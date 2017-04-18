@@ -37,7 +37,7 @@ thermscat:
 
 clean:
 	rm -f data/data_plane.txt
-	rm -f data/wind.txt
+	rm -f data/data_wind.txt
 	rm -f data/config.txt
 	rm -f data/energy.txt
 	rm -f main
