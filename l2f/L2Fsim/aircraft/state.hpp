@@ -53,7 +53,7 @@ public:
     virtual void update_time(const double &t) = 0;
 
     /**
-     * Save the state & the time step into a file
+     * Save the state into a file
      * @param {std::string} filename; path of the log file
      */
     virtual void save(std::string filename) = 0;

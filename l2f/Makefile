@@ -5,7 +5,7 @@ LDFLAGS=
 EXEC=compile
 EXEC2=compile2
 
-all: $(EXEC)
+all: clean $(EXEC)
 	./main
 
 $(EXEC):demo/main.cpp L2Fsim/flight_zone/flat_thermal_soaring_zone.cpp L2Fsim/flight_zone/thermal/std_thermal.cpp
@@ -44,10 +44,11 @@ clean:
 	rm -f FZmain
 
 help:
-	@echo “all : compile and run demo/main.cpp”
+	@echo “all : clean, compile and run demo/main.cpp”
 	@echo “therm : compile and run demo/FZmain.cpp”
 	@echo “thermvis : run therm_zslice.py”
 	@echo “traj : run traj.py”
 	@echo “energy : run energy.py”
 	@echo “angle : run angle.py”
 	@echo “clean : make clean ...”
+

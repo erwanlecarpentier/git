@@ -32,13 +32,13 @@ int main() {
     double limit_time = 1e3;
 	double time_step_width = 1e-1;
 
-    /** Choice of the environment */
+    /** Environment */
     double windx=0., windy=0.;
     // read config1.txt
     //flat_zone my_zone(windx,windy);
     flat_thermal_soaring_zone my_zone("data/config1.txt");
 
-    /** Choice of the initial state */
+    /** Initial state */
 	double x0 = -500.; // m
 	double y0 = 0.; // m
 	double z0 = 1000.; // m
@@ -51,17 +51,17 @@ int main() {
 	double xdot0 = 0., ydot0 = 0., zdot0 = 0., Vdot0 = 0., gammadot0 = 0., khidot0 = 0.; //unrealistic but updated at the begining of the simulation
     beeler_glider_state my_state(x0,y0,z0,V0,gamma0,khi0,alpha0,beta0,sigma0,xdot0,ydot0,zdot0,Vdot0,gammadot0,khidot0,current_time);
 
-    /** Choice of the initial command */
+    /** Initial command */
     beeler_glider_command my_command;
 
-    /** Choice of the aircraft */
+    /** Aircraft */
 	double m = 1.35;
 	double ws = 2.;
 	double ar = 16.;
 	beeler_glider my_glider(my_state,my_command,m,ws,ar);
 
     /**
-     * Choice of the stepper
+     * Stepper
      * @param {double} dt; substeps-width during an integration of width time_step_width
      * @warning time_step_width must be a multiple of dt
      */
@@ -70,7 +70,7 @@ int main() {
 	//rk4_integrator my_stepper(dt);
 
     /**
-     * Choice of the pilot
+     * Pilot
      * @param {double} angle_rate_magnitude; rate at which the pilot can modify the angles
      * @param {double} ep; epsilon for Q-learning
      * @param {double} lr; 'learning rate' for Q-learning
@@ -80,7 +80,7 @@ int main() {
     double ep=1e-2, lr=1e-3;
     double df=.9;
     double uct_parameter = 1., uct_tsw=time_step_width, uct_stsw=uct_tsw;
-    unsigned int horizon=200, computational_budget=100;
+    unsigned int horizon=10, computational_budget=1000;
     //passive_pilot my_pilot(angle_rate_magnitude);
     //q_learning_pilot my_pilot(angle_rate_magnitude,ep,lr,df);
     b03_uct_pilot my_pilot(

@@ -176,8 +176,8 @@ public:
         double z = s.z;
         double gamma = s.gamma;
         double alpha = s.alpha;
-        double limit_gamma_angle = 45. * 3.14 / 180.;
-        double limit_alpha_gamma_angle = 45. * 3.14 / 180.;
+        double limit_gamma_angle = 45. * 3.14159 / 180.;
+        double limit_alpha_gamma_angle = 45. * 3.14159 / 180.;
         if(z < 0) {
             std::cout << "STOP: altitude 'z' < 0" << std::endl;
             exit(-1);
@@ -282,7 +282,6 @@ protected:
 
         /** Calc relative wind */
         fz.wind(x, y, z, t, w);
-        save_wind(w,t);
 
         V_w.at(0) = V * cos(gamma) * cos(khi) - w.at(0);
         V_w.at(1) = V * cos(gamma) * sin(khi) - w.at(1);

@@ -10,7 +10,6 @@
  * @since 1.0
  *
  * @note compatibility: 'beeler_glider.hpp'; 'beeler_glider_state.hpp'; 'beeler_glider_command.hpp'
- * @note termination criterion for a node is set in 'is_terminal' method
  */
 
 namespace L2Fsim{
@@ -68,12 +67,6 @@ public:
 
     /** Return a reference on the state attribute */
     beeler_glider_state & get_state() {return s;}
-
-    /** Boolean test for termination criterion */
-    bool is_terminal() {
-        bool answer = (s.z < 0.) ? true : false;
-        return answer;
-    }
 
     /** Boolean test for a node being fully expanded or not */
     bool is_fully_expanded() {
