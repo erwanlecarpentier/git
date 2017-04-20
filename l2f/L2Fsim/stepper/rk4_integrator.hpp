@@ -16,7 +16,8 @@ public:
      * @param {std::string} state_log_filename; file name for log
      */
     double dt;
-    std::string state_log_filename = "data/data_plane.txt";
+    std::string state_log_path = "data/state.dat";
+    std::string wind_log_path = "data/wind.dat";
 
 	/** Constructor */
 	rk4_integrator(double _dt=.001) : dt(_dt) {}
@@ -90,15 +91,14 @@ public:
         }
 
         /// 2. Save the data
-        ac.get_state().save(state_log_filename);
-        /*
-        std::vector<double> concat;
-        concat.reserve( x.size() + u.size() ); // preallocate memory
-        concat.insert( concat.end(), x.begin(),x.end() );
-        concat.insert( concat.end(), u.begin(), u.end() );
-        save_state_into_file(file_name1,concat,current_time);
-        save_energy_into_file(file_name2,current_time,time_step_width,obs_old,obs);
-        */
+        /// @note output files should be cleared first
+        save_vector(ac.get_state().get_save(),state_log_path,std::ofstream::app);
+        std::vector<double> w;
+        fz.wind(ac.get_state().getx(),
+            ac.get_state().gety(),
+            ac.get_state().getz(),
+            ac.get_state().gett(),w);
+        save_vector(w,wind_log_path,std::ofstream::app);
 
         /// 3. Apply the command to the aircraft i.e. modify its state attribute
         ac.apply_command();

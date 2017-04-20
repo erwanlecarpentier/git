@@ -10,8 +10,8 @@ import sys
 from mpl_toolkits.mplot3d import Axes3D
 
 plt.close('all')
-data = np.loadtxt("data/data_plane.txt",dtype=float)
-data_wind = np.loadtxt("data/data_wind.txt",dtype=float)
+data = np.loadtxt("data/state.dat",dtype=float)
+data_wind = np.loadtxt("data/wind.dat",dtype=float)
 
 x = data[:,0]
 y = data[:,1]
@@ -27,7 +27,7 @@ t = data[:,10]
 updraft = data_wind[:,2]
 
 def b():
-	return '#6699ff';
+	return '#333399';
 def o():
 	return '#ff6600';
 def g():

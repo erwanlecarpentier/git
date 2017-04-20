@@ -39,6 +39,7 @@ int main() {
     flat_thermal_soaring_zone my_zone("data/config1.txt");
 
     /** Initial state */
+/*
 	double x0 = -500.; // m
 	double y0 = 0.; // m
 	double z0 = 1000.; // m
@@ -50,15 +51,24 @@ int main() {
 	double sigma0 = 0.; // rad
 	double xdot0 = 0., ydot0 = 0., zdot0 = 0., Vdot0 = 0., gammadot0 = 0., khidot0 = 0.; //unrealistic but updated at the begining of the simulation
     beeler_glider_state my_state(x0,y0,z0,V0,gamma0,khi0,alpha0,beta0,sigma0,xdot0,ydot0,zdot0,Vdot0,gammadot0,khidot0,current_time);
+*/
+	double x0 = -100.; // m
+	double y0 = -100.; // m
+	double z0 = 1000.; // m
+	double V0 = 20.; // m/s
+	double gamma0 = 0.; // rad
+	double khi0 = 0.; // rad
+	double alpha0 = .0; // rad
+	double beta0 = .0; // rad
+	double sigma0 = .5; // rad
+	double xdot0 = 0., ydot0 = 0., zdot0 = 0., Vdot0 = 0., gammadot0 = 0., khidot0 = 0.; //unrealistic but updated at the begining of the simulation
+    beeler_glider_state my_state(x0,y0,z0,V0,gamma0,khi0,alpha0,beta0,sigma0,xdot0,ydot0,zdot0,Vdot0,gammadot0,khidot0,current_time);
 
     /** Initial command */
     beeler_glider_command my_command;
 
     /** Aircraft */
-	double m = 1.35;
-	double ws = 2.;
-	double ar = 16.;
-	beeler_glider my_glider(my_state,my_command,m,ws,ar);
+	beeler_glider my_glider(my_state,my_command);
 
     /**
      * Stepper
@@ -76,14 +86,15 @@ int main() {
      * @param {double} lr; 'learning rate' for Q-learning
      * @param {double} df; discount factor for Q-learning
      */
-    double angle_rate_magnitude = 3e-2;//3*1e-1 * 3.14 / 180.;
+    double angle_rate_magnitude = 6e-2;//3*1e-1 * 3.14 / 180.;
     double ep=1e-2, lr=1e-3;
     double df=.9;
-    double uct_parameter = 1., uct_tsw=time_step_width, uct_stsw=uct_tsw;
-    unsigned int horizon=10, computational_budget=1000;
-    //passive_pilot my_pilot(angle_rate_magnitude);
+    double uct_parameter = 1./sqrt(2.);
+    double uct_tsw=time_step_width, uct_stsw=uct_tsw;
+    unsigned int horizon=400, computational_budget=1e2;
+    passive_pilot my_pilot(angle_rate_magnitude);
     //q_learning_pilot my_pilot(angle_rate_magnitude,ep,lr,df);
-    b03_uct_pilot my_pilot(
+    /*b03_uct_pilot my_pilot(
         my_stepper.transition_function,
         my_glider,
         my_zone,
@@ -93,7 +104,7 @@ int main() {
         uct_stsw,
         df,
         horizon,
-        computational_budget);
+        computational_budget);*/
 
     /** Initialize the simulation */
     simulation mysim;

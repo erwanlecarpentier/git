@@ -28,7 +28,7 @@ avec le nom du fichier un fichier .txt avec lignes et colonnes
 """
 
 ## File reading
-fname = "data/data_plane.txt"
+fname = "data/state.dat"
 data = np.loadtxt(fname,dtype=float)
 data_coordonnees = data[:,[0,1,2]]
 

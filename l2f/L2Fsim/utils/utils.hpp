@@ -13,7 +13,7 @@
 namespace L2Fsim {
 
 /**
- * Sort the indices of the input vector, not depending on its content type
+ * @brief Sort the indices of the input vector, not depending on its content type
  * @param {const std::vector<double> &} v; input vector
  * @param {std::vector<unsigned int> &} up_ind; indices of the elements of v reaching the maximum values
  * @param {std::vector<unsigned int> &} dw_ind; indices of the other elements of v
@@ -31,7 +31,7 @@ inline void sort_indices(const std::vector<content_type> &v,
 }
 
 /**
- * Overload of the previous function only retrieving the indices of the elements of v reaching the maximum values
+ * @brief Overload of 'sort_indices' function only retrieving the indices of the elements of v reaching the maximum values
  * @param {const std::vector<double> &} v; input vector
  * @param {std::vector<unsigned int> &} up_ind; indices of the elements of v reaching the maximum values
  */
@@ -46,7 +46,7 @@ inline void sort_indices(const std::vector<content_type> &v,
 }
 
 /**
- * Pick a random indice of the input vector, not depending on its content type
+ * @brief Pick a random indice of the input vector, not depending on its content type
  * @param {const std::vector<content_type> &} v; input vector
  * @return {int} a random indice
  * @note initialize a random seed when executing your program
@@ -60,7 +60,7 @@ inline int rand_indice(const std::vector<content_type> &v) {
 }
 
 /**
- * Pick a random element of the input vector, not depending on its content type
+ * @brief Pick a random element of the input vector, not depending on its content type
  * @param {const std::vector<content_type> &} v; input vector
  * @return {int} a random indice
  * @note initialize a random seed when executing your program
@@ -110,14 +110,14 @@ inline double normalLaw()
 }
 
 /**
- * Save a vector into a file
+ * @brief Save a vector into a file
  * @note template method
  * @param {const std::vector<content_type> &} v; input vector, can contain any implementation-defined type
  * @param {const std::string &} path; path to output file
  * @param {std::ofstream::openmode} mode; writing mode, default overrides
  */
 template <class content_type>
-void save_vector(
+inline void save_vector(
     const std::vector<content_type> &v,
     const std::string &path,
     std::ofstream::openmode mode = std::ofstream::out)

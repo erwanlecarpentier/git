@@ -43,10 +43,11 @@ public:
 
         // D-controller
         u.dalpha = kd * (gammadot_ref - s.gammadot);
-
+		u.dsigma = 0.;
         u.dbeta = 0.;
-        if(s.sigma > +th) { u.dsigma = -angle_rate_magnitude; }
-        if(s.sigma < -th) { u.dsigma = +angle_rate_magnitude; }
+
+        //if(s.sigma > +th) { u.dsigma = -angle_rate_magnitude; }
+        //if(s.sigma < -th) { u.dsigma = +angle_rate_magnitude; }
 
 		return *this;
 	}

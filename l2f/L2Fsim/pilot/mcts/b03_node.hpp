@@ -20,7 +20,7 @@ public:
      * Attributes
      * @param {beeler_glider_state} s; state of the node
      * @param {beeler_glider_command} incoming_action; action leading from the node's parent to the node itself
-     * @param {double} average_reward; Q-value
+     * @param {double} cumulative_reward; sum of the backed-up rewards
      * @param {unsigned int} number_of_visits;
      * @param {unsigned int} depth;
      * @param {b03_node *} parent; pointer to the parent node
@@ -31,7 +31,7 @@ public:
      */
     beeler_glider_state s;
     beeler_glider_command incoming_action;
-    double average_reward;
+    double cumulative_reward;
     unsigned int number_of_visits;
     unsigned int depth;
     b03_node *parent;
@@ -42,12 +42,12 @@ public:
     b03_node(
         beeler_glider_state _s,
         std::vector<beeler_glider_command> _expendable_actions,
-        double _average_reward=0.,
+        double _cumulative_reward=0.,
         unsigned int _number_of_visits=0,
         unsigned int _depth=0) :
         s(_s),
         expendable_actions(_expendable_actions),
-        average_reward(_average_reward),
+        cumulative_reward(_cumulative_reward),
         number_of_visits(_number_of_visits),
         depth(_depth)
     {}
@@ -55,12 +55,12 @@ public:
     /** Constructor with default state */
     b03_node(
         std::vector<beeler_glider_command> _expendable_actions,
-        double _average_reward=0.,
+        double _cumulative_reward=0.,
         unsigned int _number_of_visits=0,
         unsigned int _depth=0) :
         s(),
         expendable_actions(_expendable_actions),
-        average_reward(_average_reward),
+        cumulative_reward(_cumulative_reward),
         number_of_visits(_number_of_visits),
         depth(_depth)
     {}
@@ -72,6 +72,12 @@ public:
     bool is_fully_expanded() {
         bool answer = (expendable_actions.size() == 0) ? true : false;
         return answer;
+    }
+
+    /** @brief Get the average reward */
+    double get_average_reward() {
+        double nvis = (double) number_of_visits;
+        return cumulative_reward / nvis;
     }
 
     /**

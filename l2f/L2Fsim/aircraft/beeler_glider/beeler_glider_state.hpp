@@ -4,9 +4,10 @@
 //#include <L2Fsim/aircraft/state.hpp>
 
 /**
- * Beeler's glider state from a Control point of view
+ * @file beeler_glider_state.hpp
  * @version 1.0
  * @since 1.0
+ * Beeler's glider state from a Control point of view
  */
 
 namespace L2Fsim {
@@ -15,7 +16,6 @@ class beeler_glider_state : public state {
 public:
     /**
      * Attributes
-     * State variables
      * @param {double} x, y, z; the absolute position in the earth frame
      * @param {double} gamma; elevation angle
      * @param {double} khi; azimuth angle
@@ -66,7 +66,7 @@ public:
     {}
 
     /**
-     * Dynamically creates a copy of the state
+     * @brief Dynamically creates a copy of the state
      * @warning dynamic allocation: delete the duplicated object
      * @return a pointer to the copy
      */
@@ -88,7 +88,7 @@ public:
         std::cout << time << std::endl;
     }
 
-    /** Set every dynamic variables to 0 */
+    /** @brief Set every dynamic variables to 0 */
     void clear_dynamic() override {
         xdot = 0.;
         ydot = 0.;
@@ -99,7 +99,7 @@ public:
     }
 
     /**
-     * Set the dynamic components i.e. the time derivatives interacting with the simulation integrator
+     * @brief Set the dynamic components i.e. the time derivatives interacting with the simulation integrator
      * @param {state &} s; state from which the dynamic components are copied
      * @warning dynamic cast from state to beeler_glider_state
      */
@@ -114,7 +114,7 @@ public:
     }
 
     /**
-     * Add the dynamic of a state to the current state
+     * @brief Add the dynamic of a state to the current state
      * @param {state &} s; state from which the dynamic components are added
      * @param {const double} coef; a multiplicative coefficient
      * @warning dynamic cast from state to beeler_glider_state
@@ -130,7 +130,7 @@ public:
     }
 
     /**
-     * Apply a first order dynamic transition based on the values of the dynamic attributes (time derivatives)
+     * @brief Apply a first order dynamic transition based on the values of the dynamic attributes (time derivatives)
      * @param {double} dt; time step
      */
     void apply_dynamic(const double dt) override {
@@ -143,7 +143,7 @@ public:
     }
 
     /**
-     * Update time variable
+     * @brief Update time variable
      * @param {const double &} t; current time
      */
     void update_time(const double &t) override {
@@ -151,31 +151,37 @@ public:
     }
 
     /**
-     * Save (x, y, z, V, gamma, khi, alpha, beta, sigma, time) into a file
-     * @param {std::string} filename; path of the log file
+     * @fn virtual std::vector<double> get_save() = 0;
+     * @brief Get a vector containing the saved variables
+     * @return {std::vector<double>}
      */
-    void save(std::string filename) override {
-        std::ofstream output_file;
+    std::vector<double> get_save() override {
+        std::vector<double> v;
         double Edot = zdot + V*Vdot/9.81;
-        if (time==0.){output_file.open(filename);}
-        else{output_file.open(filename,std::ios::app);}
-
-        std::string stream = "";
-        stream += std::to_string(x) + " ";
-        stream += std::to_string(y) + " ";
-        stream += std::to_string(z) + " ";
-        stream += std::to_string(V) + " ";
-        stream += std::to_string(gamma) + " ";
-        stream += std::to_string(khi) + " ";
-        stream += std::to_string(alpha) + " ";
-        stream += std::to_string(beta) + " ";
-        stream += std::to_string(sigma) + " ";
-        stream += std::to_string(Edot) + " ";
-        stream += std::to_string(time);
-
-        output_file << stream << std::endl;
-        output_file.close();
+        v.push_back(x);
+        v.push_back(y);
+        v.push_back(z);
+        v.push_back(V);
+        v.push_back(gamma);
+        v.push_back(khi);
+        v.push_back(alpha);
+        v.push_back(beta);
+        v.push_back(sigma);
+        v.push_back(Edot);
+        v.push_back(time);
+        return v;
     }
+
+    /**
+     * @fn virtual double getx() = 0; @brief Get x coordinate in earth frame
+     * @fn virtual double gety() = 0; @brief Get y coordinate in earth frame
+     * @fn virtual double getz() = 0; @brief Get z coordinate in earth frame
+     * @fn virtual double gett() = 0; @brief Get time coordinate
+    */
+    double getx() {return x;}
+    double gety() {return y;}
+    double getz() {return z;}
+    double gett() {return time;}
 };
 
 }

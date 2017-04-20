@@ -16,7 +16,8 @@ public:
      * @param {std::string} state_log_filename; file name for log
      */
     double dt;
-    std::string state_log_filename = "data/data_plane.txt";
+    std::string state_log_path = "data/state.dat";
+    std::string wind_log_path = "data/wind.dat";
 
 	/** Constructor */
 	euler_integrator(double _dt=.001) : dt(_dt) {}
@@ -92,7 +93,14 @@ public:
         }
 
         /// 2. Save the data
-        ac.get_state().save(state_log_filename);
+        /// @note output files should be cleared first
+        save_vector(ac.get_state().get_save(),state_log_path,std::ofstream::app);
+        std::vector<double> w;
+        fz.wind(ac.get_state().getx(),
+            ac.get_state().gety(),
+            ac.get_state().getz(),
+            ac.get_state().gett(),w);
+        save_vector(w,wind_log_path,std::ofstream::app);
 
         /// 3. Apply the transition with Euler method
         transition_function(ac,fz,current_time,time_step_width,dt);

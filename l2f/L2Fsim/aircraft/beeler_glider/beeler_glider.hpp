@@ -10,13 +10,17 @@
 #include <cmath>
 
 /**
+ * @file beeler_glider.hpp
+ * @version 1.1
+ * @since 1.0
+ *
  * Beeler's glider model
  * Equations derived from:
  * Beeler, Moerder and Cox. A Flight Dynamics Model for a Small Glider
  * in Ambient Winds. NASA/TM-2003-212665. 2003.
  * Model validity:
- * - wingspan in [1.5m; 3.5m]
- * - aspect ratio in [6; 20]
+ * - wingspan in [1.52m; 3.55m]
+ * - aspect ratio in [6; 16]
  * - weight in [0.22kg; 5.45kg]
  * Notations:
  * (x,y,z) glider position in an Earth-based coordinate system
@@ -29,9 +33,6 @@
  *
  * @note the earth frame corresponds to the directions of the north, east and downward for the x, y and z axis. However the z notation used in the code corresponds to the altitude i.e. '-z'
  * @note khi, gamma and sigma form an euler sequence leading to the velocity frame
- *
- * @version 1.1
- * @since 1.0
  */
 
 namespace L2Fsim {
@@ -76,7 +77,7 @@ public:
     double St = Vh * c_ * S / lt;
     double Sv = Vv * wingspan * S / lt;
     double e = 0.95;
-    double Re = 150000.;
+    //double Re = 150000.; //not used?
     double a0 = 0.1*(180./3.14);
     double alpha0 = -2.5*(3.14/180.);
     double Cd0 = 0.01;
@@ -98,7 +99,7 @@ public:
         beeler_glider_command _u,
         double m=1.35,
         double ws=2.,
-        double ar=16.) :
+        double ar=15.) :
         s(_s),
         u(_u),
         mass(m),
@@ -106,37 +107,29 @@ public:
         aspect_ratio(ar)
     {}
 
-    /** Get a reference on the state */
-    state & get_state() override {
-        return s;
-    }
+    /** @brief Get a reference on the state */
+    state & get_state() override {return s;}
 
 	/**
-	 * Set the state of the aircraft
+	 * @brief Set the state of the aircraft
 	 * @param {const beeler_glider_state &} _s; input state
 	 */
-	void set_state(const beeler_glider_state &_s) {
-        s = _s;
-	}
+	void set_state(const beeler_glider_state &_s) {s = _s;}
 
-    /** Get a reference on the command */
-    command & get_command() override {
-        return u;
-    }
+    /** @brief Get a reference on the command */
+    command & get_command() override {return u;}
 
 	/**
-	 * Set the command of the aircraft
+	 * @brief Set the command of the aircraft
 	 * @param {const beeler_glider_command &} _u; input command
 	 */
-	void set_command(const beeler_glider_command &_u) {
-        u = _u;
-	}
+	void set_command(const beeler_glider_command &_u) {u = _u;}
 
     double get_distance_to_center() override {
         return sqrt(s.x * s.x + s.y * s.y);
     }
 
-    /** Apply the command i.e. modify the state attribute of the aircraft accordingly to the command */
+    /** @brief Apply the command i.e. modify the state attribute of the aircraft accordingly to the command */
     aircraft & apply_command() override {
         s.alpha += u.dalpha;
         s.beta += u.dbeta;
@@ -145,7 +138,7 @@ public:
     }
 
     /**
-     * Compute the time derivative of the input state
+     * @brief Compute the time derivative of the input state
      * @param {const flight_zone &} fz; flight zone
      * @param {const double} t; current time
      * @param {state &} _s; updated state
@@ -159,18 +152,23 @@ public:
         double khi = s.khi;
         double sigma = s.sigma;
 
+		double cosgamma = cos(gamma);
+		double singamma = sin(gamma);
+		double cossigma = cos(sigma);
+		double sinsigma = sin(sigma);
+
         calc_aero_forces(fz, t, lift, drag, sideforce);
-        s.xdot = V * cos(gamma) * cos(khi);
-        s.ydot = V * cos(gamma) * sin(khi);
-        s.zdot = V * sin(gamma);
-        s.Vdot = - drag / mass - 9.81 * sin(gamma);
-        s.gammadot = (lift * cos(sigma) + sideforce * sin(sigma)) / (mass * V) - 9.81 * cos(gamma) / V;
-        s.khidot = (lift * sin(sigma) - sideforce * cos(sigma)) / (mass * V * cos(gamma));
+        s.xdot = V * cosgamma * cos(khi);
+        s.ydot = V * cosgamma * sin(khi);
+        s.zdot = V * singamma;
+        s.Vdot = - drag / mass - 9.81 * singamma;
+        s.gammadot = (lift * cossigma + sideforce * sinsigma) / (mass * V) - 9.81 * cosgamma / V;
+        s.khidot = (lift * sinsigma - sideforce * cossigma) / (mass * V * cosgamma);
         return *this;
     }
 
     /**
-     * Check if the state vector contains values that are out of the model's range of validity
+     * @brief Check if the state vector contains values that are out of the model's range of validity
      */
     aircraft & is_in_model() override {
         double z = s.z;
@@ -204,28 +202,7 @@ public:
 protected:
 
     /**
-     * Save the wind vector at 'data/data_wind.txt'
-     * @param {const std::vector<double> &} w; wind vector
-     * @param {const double &} time; time step
-     */
-    void save_wind(const std::vector<double> &w, const double &time) {
-        std::string filename("data/data_wind.txt");
-        std::ofstream output_file;
-        if (time==0.){output_file.open(filename);}
-        else{output_file.open(filename,std::ios::app);}
-
-        std::string stream = "";
-        stream += std::to_string(w.at(0)) + " ";
-        stream += std::to_string(w.at(1)) + " ";
-        stream += std::to_string(w.at(2)) + " ";
-        stream += std::to_string(time);
-
-        output_file << stream << std::endl;
-        output_file.close();
-    }
-
-    /**
-     * Compute lift, drag and sideforce
+     * @brief Compute lift, drag and sideforce
      * @param {flight_zone &} fz; flight zone
      * @param {const double} t; current time
      * @param {double &} lift, drag, sideforce; aerodynamic forces

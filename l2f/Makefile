@@ -36,10 +36,9 @@ thermscat:
 	python3 python_plot/thermalscatter.py
 
 clean:
-	rm -f data/data_plane.txt
-	rm -f data/data_wind.txt
+	rm -f data/state.dat
+	rm -f data/wind.dat
 	rm -f data/config.txt
-	rm -f data/energy.txt
 	rm -f main
 	rm -f FZmain
 
