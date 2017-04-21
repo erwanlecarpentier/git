@@ -21,7 +21,7 @@
  * Model validity:
  * - wingspan in [1.52m; 3.55m]
  * - aspect ratio in [6; 16]
- * - weight in [0.22kg; 5.45kg]
+ * - weight in [0.23kg; 5.44kg]
  * Notations:
  * (x,y,z) glider position in an Earth-based coordinate system
  * V ground speed of the glider
@@ -43,9 +43,9 @@ public:
      * Attributes
      * @param {beeler_glider_state} s; the state of the aircraft
      * @param {beeler_glider_command} u; the command of the aircraft
-     * @param {double} mass; mass
-     * @param {double} wingspan; wing span
-     * @param {double} aspect_ratio; aspect ratio
+     * @param {double} mass; mass in [0.23kg; 5.44kg]
+     * @param {double} wingspan; wing span in [1.52m; 3.55m]
+     * @param {double} aspect_ratio; aspect ratio in [6; 16]
      * @param {double} ARv; aspect ratio of vertical tail
      * @param {double} Sf; fuselage area
      * @param {double} lt; fuselage moment arm length
@@ -68,23 +68,26 @@ public:
     double wingspan;
     double aspect_ratio;
     double ARv = 0.5*aspect_ratio;
-    double Sf = 86. * (2.54/100.) * (2.54/100.);
-    double lt = 0.28*(2.54/100.);
+	//double Sf = 0.01553571429*wingspan*wingspan + .01950357142*wingspan - 0.01030412685; // polynomial regression - unused
+    double lt = 0.28*wingspan;
     double Vh = 0.4;
     double Vv = 0.02;
     double c_ = 1.03 * wingspan / aspect_ratio;
     double S = wingspan * wingspan / aspect_ratio;
-    double St = Vh * c_ * S / lt;
+    //double St = Vh * c_ * S / lt; //unused
     double Sv = Vv * wingspan * S / lt;
     double e = 0.95;
-    //double Re = 150000.; //not used?
-    double a0 = 0.1*(180./3.14);
-    double alpha0 = -2.5*(3.14/180.);
+    //double Re = 150000.; //unused
+    double a0 = 0.1*(180./M_PI);
+    double alpha0 = -2.5*(M_PI/180.);
     double Cd0 = 0.01;
     double Cdl = 0.05;
     double Clmin = 0.4;
-    double Cl_alpha = a0/(1.+a0/(3.14*e*aspect_ratio));
-    double Cc_beta = a0/(1.+a0*(3.14*ARv)) * (Sv / S);
+    double Cl_alpha = a0/(1.+a0/(M_PI*e*aspect_ratio));
+    double Cc_beta = (a0/(1.+a0/(M_PI*e*ARv))) * (Sv/S);
+	//double Cdf = .008; //unused
+	//double Cdt = .01; //unused
+	//double Cde = .002; //unused
 
     /**
      * Constructor
@@ -174,8 +177,8 @@ public:
         double z = s.z;
         double gamma = s.gamma;
         double alpha = s.alpha;
-        double limit_gamma_angle = 45. * 3.14159 / 180.;
-        double limit_alpha_gamma_angle = 45. * 3.14159 / 180.;
+        double limit_gamma_angle = 45. * M_PI / 180.;
+        double limit_alpha_gamma_angle = 45. * M_PI / 180.;
         if(z < 0) {
             std::cout << "STOP: altitude 'z' < 0" << std::endl;
             exit(-1);
@@ -211,9 +214,9 @@ protected:
                         const double t,
                         double &lift,
                         double &drag,
-                        double &sideforce) { //const {
+                        double &sideforce) {
 
-        /** Retrieve aircraft's state */
+        // Retrieve aircraft's state
         double x = s.x;
         double y = s.y;
         double z = s.z;
@@ -223,9 +226,18 @@ protected:
         double alpha = s.alpha;
         double beta = s.beta;
         double sigma = s.sigma;
+		//double xdot = s.xdot;
+		//double ydot = s.ydot;
+		//double zdot = s.zdot;
+		double cos_gamma = cos(gamma);
+		double cos_alpha = cos(alpha);
+		double sin_alpha = sin(alpha);
+		double cos_beta = cos(beta);
+		double sin_beta = sin(beta);
 
         /** Relative wind */
         std::vector<double> w(3);
+        fz.wind(x, y, z, t, w);
 
         /** Wind relative velocity */
         std::vector<double> V_w(3);
@@ -237,15 +249,13 @@ protected:
         /** Aerodynamic force coefficients with wind */
         double Cc_w, Cl_w, Cd_w;
 
-        /** Dynamic pressure */
-        double q;
-
         /** Rotation matrices and quaternions */
-        quaternion rviq; // quaternion version of the Euler rotation sequence R_VI
+        quaternion rviq; // quaternion version of the Euler rotation sequence {khi,gamma,sigma}
+        quaternion rwiq; // quaternion version of the Euler rotation sequence {khi_w,gamma_w,sigma_w}
 
         std::vector<double> rbv(9); // rotation from velocity frame to body frame R_BV
         std::vector<double> rbv1(9); // rotation of alpha
-        std::vector<double> rbv2(9); // rotation of -beta
+        std::vector<double> rbv2(9); // rotation of beta
         quaternion rbvq; //quaternion version R_BV
         quaternion rbv1q;
         quaternion rbv2q;
@@ -257,66 +267,67 @@ protected:
         quaternion m11q;
         quaternion m12q;
 
-        /** Calc relative wind */
-        fz.wind(x, y, z, t, w);
-
-        V_w.at(0) = V * cos(gamma) * cos(khi) - w.at(0);
-        V_w.at(1) = V * cos(gamma) * sin(khi) - w.at(1);
+        V_w.at(0) = V * cos_gamma * cos(khi) - w.at(0);
+        V_w.at(1) = V * cos_gamma * sin(khi) - w.at(1);
         V_w.at(2) = V * sin(gamma) - w.at(2);
 
-        X_w.at(0) = V_w.at(0) / sqrt(V_w.at(0)*V_w.at(0) + V_w.at(1)*V_w.at(1) + V_w.at(2)*V_w.at(2));
-        X_w.at(1) = V_w.at(1) / sqrt(V_w.at(0)*V_w.at(0) + V_w.at(1)*V_w.at(1) + V_w.at(2)*V_w.at(2));
-        X_w.at(2) = V_w.at(2) / sqrt(V_w.at(0)*V_w.at(0) + V_w.at(1)*V_w.at(1) + V_w.at(2)*V_w.at(2));
+		double V_w_2norm = sqrt(V_w.at(0)*V_w.at(0) + V_w.at(1)*V_w.at(1) + V_w.at(2)*V_w.at(2));
 
-        /** Calc of gamma_w and khi_w */
-        gamma_w = asin(X_w.at(2));
+        X_w.at(0) = V_w.at(0) / V_w_2norm;
+        X_w.at(1) = V_w.at(1) / V_w_2norm;
+        X_w.at(2) = V_w.at(2) / V_w_2norm;
 
-        if(X_w.at(0) / cos(gamma_w) > 1) {
+        // Calculation of gamma_w and khi_w
+        gamma_w = asin(X_w.at(2)); // taking into account the signe change
+		double cos_gamma_w = cos(gamma_w);
+		double sin_gamma_w = sin(gamma_w);
+
+        if(X_w.at(0) / cos_gamma_w > 1) {
             khi_w = 0;
-        }else if(X_w.at(0) / cos(gamma_w) < -1){
+        }else if(X_w.at(0) / cos_gamma_w < -1){
             khi_w = M_1_PI;
         }else{
-            khi_w = sgn(X_w.at(1) / cos(gamma_w)) * acos(X_w.at(0) / cos(gamma_w));
+            khi_w = sgn(X_w.at(1) / cos_gamma_w) * acos(X_w.at(0) / cos_gamma_w);
         }
+		double cos_khi_w = cos(khi_w);
+		double sin_khi_w = sin(khi_w);
 
-        /** Calc of alpha_w, beta_w and sigma_w :
-         Use of rotation matrices and quaternions */
+        // Calculation of alpha_w, beta_w and sigma_w : use of rotation matrices and quaternions
 
         rviq.fromEuler(khi, gamma, sigma);
 
-        rbv1.at(0) = cos(alpha);
-        rbv1.at(2) = sin(alpha);
-        rbv1.at(4) = 1;
-        rbv1.at(6) = -sin(alpha);
-        rbv1.at(8) = cos(alpha);
-        rbv1.at(1) = rbv1.at(3) = rbv1.at(5) = rbv1.at(7) = 0;
+        rbv1.at(0) = cos_alpha;
+        rbv1.at(2) = sin_alpha;
+        rbv1.at(4) = 1.;
+        rbv1.at(6) = -sin_alpha;
+        rbv1.at(8) = cos_alpha;
+        rbv1.at(1) = rbv1.at(3) = rbv1.at(5) = rbv1.at(7) = 0.;
 
-        rbv2.at(0) = cos(beta);
-        rbv2.at(1) = sin(beta);
-        rbv2.at(3) = -sin(beta);
-        rbv2.at(4) = cos(beta);
-        rbv2.at(8) = 1;
-        rbv2.at(2) = rbv2.at(5) = rbv2.at(6) = rbv2.at(7) = 0;
+        rbv2.at(0) = cos_beta;
+        rbv2.at(1) = sin_beta;
+        rbv2.at(3) = -sin_beta;
+        rbv2.at(4) = cos_beta;
+        rbv2.at(8) = 1.;
+        rbv2.at(2) = rbv2.at(5) = rbv2.at(6) = rbv2.at(7) = 0.;
 
         rbv1q.fromRotationMatrix(rbv1);
         rbv2q.fromRotationMatrix(rbv2);
         rbvq = rbv1q;
         rbvq.multRight(rbv2q);
 
-        // On doit commencer par les lignes, il me semble
-        m11.at(0) = cos(gamma_w);
-        m11.at(2) = -sin(gamma_w);
-        m11.at(4) = 1;
-        m11.at(6) = sin(gamma_w);
-        m11.at(8) = cos(gamma_w);
-        m11.at(1) = m11.at(3) = m11.at(5) = m11.at(7) = 0;
+        m11.at(0) = cos_gamma_w;
+        m11.at(2) = -sin_gamma_w;
+        m11.at(4) = 1.;
+        m11.at(6) = sin_gamma_w;
+        m11.at(8) = cos_gamma_w;
+        m11.at(1) = m11.at(3) = m11.at(5) = m11.at(7) = 0.;
 
-        m12.at(0) = cos(khi_w);
-        m12.at(1) = sin(khi_w);
-        m12.at(3) = -sin(khi_w);
-        m12.at(4) = cos(khi_w);
-        m12.at(8) = 1;
-        m12.at(2) = m12.at(5) = m12.at(6) = m12.at(7) = 0;
+        m12.at(0) = cos_khi_w;
+        m12.at(1) = sin_khi_w;
+        m12.at(3) = -sin_khi_w;
+        m12.at(4) = cos_khi_w;
+        m12.at(8) = 1.;
+        m12.at(2) = m12.at(5) = m12.at(6) = m12.at(7) = 0.;
 
         m11q.fromRotationMatrix(m11);
         m12q.fromRotationMatrix(m12);
@@ -327,35 +338,51 @@ protected:
         mq.toRotationMatrix(m);
 
         alpha_w = asin(m.at(2));
+		double cos_alpha_w = cos(alpha_w);
 
-        if(m.at(8) / cos(alpha_w) > 1) {
-            sigma_w = 0;
-        }else if(m.at(8) / cos(alpha_w) < -1){
+        if(m.at(8) / cos_alpha_w > 1.) {
+            sigma_w = 0.;
+        }else if(m.at(8) / cos_alpha_w < -1.){
             sigma_w = M_1_PI;
         }else{
-            sigma_w = sgn(-m.at(5) / cos(alpha_w)) * acos(m.at(8) / cos(alpha_w));
+            sigma_w = sgn(-m.at(5) / cos_alpha_w) * acos(m.at(8) / cos_alpha_w);
         }
 
-        if(m.at(0) / cos(alpha_w) > 1) {
-            beta_w = 0;
-        }else if(m.at(0) / cos(alpha_w) < -1){
+        if(m.at(0) / cos_alpha_w > 1.) {
+            beta_w = 0.;
+        }else if(m.at(0) / cos_alpha_w < -1.){
             beta_w = M_1_PI;
         }else{
-            beta_w = sgn(m.at(1) / cos(alpha_w)) * acos(m.at(0) / cos(alpha_w));
+            beta_w = sgn(m.at(1) / cos_alpha_w) * acos(m.at(0) / cos_alpha_w);
         }
 
-        /** Calc of the aerodynamic force coefficients with wind */
+        // Calc of the aerodynamic force coefficients with wind
         Cc_w = Cc_beta * beta_w;
         Cl_w = Cl_alpha * (alpha_w - alpha0);
-        Cd_w = Cd0 + Cdl * (Cl_w - Clmin) * (Cl_w - Clmin) + Cl_w * Cl_w / (3.14*e*aspect_ratio) + Cc_w * Cc_w / (3.14*e*aspect_ratio) * (S / Sv);
+        Cd_w = Cd0 + Cdl * (Cl_w - Clmin) * (Cl_w - Clmin) + Cl_w * Cl_w / (M_PI*e*aspect_ratio) + Cc_w * Cc_w / (M_PI*e*aspect_ratio) * (S / Sv);
 
-        /** Calc of the dynamic pressure */
-        q = 0.5 * 1.225 * (V_w.at(0)*V_w.at(0) + V_w.at(1)*V_w.at(1) + V_w.at(2)*V_w.at(2));
+        // Dynamic pressure
+        double q = 0.5 * 1.225 * V_w_2norm * V_w_2norm;
+		double qS = q*S;
 
-        /** Calc of the aerodynamic forces */
-        drag = q * S * Cd_w;
-        sideforce = q * S * Cc_w;
-        lift = q * S * Cl_w;
+        // Calc of the aerodynamic forces in wind frame
+        double drag_w = qS * Cd_w;
+        double sideforce_w = qS * Cc_w;
+        double lift_w = qS * Cl_w;
+		std::vector<double> forces_w(3); // forces in the wind frame
+		forces_w.at(0) = -drag_w;
+		forces_w.at(1) = -sideforce_w;
+		forces_w.at(2) = -lift_w;
+
+		// Transformation to the velocity frame
+        rwiq.fromEuler(khi_w, gamma_w, sigma_w);
+		rviq.invert(); // rviq is rivq
+		rviq.multRight(rwiq); //rviq is rivq*rwiq
+		rviq.rotateVector(forces_w);
+
+		drag = -forces_w.at(0);
+		sideforce = -forces_w.at(1);
+		lift = -forces_w.at(2);
     }
 };
 

@@ -61,7 +61,15 @@ int main() {
 	double alpha0 = .0; // rad
 	double beta0 = .0; // rad
 	double sigma0 = .5; // rad
-	double xdot0 = 0., ydot0 = 0., zdot0 = 0., Vdot0 = 0., gammadot0 = 0., khidot0 = 0.; //unrealistic but updated at the begining of the simulation
+
+	//TODO put this into constructor
+	double xdot0 = V0 * cos(khi0) + cos(gamma0);
+	double ydot0 = V0 * sin(khi0) + cos(gamma0);
+	double zdot0 = V0 * sin(gamma0);
+	double Vdot0 = 0.;
+	double gammadot0 = 0.;
+	double khidot0 = 0.;
+
     beeler_glider_state my_state(x0,y0,z0,V0,gamma0,khi0,alpha0,beta0,sigma0,xdot0,ydot0,zdot0,Vdot0,gammadot0,khidot0,current_time);
 
     /** Initial command */
@@ -69,6 +77,7 @@ int main() {
 
     /** Aircraft */
 	beeler_glider my_glider(my_state,my_command);
+	//my_glider.update_state_dynamic(my_zone, 0., my_glider.get_state());
 
     /**
      * Stepper

@@ -41,11 +41,13 @@ ax1bis = ax1.twinx()
 ax1bis.plot(t,updraft,color=o())
 ax1bis.set_ylabel('Updraft', color=o())
 ax1bis.tick_params('y', colors=o())
+ax1bis.axhline(y=0., color='black', linestyle='--')
 
 ax2 = plt.subplot(2,2,2)
 plt.plot(t,V,label='V',color=b())
 plt.plot(t,Edot,label='Edot',color=o())
 plt.legend(loc='upper left')
+plt.axhline(y=0., color='black', linestyle='--')
 
 ax3 = plt.subplot(2,2,3)
 plt.plot(t,gamma,label='gamma',color=b())

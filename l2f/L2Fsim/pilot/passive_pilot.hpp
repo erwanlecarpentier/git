@@ -39,7 +39,7 @@ public:
         beeler_glider_state &s = dynamic_cast <beeler_glider_state &> (_s);
         beeler_glider_command &u = dynamic_cast <beeler_glider_command &> (_u);
         double th = angle_rate_magnitude / 2.;
-        double kd=1e-2, gammadot_ref=0.; // use kd=1e-3 for rk4 integrator
+        double kd=1e-2, gammadot_ref=0.;
 
         // D-controller
         u.dalpha = kd * (gammadot_ref - s.gammadot);

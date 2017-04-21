@@ -2,6 +2,7 @@
 #define L2FSIM_BEELER_GLIDER_STATE_HPP_
 
 //#include <L2Fsim/aircraft/state.hpp>
+#include <ctgmath>
 
 /**
  * @file beeler_glider_state.hpp
@@ -139,7 +140,9 @@ public:
         z += dt * zdot;
         V += dt * Vdot;
         gamma += dt * gammadot;
+        gamma = fmod(gamma,2*M_PI);
         khi += dt * khidot;
+        khi = fmod(khi,2*M_PI);
     }
 
     /**
