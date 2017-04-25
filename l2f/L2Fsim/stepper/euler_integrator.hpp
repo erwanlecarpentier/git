@@ -23,29 +23,8 @@ public:
 	euler_integrator(double _dt=.001) : dt(_dt) {}
 
     /**
-     * Euler update operator
-     * Modifies the static variables of the state according to the corresponding simulation configuration
-     * @warning The dynamic part of the state is set to the value used for the update (cf Euler, RK4, etc.)
-     * @param {aircraft &} ac; aircraft
-     * @param {flight_zone &} fz; flight zone
-     * @param {const double} current_time; current time
-     * @param {const double} dt; integration step
-     */
-    /*
-    void euler_update(
-        aircraft &ac,
-        flight_zone &fz,
-        const double current_time,
-        const double dt)
-    {
-        ac.update_state_dynamic(fz,current_time,ac.get_state());
-        ac.get_state().apply_dynamic(dt);
-    }
-    */
-
-    /**
      * Transition function
-     * @note Perform a transition given: an aircraft model with a correct state and command; an atmospheric model; the current time; the time-step-width and the sub-time-step-width
+     * @brief Perform a transition given: an aircraft model with a correct state and command; an atmospheric model; the current time; the time-step-width and the sub-time-step-width
      * @note static method for use within an external simulator
      * @param {aircraft &} ac; aircraft model
      * @param {flight_zone &} fz; atmosphere model
@@ -60,11 +39,12 @@ public:
         const double &time_step_width,
         const double &dt)
     {
-        ac.apply_command();
         for(int n=0; n<time_step_width/dt; ++n) {
-            //euler_update(ac,fz,current_time,dt);
+            ac.apply_command();
+            //// EULER UPDATE
             ac.update_state_dynamic(fz,current_time,ac.get_state());
             ac.get_state().apply_dynamic(dt);
+            //// END EULER UPDATE
             current_time += dt;
             ac.get_state().update_time(current_time);
         }

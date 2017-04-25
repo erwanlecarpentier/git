@@ -9,13 +9,13 @@ all: clean $(EXEC)
 	./main
 
 $(EXEC):demo/main.cpp L2Fsim/flight_zone/flat_thermal_soaring_zone.cpp L2Fsim/flight_zone/thermal/std_thermal.cpp
-	$(CC) -o main demo/main.cpp L2Fsim/flight_zone/flat_thermal_soaring_zone.cpp L2Fsim/flight_zone/thermal/std_thermal.cpp -I.
+	$(CC) -o main demo/main.cpp L2Fsim/flight_zone/flat_thermal_soaring_zone.cpp L2Fsim/flight_zone/thermal/std_thermal.cpp -I. -lconfig++
 
 therm:$(EXEC2)
 	./FZmain
 
 $(EXEC2):demo/FZmain.cpp L2Fsim/flight_zone/flat_thermal_soaring_zone.cpp L2Fsim/flight_zone/thermal/std_thermal.cpp
-	$(CC) -o FZmain demo/FZmain.cpp L2Fsim/flight_zone/flat_thermal_soaring_zone.cpp L2Fsim/flight_zone/thermal/std_thermal.cpp -I.
+	$(CC) -o FZmain demo/FZmain.cpp L2Fsim/flight_zone/flat_thermal_soaring_zone.cpp L2Fsim/flight_zone/thermal/std_thermal.cpp -I. -lconfig++
 
 thermvis:
 	python3 python_plot/therm_zslice.py

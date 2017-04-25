@@ -52,6 +52,8 @@ public:
     {
         std::vector<double> phi = get_feature_vector(prev_s,prev_a);
         parameters.resize(phi.size(),0.);
+
+        //get_cfg("demo/settings/ac_settings/q_learning_pilot.cfg");
     }
 
     /**

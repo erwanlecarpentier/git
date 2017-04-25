@@ -76,8 +76,7 @@ public:
 
     /** @brief Get the average reward */
     double get_average_reward() {
-        double nvis = (double) number_of_visits;
-        return cumulative_reward / nvis;
+        return cumulative_reward / (double)number_of_visits;
     }
 
     /**
