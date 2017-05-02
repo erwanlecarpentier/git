@@ -107,6 +107,9 @@ public:
             scores.push_back(uct_score(parent.children[i]));
         }
         sort_indices(scores,max_indices);
+        //std::cout<<"best uct child ("<<parent.children.size()<<" children)";//TRM
+        //std::cout<<" scores: "<<scores[0]<<" "<<scores[1]<<" "<<scores[2];//TRM
+        //std::cout<<" - hence max_indices has size "<<max_indices.size()<<std::endl;//TRM
         return parent.children.at(rand_element(max_indices));
     }
 
@@ -151,11 +154,10 @@ public:
         const beeler_glider_command &a_t,
         const beeler_glider_state &s_tp)
     {
-        //std::cout<<"    zdot "<<s_t.zdot<<std::endl; //TRM
-        //std::cout<<"    V    "<<s_t.V<<std::endl;
-        //std::cout<<"    Vdot "<<s_t.Vdot<<std::endl;
         double edot = s_t.zdot + s_t.V * s_t.Vdot / 9.81;
-        return edot/1000.+0.01;
+        double rwd=0.;
+        if(edot>0.){rwd=1.;}
+        return rwd;
     }
 
     /**
@@ -212,6 +214,7 @@ public:
         beeler_glider_state s_tp, s_t=s;
         beeler_glider_command a_t;
         for(unsigned int t=0; t<horizon; ++t) {
+            //std::cout<<"dft policy"<<std::endl;//TRM
             a_t = rand_element(actions);
             s_tp = transition_model(s_t,a_t);
             reward += pow(df,(double)t) * reward_model(s_t,a_t,s_tp);
@@ -245,6 +248,7 @@ public:
             scores.push_back(v0.children[i].get_average_reward());
         }
         sort_indices(scores,max_indices);
+        //std::cout<<"best actions"<<std::endl;//TRM
         b03_node v = v0.children.at(rand_element(max_indices));
         a = v.incoming_action;
     }
@@ -260,10 +264,9 @@ public:
         beeler_glider_state &s0 = dynamic_cast <beeler_glider_state &> (_s);
         beeler_glider_command &a = dynamic_cast <beeler_glider_command &> (_a);
         b03_node v0(s0,get_expendable_actions(),0.,1,0); // root node
-
         for(unsigned int i=0; i<computational_budget; ++i) {
             b03_node v(get_expendable_actions(),0.,0,0);
-            double reward;
+            double reward=0.;
             tree_policy(v0,v);
             default_policy(v.get_state(),reward);
             backup(v,reward);
@@ -274,7 +277,7 @@ public:
         double kd=1e-2, gammadot_ref=0.;
         a.dalpha = kd * (gammadot_ref - s0.gammadot);
 
-        //////////////////////////////////////////////////////////////////////////////////
+        //// TO REMOVE //////////////////////////////////////////////////////////////////
         if(true){//TRM
         for(unsigned int l=0; l<v0.children.size(); ++l) {
             std::cout<<"visit "<<v0.children[l].number_of_visits;
@@ -292,7 +295,7 @@ public:
         }
         std::cout<<std::endl;
         }
-        //////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////
 		return *this;
 	}
 

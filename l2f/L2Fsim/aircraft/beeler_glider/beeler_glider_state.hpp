@@ -64,7 +64,11 @@ public:
         gammadot(_gammadot),
         khidot(_khidot),
         time(_time)
-    {}
+    {
+        xdot = V * cos(khi) + cos(gamma);
+        ydot = V * sin(khi) + cos(gamma);
+        zdot = V * sin(gamma);
+    }
 
     /**
      * @brief Dynamically creates a copy of the state

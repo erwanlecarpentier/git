@@ -1,22 +1,20 @@
-#ifndef L2FSIM_PASSIVE_PILOT_HPP_
-#define L2FSIM_PASSIVE_PILOT_HPP_
+#ifndef L2FSIM_HEURISTIC_PILOT_HPP_
+#define L2FSIM_HEURISTIC_PILOT_HPP_
 
 #include <L2Fsim/pilot/pilot.hpp>
 #include <L2Fsim/aircraft/beeler_glider/beeler_glider_state.hpp>
 #include <L2Fsim/aircraft/beeler_glider/beeler_glider_command.hpp>
 
 /**
- * @file passive_pilot.hpp
- * @brief A passive pilot implementation compatible with the Beeler Glider model 'beeler_glider.hpp'
- * @version 1.1
+ * @file heuristic_pilot.hpp
+ * @brief A heuristic pilot implementation compatible with the Beeler Glider model 'beeler_glider.hpp'
+ * @version 1.0
  * @since 1.0
- *
- * The pilot takes the state vector as input and return a neutral command
  */
 
 namespace L2Fsim {
 
-class passive_pilot : public pilot {
+class heuristic_pilot : public pilot {
 public:
     /**
      * Attributes
@@ -24,7 +22,7 @@ public:
      */
     double angle_rate_magnitude;
 
-    passive_pilot(double _angle_rate_magnitude=.03) :
+    heuristic_pilot(double _angle_rate_magnitude=.03) :
         angle_rate_magnitude(_angle_rate_magnitude)
     {}
 
@@ -37,10 +35,16 @@ public:
      */
 	pilot & operator()(state &_s, command &_u) override
 	{
+        beeler_glider_state &s = dynamic_cast <beeler_glider_state &> (_s);
         beeler_glider_command &u = dynamic_cast <beeler_glider_command &> (_u);
-        u.dalpha = 0.;
+        double th = .5 * angle_rate_magnitude;
+        double kd=1e-2, gammadot_ref=0.;
+
+        // D-controller
+        u.dalpha = kd * (gammadot_ref - s.gammadot);
         u.dbeta = 0.;
-        u.dsigma = 0.;
+        if(s.sigma > +th) { u.dsigma = -angle_rate_magnitude; }
+        if(s.sigma < -th) { u.dsigma = +angle_rate_magnitude; }
 
 		return *this;
 	}

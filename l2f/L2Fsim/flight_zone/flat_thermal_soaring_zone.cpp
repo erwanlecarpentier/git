@@ -4,31 +4,42 @@ namespace L2Fsim {
 
 using namespace std;
 
-/*---------------------------------------------------------------------------------------
- ---------------------------            CONSTRUCTOR             -------------------------
- --------------------------------------------------------------------------------------*/
-
-///Constructor. Create an empty zone defined by its dimension, wind, end time and height of thermals.
-flat_thermal_soaring_zone::flat_thermal_soaring_zone(double Tend,int miX,int maX,int miY,int maY,
-                                                     int miZ,int maZ,double wx,double wy,double Zi)
+/**
+ * Constructor
+ * @brief create an empty zone defined by its dimension, wind, ending time and thermal's height
+ */
+flat_thermal_soaring_zone::flat_thermal_soaring_zone(
+    double _tend=1e3,
+    int _minX=-1000,
+    int _maxX=+1000,
+    int _minY=-1000,
+    int _maxY=+1000,
+    int _minZ=+0,
+    int _maxZ=+2000,
+    double _windx=0.,
+    double _windy=0.,
+    double _dmin=200.,
+    double _zi=1400.) :
+    tend(_tend),
+    minX(_minX),
+    maxX(_maxX),
+    minY(_minY),
+    maxY(_maxY),
+    minZ(_minZ),
+    maxZ(_maxZ),
+    windx(_windx),
+    windy(_windy),
+    dmin(_dmin),
+    zi(_zi)
 {
-    tstart=0.0;
-    tend=Tend;
-    minX=miX;
-    maxX=maX;
-    minY=miY;
-    maxY=maX;
-    minZ=miZ;
-    maxZ=maZ;
-    windx = wx;
-    windy = wy;
-    zi=Zi;
+    tstart=0.;
 }
 
-///Constructor. Read a saved thermal scenario in order to play an identical simulation of the flight zone.
 /**
-    \param filename a file including a thermal scenario, saved thanks to the saveConfig function.
-*/
+ * Constructor
+ * @brief Read a saved thermal scenario in order to play an identical simulation of the flight zone
+ * @param {std::string} filename; path to the saved scenario
+ */
 flat_thermal_soaring_zone::flat_thermal_soaring_zone(string filename)
 {
     ifstream file(filename);
@@ -45,12 +56,12 @@ flat_thermal_soaring_zone::flat_thermal_soaring_zone(string filename)
             continue;
         switch(readline)
         {
-            case 1: stream>>minX>>maxX;break;
-            case 2: stream>>minY>>maxY;break;
-            case 3: stream>>minZ>>maxZ;break;
-            case 4: stream>>tstart>>tend;break;
-            case 5: stream>>windx>>windy;break;
-            case 6: stream>>zi;break;
+            case 1: stream>>minX>>maxX; break;
+            case 2: stream>>minY>>maxY; break;
+            case 3: stream>>minZ>>maxZ; break;
+            case 4: stream>>tstart>>tend; break;
+            case 5: stream>>windx>>windy; break;
+            case 6: stream>>zi; break;
         }
 
         if(readline>6)
@@ -85,19 +96,20 @@ flat_thermal_soaring_zone::flat_thermal_soaring_zone(string filename)
 /*---------------------------------------------------------------------------------------
  ---------------------------          PRIVATE METHODS           -------------------------
  --------------------------------------------------------------------------------------*/
-///Define the maximum number of thermals in the zone.
+
+/** @brief Maximum number of thermals in the zone */
 int flat_thermal_soaring_zone::nbMaxThermals()
 {
-    double ziAverage = 1200;
+    double ziAverage = 1200.;
     return floor(0.6*(maxX-minX)*(maxY-minY)/(dmin*ziAverage));
 }
 
-///Define the center of a new thermal, dependent on positions of other thermals.
 /**
-    \param center a list of the thermal centers in the simulation.
-    \param t the simulated time.
-*/
-bool flat_thermal_soaring_zone::createThermalCenter(vector<double>& center, double t)
+ * @brief Define the center of a new thermal depending on positions of other thermals
+ * @param {vector<double> &} center; list of the thermal centers in the simulation
+ * @param {double} t; time
+ */
+bool flat_thermal_soaring_zone::createThermalCenter(vector<double> &center, double t)
 {
     bool newCenterIsValid = false;
 
@@ -171,10 +183,10 @@ bool flat_thermal_soaring_zone::createThermalCenter(vector<double>& center, doub
     return(newCenterIsValid);
 }
 
-///Count the number of thermals alive at time t.
 /**
-    \param t the simulated time.
-*/
+ * @brief Count the number of alive thermals at time t
+ * @param {double} t; time
+ */
 int flat_thermal_soaring_zone::numberAliveAtTime(double t)
 {
     int count=0;
@@ -198,7 +210,6 @@ double flat_thermal_soaring_zone::environSink(double z, double t)
     double regY=maxY-minY;
     for(auto th: thermals)
     {
-
         if (th->isAlive(t))
         {
             swd=((0.5 < (z / th->getzi())) && ((z / th->getzi()) < 0.9))?2.5 * (z/th->getzi() - 0.5):0;
@@ -207,15 +218,11 @@ double flat_thermal_soaring_zone::environSink(double z, double t)
             massFlowTh += avgUpdraft*PI*radius*radius;
             areaTh += PI*radius*radius;
         }
-
     }
 
     w_e = - massFlowTh / (regX*regY - areaTh);
 
-    if(w_e>0.0)
-    {
-        w_e=0.0;
-    }
+    if(w_e>0.0){w_e=0.0;}
 
     return(w_e);
 }
@@ -225,52 +232,43 @@ double flat_thermal_soaring_zone::environSink(double z, double t)
  --------------------------------------------------------------------------------------*/
 
 
-/// Computes the wind vector w, at point (x,y,z), at time t.
 /**
-    \param x a horizontal coordinate of the system (x,y,z).
-    \param y a horizontal coordinate of the system (x,y,z).
-    \param z the vertical coordinate of the system (x,y,z).
-    \param t the time.
-    \param w the wind vector: windx, windy, windz.
-*/
+ * @brief Compute the wind velocity vector w at coordinate (x,y,z,t)
+ * @param {double} x, y, z, t; coordinates
+ * @param {std::vector<double> &} w; wind velocity vector [wx, wy, wz]
+ */
 flat_thermal_soaring_zone& flat_thermal_soaring_zone::wind
     (double x, double y, double z, double t, vector<double> &w)
 {
     vector<double>(3, 0.).swap(w);
     w[0]=windx;w[1]=windy;w[2]=0.;
-    double  w_e=environSink(z,t);
+    double w_e = environSink(z,t);
 
-    for(auto& therm: thermals)
-    {
-        if (therm->isAlive(t))
-        {
+    for(auto& therm: thermals) {
+        if(therm->isAlive(t)) {
             therm->wind(x,y,z,t,w);
         }
     }
 
-    // compute environmental sink rate
-    if (thermals.size()!=0) {
-        if(thermals[0]->getModel()==1)
-        {
-            w[2] = w[2] + w_e;
-        }
+    if(thermals.size()!=0 && thermals[0]->getModel()==1){
+        w[2] += w_e;
     }
 
     return *this;
 }
 
-///Simulate a scenario of thermals.
 /**
-    \param deltaT the interval of thermal actualization.
-    \param model the chosen model for the simulation.
-*/
-void flat_thermal_soaring_zone::createScenario(double deltaT,int model)
+ * @brief Create a scenario including thermals
+ * @param {double} deltaT, period of thermal actualization
+ * @param {int} model; thermal model
+ */
+void flat_thermal_soaring_zone::createScenario(double deltaT, int model)
 {
     cout << "--> Create scenario" << endl;
-    int nb_Alive_t,total=0;
-    int nbThermalmax=nbMaxThermals();
+    int nb_Alive_t, total=0;
+    int nbThermalmax = nbMaxThermals();
 
-    for (double t=tstart; t<tend ; t=t+deltaT)
+    for(double t=tstart; t<tend; t+=deltaT)
     {
         cout << "t = " << t << endl;
         nb_Alive_t=numberAliveAtTime(t);
@@ -293,14 +291,13 @@ void flat_thermal_soaring_zone::createScenario(double deltaT,int model)
     cout << endl;
 }
 
-///Write the whole wind data for the visualization of a zslice in a file.
 /**
-    \param deltaT the interval of thermal actualization.
-    \param deltax the definition of the mesh precision onto x-axis.
-    \param deltay the definition of the mesh precision onto y-axis.
-    \param zslice the height of the windfield you want to write.
-    \param filename the name of the file you want to write data.
-*/
+ * @brief Write the wind data for the visualization of a 'zslice' in a file
+ * @param {double} deltaT, period of thermal actualization
+ * @param {double} deltax, deltay; mesh precision
+ * @param {double} zslice; height of the windfield
+ * @param {std::string} filename; output path
+ */
 void flat_thermal_soaring_zone::writeScenario
     (double deltaT, double deltax, double deltay, double zslice,string filename)
 {
@@ -335,10 +332,10 @@ void flat_thermal_soaring_zone::writeScenario
     cout << endl;
 }
 
-///Save a thermal scenario in order to play it again in an other simulation.
 /**
-    \param filename the name of the .txt file you want to save the scenario.
-*/
+ * @brief Save a scenario in '.txt' format
+ * @param {std::string} filename; output path
+ */
 void flat_thermal_soaring_zone::saveConfig(string filename)
 {
     cout << "--> Save config"<< endl;
@@ -367,10 +364,10 @@ void flat_thermal_soaring_zone::saveConfig(string filename)
     myfile.close();
 }
 
-///Save a thermal scenario in order to play it again in an other simulation.
 /**
-    \param filename the name of the .csv file you want to save the scenario.
-*/
+ * @brief Save a scenario in '.csv' format
+ * @param {std::string} filename; output path
+ */
 void flat_thermal_soaring_zone::saveConfigToCSV(string filename)
 {
     ofstream myfile;

@@ -5,6 +5,7 @@
 #include <L2Fsim/aircraft/beeler_glider/beeler_glider_command.hpp>
 
 #include <L2Fsim/pilot/passive_pilot.hpp>
+#include <L2Fsim/pilot/heuristic_pilot.hpp>
 #include <L2Fsim/pilot/q_learning/q_learning_pilot.hpp>
 #include <L2Fsim/pilot/mcts/b03_uct_pilot.hpp>
 
@@ -41,27 +42,17 @@ int main() {
     /** Environment */
     double windx=0., windy=0.;
     // read config1.txt
-    //flat_zone my_zone(windx,windy);
-    flat_thermal_soaring_zone my_zone("data/config1.txt");
+    flat_zone my_zone(windx,windy);
+    //flat_thermal_soaring_zone my_zone("data/config1.txt");
 
     /** Initial state */
-	double x0 = -500.; // m
-	double y0 = 0.; // m
-	double z0 = 1000.; // m
-	double V0 = 20.; // m/s
-	double gamma0 = 0.; // rad
-	double khi0 = 0.; // rad
-	double alpha0 = 0.; // rad
-	double beta0 = 0.; // rad
-	double sigma0 = 0.; // rad
-	//TODO put the following into the constructor
-	double xdot0 = V0 * cos(khi0) + cos(gamma0);
-	double ydot0 = V0 * sin(khi0) + cos(gamma0);
-	double zdot0 = V0 * sin(gamma0);
-	double Vdot0 = 0.;
-	double gammadot0 = 0.;
-	double khidot0 = 0.;
-    beeler_glider_state my_state(x0,y0,z0,V0,gamma0,khi0,alpha0,beta0,sigma0,xdot0,ydot0,zdot0,Vdot0,gammadot0,khidot0,t);
+	double x0 = -500.;
+	double y0 = 0.;
+	double z0 = 1000.;
+	double V0 = 20.;
+	double gamma0=0., khi0=0.;
+	double alpha0=0., beta0=0., sigma0=0.;
+    beeler_glider_state my_state(x0,y0,z0,V0,gamma0,khi0,alpha0,beta0,sigma0);
 
     /** Initial command */
     beeler_glider_command my_command;
@@ -81,13 +72,14 @@ int main() {
      * @param {double} lr; 'learning rate' for Q-learning
      * @param {double} df; discount factor for Q-learning
      */
-    double angle_rate_magnitude = 1e-2;//3*1e-1 * 3.14 / 180.;
+    double angle_rate_magnitude = 1e-2;
     double ep=1e-2, lr=1e-3;
     double df=.9;
-    double uct_parameter = 1./sqrt(2.);//=0.70710678118
-    double uct_tsw=Dt, uct_stsw=uct_tsw;
-    unsigned int horizon=500, computational_budget=1e3;
-    passive_pilot my_pilot(angle_rate_magnitude);
+    double uct_parameter = 1./sqrt(2.);
+    double uct_tsw=2., uct_stsw=uct_tsw/1.;
+    unsigned int horizon=100, computational_budget=10000;
+    //passive_pilot my_pilot(angle_rate_magnitude);
+    heuristic_pilot my_pilot(angle_rate_magnitude);
     //q_learning_pilot my_pilot(angle_rate_magnitude,ep,lr,df);
     /*b03_uct_pilot my_pilot(
         my_stepper.transition_function,
