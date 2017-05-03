@@ -3,9 +3,9 @@
 
 #include <L2Fsim/pilot/pilot.hpp>
 #include <vector>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <string>
 #include <L2Fsim/utils/utils.hpp>
 
@@ -66,15 +66,15 @@ class pilot_genQlearn : public pilot
     // Operator pour avoir la commande
     pilot_genQlearn& operator()(std::vector<double> &obs,std::vector<double> &command){
         // Ici on actualise la Q table en fonction des resultats
-        
+
         // We print the Qtable
         print_Qtable();
-        
+
         actualize_Q_table(obs);
 
         // On choisit l'action que l'on va prendre
         choose_action(obs,command);
-        
+
         // Save the previous obs
         obs_prevprev = obs_prev;
         obs_prev = obs;
@@ -105,9 +105,9 @@ class pilot_genQlearn : public pilot
             printf("size vQ = %d : error\n",vQ.size());
             exit(-1);
         }
-        
+
         //vQ = {1.};
-        
+
         // Boucle sur les elements simples
         for(i = 0;i<concat.size();i++){
             vQ.push_back(concat.at(i));
@@ -115,12 +115,12 @@ class pilot_genQlearn : public pilot
 
         for(i = 0;i<concat.size();i++){
             for(j=0;j<i+1;j++){
-                
+
                     vQ.push_back(concat.at(i)*concat.at(j));
-                
+
             }
         }
-        
+
     }
 
     // Get Q value
@@ -132,10 +132,10 @@ class pilot_genQlearn : public pilot
 
         int i;
         for(i=0;i<vQ.size();i++){
-            
+
                 Q += Qtable.at(i)*vQ.at(i);
-            
-            
+
+
         }
     }
     // Get dQ value
@@ -156,13 +156,13 @@ class pilot_genQlearn : public pilot
         double dQ;
         int n = Qtable.size();
         int i;
-        
+
         get_max_action_obs(obs,obs_prev,maxQ);
         get_Q_value(obs_prev,obs_prevprev,command_actual,Q);
-        
+
         std::vector<double> vQ;
         get_vQ(obs_prev,obs_prevprev,command_actual,vQ);
-        
+
         printf("begin print parameters\n");
         printf("maxQ : %lf\n",maxQ);
         printf("reward : %lf\n",reward);
@@ -176,7 +176,7 @@ class pilot_genQlearn : public pilot
         */
         std::vector<double> newQtable;
         std::vector<double>(dim_Theta, 0.).swap(newQtable);
-        
+
         for(i=0;i<n;i++){
 
             dQ = vQ.at(i);
@@ -200,9 +200,9 @@ class pilot_genQlearn : public pilot
         std::vector<double> action_tot_alpha;
         std::vector<double> action_tot_beta;
         std::vector<double> action_tot_sigma;
-        
+
         get_possible_action(obs,action_tot_alpha,action_tot_beta,action_tot_sigma);
-        
+
         double rand_x = rand_double(0,1);
 
         if(rand_x < epsilon){
@@ -225,9 +225,9 @@ class pilot_genQlearn : public pilot
             get_max_action_action(obs,obs_prev,action_prev);
 
         }
-        
+
         command = {action_prev[0] + command_actual.at(0),action_prev[1] + command_actual.at(1),action_prev[2] + command_actual.at(2)};
-        
+
         //printf("choice : alpha = %lf, beta = %lf, sigma = %lf\n",action_prev[0],action_prev[1],action_prev[2]);
 
     }
@@ -238,9 +238,9 @@ class pilot_genQlearn : public pilot
         std::vector<double> action_tot_alpha;
         std::vector<double> action_tot_beta;
         std::vector<double> action_tot_sigma;
-        
+
         get_possible_action(obs,action_tot_alpha,action_tot_beta,action_tot_sigma);
-        
+
         int i,j,p;
         maxQ = -10000000000;
         double Q;
@@ -251,12 +251,12 @@ class pilot_genQlearn : public pilot
         printf("Size beta : %d\n",action_tot_beta.size());
         printf("Size sigma : %d\n",action_tot_beta.size());
         */
-        
+
         if(action_tot_alpha.size() != 3 &&action_tot_beta.size() != 3&&action_tot_beta.size() != 3){
             printf("Size not ok\n");
             exit(-1);
         }
-        
+
         //printf("choice of maxQ\n");
         for(i=0;i<action_tot_alpha.size();i++){
             for(j=0;j<action_tot_beta.size();j++){
@@ -282,19 +282,19 @@ class pilot_genQlearn : public pilot
         std::vector<double> action_tot_alpha;
         std::vector<double> action_tot_beta;
         std::vector<double> action_tot_sigma;
-        
+
         get_possible_action(obs,action_tot_alpha,action_tot_beta,action_tot_sigma);
-        
+
         int i,j,p;
         double max_Q = -10000000000;
-        
+
         if(action_tot_alpha.size() != 3 &&action_tot_beta.size() != 3&&action_tot_beta.size() != 3){
             printf("Size not ok\n");
             exit(-1);
         }
-        
-        
-        
+
+
+
         double Q;
         std::vector<double> command_a;
         //printf("choice of action\n");
@@ -308,12 +308,12 @@ class pilot_genQlearn : public pilot
                         max_Q = Q;
                         action = {action_tot_alpha.at(i), action_tot_beta.at(j), action_tot_sigma.at(p)};
                     }
-                    
-                    
+
+
                 }
             }
         }
-        
+
 
     }
 
@@ -322,77 +322,77 @@ class pilot_genQlearn : public pilot
 
         // Obs[0] -> la hauteur h
         // Obs[1] -> la vitesse V
-        
+
         reward = ((obs[0] - obs_prec[0]) + 1/(2*9.81)*(obs[1]*obs[1] - obs_prec[1]*obs_prec[1]))/dt;
 
     }
-    
+
     void get_possible_action(std::vector<double> &obs,std::vector<double> &action_tot_alpha,std::vector<double> &action_tot_beta,std::vector<double> &action_tot_sigma){
-    
-        
+
+
         action_tot_beta = {-incrementation_command_beta,0.,incrementation_command_beta};
-        
+
         // sigma condition
         action_tot_sigma = {-incrementation_command_sigma,0.,incrementation_command_sigma};
         if (command_actual.at(2) >= 0.6) {
             action_tot_sigma = {-2*incrementation_command_sigma,-incrementation_command_sigma,0.};
         }
-        
+
         if (command_actual.at(2) < -0.6) {
             action_tot_sigma = {2*incrementation_command_sigma,incrementation_command_sigma,0.};
         }
-        
-        
+
+
         // If everything is ok
         if(std::abs(obs.at(2) + command_actual.at(0)) < 0.3){
-            
+
         //printf("no problem for command\n");
         action_tot_alpha = {-incrementation_command_alpha,0.,incrementation_command_alpha};
-        
-        
-        
+
+
+
         } else {
-            
+
             //printf("problem for command\n");
             // If not
-            
+
             if (obs.at(2) + command_actual.at(0) >= 0.3) {
                 action_tot_alpha = {-4*incrementation_command_alpha,-2*incrementation_command_alpha};
             }
-            
+
             if (obs.at(2) + command_actual.at(0) <= -0.3) {
                 action_tot_alpha = {4*incrementation_command_alpha,2*incrementation_command_alpha};
             }
-            
+
 
         }
-        
-        
+
+
     }
-    
+
     // Function use to print the Qtable
     void print_Qtable(){
-        
+
         printf("Qtable : ");
         int i;
         for (i=0; i<Qtable.size(); i++) {
             printf(" %lf",Qtable[i]);
         }
         printf("\n");
-        
+
     }
-    
+
     pilot_genQlearn& out_of_range(std::vector<double> &obs,
                           std::vector<double> &command)
     {
         std::vector<double>(3, 0.).swap(command);
         command.at(2) = 0.4;
-        
+
         obs_prevprev = obs_prev;
         obs_prev = obs;
         command_actual = command;
     }
-    
+
 
 };
 }

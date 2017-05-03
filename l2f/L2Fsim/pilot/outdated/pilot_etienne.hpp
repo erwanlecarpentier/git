@@ -4,9 +4,9 @@
 #include <L2Fsim/pilot/pilot.hpp>
 #include <L2Fsim/utils/utils.hpp>
 #include <vector>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <string>
 
 

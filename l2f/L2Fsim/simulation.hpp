@@ -7,7 +7,8 @@
 #include <L2Fsim/pilot/pilot.hpp>
 
 /**
- * Simulation environment
+ * @file simulation.hpp
+ * @brief Simulation environment
  * @version 1.1
  * @since 1.0
  *

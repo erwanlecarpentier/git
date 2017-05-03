@@ -59,8 +59,8 @@ public:
         double _time_step_width=1e-1,
         double _sub_time_step_width=1e-1,
         double _df=.9,
-        unsigned int _horizon=10,
-        unsigned int _computational_budget=1e2) :
+        unsigned int _horizon=100,
+        unsigned int _computational_budget=1000) :
         ac(_ac),
         fz(_fz),
         transition_function(_transition_function),
@@ -154,6 +154,7 @@ public:
         const beeler_glider_command &a_t,
         const beeler_glider_state &s_tp)
     {
+        (void)a_t; (void)s_tp; // unused by default
         double edot = s_t.zdot + s_t.V * s_t.Vdot / 9.81;
         double rwd=0.;
         if(edot>0.){rwd=1.;}

@@ -159,10 +159,11 @@ public:
      * Get the reward value for tuple (prev_s,prev_a,s)
      * @param {const beeler_glider_state &} s; state "t+1"
      * @param {double &} reward; reward
-     * @note next state 's' not used so far
+     * @note next state 's' unused so far
      */
     void get_reward(const beeler_glider_state &s, double &reward)
     {
+        (void) s; // this is default
         reward = prev_s.zdot + prev_s.V * prev_s.Vdot / 9.81;
     }
 

@@ -37,11 +37,11 @@ public:
      */
 	pilot & operator()(state &_s, command &_u) override
 	{
+        (void) _s; // this is default
         beeler_glider_command &u = dynamic_cast <beeler_glider_command &> (_u);
         u.dalpha = 0.;
         u.dbeta = 0.;
         u.dsigma = 0.;
-
 		return *this;
 	}
 

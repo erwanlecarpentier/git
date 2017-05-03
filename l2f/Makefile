@@ -1,53 +1,55 @@
+CCC=g++
+CCFLAGS=-std=c++11 -Wall -Wextra -I. -O2 -s -g #-ansi -pedantic
+LDFLAGS=-lm -lconfig++
+EXEC=main
+EXEC2=FZmain
 
-CC=g++ --std=c++11
-CFLAGS=-W -Wall -ansi -pedantic -O2 -s
-LDFLAGS=
-EXEC=compile
-EXEC2=compile2
+.PHONY : all compile run clean
 
-all: clean $(EXEC)
-	./main
+all : clean compile run
 
-$(EXEC):demo/main.cpp L2Fsim/flight_zone/flat_thermal_soaring_zone.cpp L2Fsim/flight_zone/thermal/std_thermal.cpp
-	$(CC) -o main demo/main.cpp L2Fsim/flight_zone/flat_thermal_soaring_zone.cpp L2Fsim/flight_zone/thermal/std_thermal.cpp -I. -lconfig++
+run :
+	./$(EXEC)
 
-therm:$(EXEC2)
-	./FZmain
+compile : demo/main.cpp L2Fsim/flight_zone/flat_thermal_soaring_zone.cpp L2Fsim/flight_zone/thermal/std_thermal.cpp
+	$(CCC) $(CCFLAGS) demo/main.cpp L2Fsim/flight_zone/flat_thermal_soaring_zone.cpp L2Fsim/flight_zone/thermal/std_thermal.cpp -o $(EXEC) $(LDFLAGS)
 
-$(EXEC2):demo/FZmain.cpp L2Fsim/flight_zone/flat_thermal_soaring_zone.cpp L2Fsim/flight_zone/thermal/std_thermal.cpp
-	$(CC) -o FZmain demo/FZmain.cpp L2Fsim/flight_zone/flat_thermal_soaring_zone.cpp L2Fsim/flight_zone/thermal/std_thermal.cpp -I. -lconfig++
+therm :
+	./$(EXEC2)
 
-thermvis:
-	python3 python_plot/therm_zslice.py
-	
-energy:
-	python3 python_plot/energy.py
+compile2 : demo/FZmain.cpp L2Fsim/flight_zone/flat_thermal_soaring_zone.cpp L2Fsim/flight_zone/thermal/std_thermal.cpp
+	$(CCC) $(CCFLAGS) demo/FZmain.cpp L2Fsim/flight_zone/flat_thermal_soaring_zone.cpp L2Fsim/flight_zone/thermal/std_thermal.cpp -o $(EXEC2) $(LDFLAGS)
 
-traj:
-	python3 python_plot/traj.py
+thermvis :
+	python3 plot/therm_zslice.py
 
-plot_all:
-	python3 python_plot/plot_all.py
+thermscat :
+	python3 plot/thermalscatter.py
 
-angle:
-	python3 python_plot/angle.py
+2d_trajectory :
+	python3 plot/2d_trajectory.py
 
-thermscat:
-	python3 python_plot/thermalscatter.py
+3d_trajectory :
+	python3 plot/3d_trajectory.py
 
-clean:
+variables :
+	python3 plot/variables.py
+
+plot_all :
+	python3 plot/2d_trajectory.py & python3 plot/3d_trajectory.py & python3 plot/variables.py
+
+clean :
 	rm -f data/state.dat
 	rm -f data/wind.dat
 	rm -f data/config.txt
-	rm -f main
-	rm -f FZmain
+	rm -f $(EXEC)
+	rm -f $(EXEC2)
 
-help:
-	@echo “all : clean, compile and run demo/main.cpp”
-	@echo “therm : compile and run demo/FZmain.cpp”
+help :
+	@echo “all : clean, compile and run $(EXEC)”
+	@echo “therm : compile and run $(EXEC2)”
 	@echo “thermvis : run therm_zslice.py”
-	@echo “traj : run traj.py”
-	@echo “energy : run energy.py”
-	@echo “angle : run angle.py”
-	@echo “clean : make clean ...”
+	@echo “2d_trajectory : run 2d_trajectory.py”
+	@echo “3d_trajectory : run 3d_trajectory.py”
+	@echo “clean : remove executable and data files”
 

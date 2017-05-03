@@ -5,9 +5,8 @@
 #include <L2Fsim/utils/utils.hpp>
 #include <iostream>
 #include <vector>
-#include <math.h>
+#include <cmath>
 #include <ctime>
-#include <vector>
 
 namespace L2Fsim {
 

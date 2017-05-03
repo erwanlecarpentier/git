@@ -5,8 +5,12 @@
 
 namespace L2Fsim{
 
-/// The abstract class flight_zone implementing the zone in which the aircraft moves.
+///
 /**
+ * @file flight_zone.hpp
+ * @version 1.0
+ *
+ * @brief The abstract class flight_zone implementing the atmospheric environment into which the aircraft moves
  * A flight zone holds two important concepts:
  * - it has a characterization of the wind w in the flight zone at a given time;
  * - it has an altitude z of the ground surface at all points in the flight zone;
@@ -15,33 +19,24 @@ namespace L2Fsim{
 class flight_zone
 {
 
-    /*--------------------------------------
-     --------------- Methods ---------------
-     -------------------------------------*/
-
 public:
+    virtual ~flight_zone() = default;
 
-    /// Computes the wind vector w, at point (x,y,z), at time t.
-	/**
-		\param x a horizontal coordinate of the system (x,y,z).
-		\param y a horizontal coordinate of the system (x,y,z).
-		\param z the vertical coordinate of the system (x,y,z).
-		\param t the time.
-		\param w the wind vector: windx, windy, windz. These three components are the projections of the wind speed onto the coordinate system (x,y,z).
-	*/
-
+    /**
+	 * @brief Compute the wind velocity vector w at coordinate (x,y,z,t)
+	 * @param {double} x, y, z, t; coordinates in earth frame
+	 * @param {std::vector<double> &} w; wind velocity vector [wx, wy, wz]
+	 */
 	virtual flight_zone& wind(double x, double y, double z, double t, std::vector<double> &w) =0;
 
-    /// Computes the z coordinate of the ground at (x,y). Set at 0 as default value.
-	/**
-        \param x a horizontal coordinate of the system (x,y,z).
-		\param y a horizontal coordinate of the system (x,y,z).
-		\param z the vertical coordinate of the system (x,y,z).
-	*/
-
-    flight_zone& ground(double x, double y, double &z)
+    /**
+	 * @brief Compute the altitude at (x,y)
+	 * @param {const double &} x, y; coordinates in earth frame
+	 * @param {double &} z; altitude
+	 */
+    flight_zone& ground(const double &x, const double &y, double &z)
     {
-        z=0.;
+        (void) x; (void) y; z=0.;// this is default
         return *this;
     }
 };

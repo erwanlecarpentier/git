@@ -100,9 +100,9 @@ public:
     beeler_glider(
         beeler_glider_state _s,
         beeler_glider_command _u,
-        double m=1.35,
-        double ws=2.,
-        double ar=15.) :
+        double m=1.36,
+        double ws=1.524,
+        double ar=16.) :
         s(_s),
         u(_u),
         mass(m),

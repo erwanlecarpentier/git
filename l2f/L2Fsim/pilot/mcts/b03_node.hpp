@@ -46,10 +46,10 @@ public:
         unsigned int _number_of_visits=0,
         unsigned int _depth=0) :
         s(_s),
-        expendable_actions(_expendable_actions),
         cumulative_reward(_cumulative_reward),
         number_of_visits(_number_of_visits),
-        depth(_depth)
+        depth(_depth),
+        expendable_actions(_expendable_actions)
     {}
 
     /** Constructor with default state */
@@ -59,10 +59,10 @@ public:
         unsigned int _number_of_visits=0,
         unsigned int _depth=0) :
         s(),
-        expendable_actions(_expendable_actions),
         cumulative_reward(_cumulative_reward),
         number_of_visits(_number_of_visits),
-        depth(_depth)
+        depth(_depth),
+        expendable_actions(_expendable_actions)
     {}
 
     /** Return a reference on the state attribute */

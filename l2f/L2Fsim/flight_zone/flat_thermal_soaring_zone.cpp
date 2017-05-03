@@ -190,17 +190,13 @@ bool flat_thermal_soaring_zone::createThermalCenter(vector<double> &center, doub
 int flat_thermal_soaring_zone::numberAliveAtTime(double t)
 {
     int count=0;
-    for(int i=0; i<thermals.size();i++)
+    for(unsigned int i=0; i<thermals.size(); ++i)
     {
         thermal* th = thermals[i];
-        if(th->isAlive(t))
-        {
-            count++;
-        }
+        if(th->isAlive(t)){count++;}
     }
     return count;
 }
-
 
 double flat_thermal_soaring_zone::environSink(double z, double t)
 {
@@ -371,7 +367,7 @@ void flat_thermal_soaring_zone::saveConfig(string filename)
 void flat_thermal_soaring_zone::saveConfigToCSV(string filename)
 {
     ofstream myfile;
-    myfile.open (filename);
+    myfile.open(filename);
     myfile<<"model tBirth CentreX CentreY CentreZ zi w_star lifetime ksi"<<endl;
 
     for(auto th: thermals)
