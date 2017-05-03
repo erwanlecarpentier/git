@@ -46,6 +46,8 @@ clean :
 	rm -f $(EXEC2)
 
 help :
+	@echo “compile : compile “demo/main.cpp”, executable is $(EXEC)”
+	@echo “run : run $(EXEC)”
 	@echo “all : clean, compile and run $(EXEC)”
 	@echo “therm : compile and run $(EXEC2)”
 	@echo “thermvis : run therm_zslice.py”

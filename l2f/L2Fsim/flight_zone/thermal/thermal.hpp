@@ -22,6 +22,8 @@ protected:
      -------------------------------------*/
 
 public:
+    /** Destructor */
+    virtual ~thermal() = default;
 
     // get
     ///Get the peak velocity of the thermal.

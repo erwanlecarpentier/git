@@ -23,10 +23,14 @@ protected:
 
 public:
 
+    /** Constructor */
     flat_zone(double _windx=0., double _windy=0.) :
         windx(_windx),
         windy(_windy)
     {}
+
+    /** Destructor */
+    virtual ~flat_zone() = default;
 
     /**
 	 * Compute the wind vector w, at point (x,y,z,t)

@@ -75,10 +75,8 @@ std_thermal::std_thermal(int mod,double tB,double XC0,double YC0,double ZC0,
     }
 }
 
-// destructor
-    // no pointer in attributes
-    // nothing to delete
-
+/** Destructor */
+std_thermal::~std_thermal() = default;
 
 /*---------------------------------------------------------------------------------------
  ---------------------------              GETTEURS              -------------------------

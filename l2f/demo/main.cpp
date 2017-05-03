@@ -169,10 +169,11 @@ int main() {
 
 	/** Run the simulation */
     while(t<t_lim) {
-        std::cout << "t = " << t << std::endl;
+        //std::cout << "t = " << t << std::endl;
 		mysim.step(t,Dt);
 	}
 
 	/** Delete the dynamically created variables */
 	delete my_zone;
+	std::cout << "Program run successfully" << std::endl;
 }

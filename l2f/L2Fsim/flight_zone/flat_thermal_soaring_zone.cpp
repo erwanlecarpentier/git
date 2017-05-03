@@ -47,7 +47,7 @@ flat_thermal_soaring_zone::flat_thermal_soaring_zone(string filename)
 
     string  line;
     vector<double> data;
-    vector<std::vector<double> > datavector;
+    vector<std::vector<double>> datavector;
     int readline=1;
     while(getline(file, line))
     {
@@ -91,6 +91,14 @@ flat_thermal_soaring_zone::flat_thermal_soaring_zone(string filename)
         thermals.push_back(newTH);
     }
     cout<<"Configurations read file : "<<filename<<" ; and thermals are created accordingly."<<endl;
+}
+
+/** Destructor */
+flat_thermal_soaring_zone::~flat_thermal_soaring_zone()
+{
+    for(auto th: thermals) {
+        delete th;
+    }
 }
 
 /*---------------------------------------------------------------------------------------

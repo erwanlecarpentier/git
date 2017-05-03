@@ -39,9 +39,8 @@ protected:
      -------------------------------------*/
 
 public:
-
-    /// Constructor of a thermal.
     /**
+     * Constructor
         \param model the chosen model for the thermal.
         \param tB the birth time of the thermal.
 		\param XC0 the x-axis coordinate of the thermal center at tBirth.
@@ -56,7 +55,7 @@ public:
     std_thermal(int model,double tB=0.,double XC0=0.,double YC0=0.,double ZC0=0.,
                 double Zi=1200.,double wstar=2.5, int lifetime=1200, double ksi=0.2,bool read=false);
 
-    /// Destructor.
+    /** Destructor */
     ~std_thermal();
 
     // getteurs

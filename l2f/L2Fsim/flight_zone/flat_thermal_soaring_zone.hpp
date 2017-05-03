@@ -70,6 +70,9 @@ public:
 	 */
     flat_thermal_soaring_zone(std::string filename);
 
+    /** Destructor */
+    ~flat_thermal_soaring_zone();
+
 	/**
 	 * @brief Compute the wind velocity vector w at coordinate (x,y,z,t)
 	 * @param {double} x, y, z, t; coordinates
