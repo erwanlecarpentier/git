@@ -8,7 +8,7 @@ EXEC2=FZmain
 
 all : clean compile run
 
-run :
+run : clean_data
 	./$(EXEC)
 
 compile : demo/main.cpp L2Fsim/flight_zone/flat_thermal_soaring_zone.cpp L2Fsim/flight_zone/thermal/std_thermal.cpp
@@ -45,13 +45,19 @@ clean :
 	rm -f $(EXEC)
 	rm -f $(EXEC2)
 
+clean_data :
+	rm -f data/state.dat
+	rm -f data/wind.dat
+	rm -f data/config.txt
+
 help :
 	@echo “compile : compile “demo/main.cpp”, executable is $(EXEC)”
-	@echo “run : run $(EXEC)”
+	@echo “run : clean and run $(EXEC)”
 	@echo “all : clean, compile and run $(EXEC)”
 	@echo “therm : compile and run $(EXEC2)”
 	@echo “thermvis : run therm_zslice.py”
 	@echo “2d_trajectory : run 2d_trajectory.py”
 	@echo “3d_trajectory : run 3d_trajectory.py”
 	@echo “clean : remove executable and data files”
+	@echo “clean_data : remove data files”
 
