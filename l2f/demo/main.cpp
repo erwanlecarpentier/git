@@ -120,7 +120,6 @@ void run_with_config(const char *cfg_path) {
     libconfig::Config cfg;
     cfg.readFile(cfg_path);
 
-    srand(time(NULL));
     double t_lim, Dt, nb_dt, t=0.;
     read_time_variables(cfg,t_lim,Dt,nb_dt);
 
@@ -183,6 +182,7 @@ void run_with_config(const char *cfg_path) {
 }
 
 int main() {
+    srand(time(NULL));
     run_with_config("demo/config.cfg");
     return 0;
 }

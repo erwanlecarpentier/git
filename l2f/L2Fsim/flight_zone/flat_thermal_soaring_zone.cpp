@@ -245,7 +245,7 @@ flat_thermal_soaring_zone& flat_thermal_soaring_zone::wind
     (double x, double y, double z, double t, vector<double> &w)
 {
     vector<double>(3, 0.).swap(w);
-    w[0]=windx;w[1]=windy;w[2]=0.;
+    w[0]=windx; w[1]=windy; w[2]=0.;
     double w_e = environSink(z,t);
 
     for(auto& therm: thermals) {
@@ -269,27 +269,21 @@ flat_thermal_soaring_zone& flat_thermal_soaring_zone::wind
 void flat_thermal_soaring_zone::createScenario(double deltaT, int model)
 {
     cout << "--> Create scenario" << endl;
-    int nb_Alive_t, total=0;
-    int nbThermalmax = nbMaxThermals();
-
-    for(double t=tstart; t<tend; t+=deltaT)
-    {
+    int nb_alive_th, total=0;
+    int max_nb_of_th = nbMaxThermals();
+    for(double t=tstart; t<tend; t+=deltaT) {
         cout << "t = " << t << endl;
-        nb_Alive_t=numberAliveAtTime(t);
-
-        while(nb_Alive_t<nbThermalmax)
-        {
+        nb_alive_th = numberAliveAtTime(t);
+        while(nb_alive_th<max_nb_of_th) {
             vector<double> center;
-
-            if(createThermalCenter(center,t))
-            {
+            if(createThermalCenter(center,t)) {
                 //std_thermal(mod,tB,XC0,YC0,ZC0,Zi,wstar,Lifetime,Ksi,read):
                 std_thermal* newTH = new std_thermal(model,t,center[0],center[1],center[2],zi,0.,0,0.,0);
                 newTH->setwind(windx,windy);
                 thermals.push_back(newTH);
                 total++;
             }
-            nb_Alive_t=numberAliveAtTime(t);
+            nb_alive_th=numberAliveAtTime(t);
         }
     }
     cout << endl;
@@ -302,8 +296,12 @@ void flat_thermal_soaring_zone::createScenario(double deltaT, int model)
  * @param {double} zslice; height of the windfield
  * @param {std::string} filename; output path
  */
-void flat_thermal_soaring_zone::writeScenario
-    (double deltaT, double deltax, double deltay, double zslice,string filename)
+void flat_thermal_soaring_zone::writeScenario(
+    double deltaT,
+    double deltax,
+    double deltay,
+    double zslice,
+    string filename)
 {
     cout << "--> Write scenario" << endl;
     ofstream file;
@@ -311,24 +309,18 @@ void flat_thermal_soaring_zone::writeScenario
 
     file << "t x y z updraft"<<endl;
 
-    for (double t=tstart; t<tend ; t=t+deltaT) {
+    for (double t=tstart; t<tend ; t+=deltaT) {
         cout << "t = " << t << endl;
         vector<double> w;
-        for (int x=minX;x<maxX;x=x+deltax)
-        {
-            for (int y=minY;y<maxY;y=y+deltay)
-            {
-                //for (int z=300;z<1250;z=z+300)
-                //{
-                    //cout << t << "  " << x << "  " << y << endl;
-                    this->wind(x,y,zslice,t,w);
-                    file << t << " " ;
-                    file << x << " " ;
-                    file << y << " " ;
-                    file << zslice << " " ;
-                    file << w[2];
-                    file << endl;
-                //}
+        for (int x=minX; x<maxX; x+=deltax) {
+            for (int y=minY; y<maxY; y+=deltay) {
+                this->wind(x,y,zslice,t,w);
+                file << t << " " ;
+                file << x << " " ;
+                file << y << " " ;
+                file << zslice << " " ;
+                file << w[2];
+                file << endl;
             }
         }
     }
@@ -337,7 +329,7 @@ void flat_thermal_soaring_zone::writeScenario
 }
 
 /**
- * @brief Save a scenario in '.txt' format
+ * @brief Save a scenario in '.cfg' format
  * @param {std::string} filename; output path
  */
 void flat_thermal_soaring_zone::saveConfig(string filename)

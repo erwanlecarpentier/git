@@ -1,63 +1,57 @@
 #include <L2Fsim/flight_zone/flat_thermal_soaring_zone.hpp>
 #include <iostream>
 
-
-using namespace std;
 using namespace L2Fsim;
 
-int main(int argc, const char * argv[])
-{
-    /*--------------------------------------
-     ------------- FLIGHT ZONE -------------
-     -------------------------------------*/
-    double time_limit = 1000.;
-    double deltaT     = 100.;  // actualization of thermals
-    int minX  = -1000;        // definition of box
-    int maxX  = 1000;         // definition of box
-    int minY  = -1000;        // definition of box
-    int maxY  = 1000;         // definition of box
-    int minZ  = 0;            // definition of box
-    int maxZ  = 2000;         // definition of box
-    double wx = 0.;           // definition of wind
-    double wy = 0.;           // definition of wind
-    int zi    = 1400.;        // definition of height of all thermals
+int main() {
+    srand(time(NULL));
 
-    int model = 1;            // definition of the model of thermals
-    // 1 : Allen     model
-    // 2 : Childress model
-    // 3 : Lenschow  model
-    // 4 : Geodon    model
-    // 5 : Lawrance  model
+    /**
+     * Configuration
+     * @param {double} t_lim;
+     * @param {double} deltaT; actualization of thermals
+     * @param {int} minX, maxX, minY, maxY, minZ, maxZ; box definition
+     * @param {double} wx, wy; horizontal wind vector components in the earth frame
+     * @param {double} zi; thermals height
+     * @param {double} dmin; radius of a thermal
+     * @param {int} model; thermal model selection
+     * 1: Allen
+     * 2: Childress
+     * 3: Lenschow
+     * 4: Geodon
+     * 5: Lawrance
+     */
+    double t_lim = 1000.;
+    double deltaT = 100.;
+    int minX = -1000;
+    int maxX = 1000;
+    int minY = -1000;
+    int maxY = 1000;
+    int minZ = 0;
+    int maxZ = 2000;
+    double wx = 0.;
+    double wy = 0.;
+    double d_min = 200.;
+    double zi = 1400.;
+    int model = 1;
 
-    //------------------------//
     // 1 : create an empty box
-    //------------------------//
-    //flat_thermal_soaring_zone FZ(time_limit,minX,maxX,minY,maxY,minZ,maxZ,wx,wy,zi);
+    flat_thermal_soaring_zone fz(t_lim,minX,maxX,minY,maxY,minZ,maxZ,wx,wy,d_min,zi);
 
-    //-----------------------------------//
     // 2 : Simulate a scenario of thermals
-    //-----------------------------------//
-    FZ.createScenario(deltaT,model);
+    fz.createScenario(deltaT,model);
 
-    //---------------------------------------//
-    // 3 : write DATA for visualization zslice
-    //---------------------------------------//
-    // Write the whole wind DATA of a zslice in a file
-    double deltax = 5.;    // definition of the mesh precision in x direction
-    double deltay = 5.;    // definition of the mesh precision in y direction
-    double zslice = 650.;  // height of the windfield you want to write
-    FZ.writeScenario(deltaT,deltax,deltay,zslice,"DATA/wind.txt");
+    // 3 : write data for zslice visualization
+    double deltax = 50.; // mesh precision in x direction
+    double deltay = deltax; // mesh precision in y direction
+    double zslice = 500.;  // height of the windfield
+    fz.writeScenario(deltaT,deltax,deltay,zslice,"data/wind_field.dat");
 
-    //---------------------------//
     // 4 : save this configuration
-    //---------------------------//
-    FZ.saveConfig("DATA/config2.txt");
+    fz.saveConfig("config/thermal_config.cfg");
 
-    //---------------------------------//
     // 5 : call a previous configuration
-    //---------------------------------//
-    // Constructor 2
-    flat_thermal_soaring_zone FZ1("DATA/config1.txt");
-    flat_thermal_soaring_zone FZ_one_therm("DATA/configUneSeuleTherm.txt");
+    //flat_thermal_soaring_zone fz_bis("data/config1.txt");
 
+    return 0;
 }

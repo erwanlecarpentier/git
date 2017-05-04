@@ -14,17 +14,14 @@ run : clean_data
 compile : demo/main.cpp L2Fsim/flight_zone/flat_thermal_soaring_zone.cpp L2Fsim/flight_zone/thermal/std_thermal.cpp
 	$(CCC) $(CCFLAGS) demo/main.cpp L2Fsim/flight_zone/flat_thermal_soaring_zone.cpp L2Fsim/flight_zone/thermal/std_thermal.cpp -o $(EXEC) $(LDFLAGS)
 
-therm :
+run2 :
 	./$(EXEC2)
 
 compile2 : demo/FZmain.cpp L2Fsim/flight_zone/flat_thermal_soaring_zone.cpp L2Fsim/flight_zone/thermal/std_thermal.cpp
 	$(CCC) $(CCFLAGS) demo/FZmain.cpp L2Fsim/flight_zone/flat_thermal_soaring_zone.cpp L2Fsim/flight_zone/thermal/std_thermal.cpp -o $(EXEC2) $(LDFLAGS)
 
-thermvis :
-	python3 plot/therm_zslice.py
-
-thermscat :
-	python3 plot/thermalscatter.py
+thermal_magnitude :
+	python3 plot/thermal_magnitude.py
 
 2d_trajectory :
 	python3 plot/2d_trajectory.py
@@ -54,8 +51,8 @@ help :
 	@echo “compile : compile “demo/main.cpp”, executable is $(EXEC)”
 	@echo “run : clean and run $(EXEC)”
 	@echo “all : clean, compile and run $(EXEC)”
-	@echo “therm : compile and run $(EXEC2)”
-	@echo “thermvis : run therm_zslice.py”
+	@echo “run2 : compile and run $(EXEC2)”
+	@echo “thermal_magnitude : run thermal_magnitude.py”
 	@echo “2d_trajectory : run 2d_trajectory.py”
 	@echo “3d_trajectory : run 3d_trajectory.py”
 	@echo “clean : remove executable and data files”

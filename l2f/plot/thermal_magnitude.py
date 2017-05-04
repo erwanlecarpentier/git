@@ -5,15 +5,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-filename="data/wind.txt"
+filename="data/wind_field.dat"
 data = pd.read_csv(filename,sep = ' ')
 data_t = data[data["t"]==400]
-#data_t_z = data_t[data_t["z"]==900]
 
 fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-
-sp = ax.scatter(data_t["x"], data_t["y"], data_t["z"], s=20, c=data_t["updraft"])
-plt.colorbar(sp)
+ax = fig.gca(projection='3d')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title('Updraft velocity[m/s]', fontsize=15)
+cs=ax.plot_trisurf(data_t["x"], data_t["y"], data_t["updraft"], cmap=cm.jet, linewidth=0.2)
 
 plt.show()
+
