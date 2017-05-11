@@ -11,14 +11,14 @@ all : clean compile run
 run : clean_data
 	./$(EXEC)
 
-compile : demo/main.cpp L2Fsim/flight_zone/flat_thermal_soaring_zone.cpp L2Fsim/flight_zone/thermal/std_thermal.cpp
-	$(CCC) $(CCFLAGS) demo/main.cpp L2Fsim/flight_zone/flat_thermal_soaring_zone.cpp L2Fsim/flight_zone/thermal/std_thermal.cpp -o $(EXEC) $(LDFLAGS)
+compile : demo/main.cpp
+	$(CCC) $(CCFLAGS) demo/main.cpp -o $(EXEC) $(LDFLAGS)
 
 run2 :
 	./$(EXEC2)
 
-compile2 : demo/FZmain.cpp L2Fsim/flight_zone/flat_thermal_soaring_zone.cpp L2Fsim/flight_zone/thermal/std_thermal.cpp
-	$(CCC) $(CCFLAGS) demo/FZmain.cpp L2Fsim/flight_zone/flat_thermal_soaring_zone.cpp L2Fsim/flight_zone/thermal/std_thermal.cpp -o $(EXEC2) $(LDFLAGS)
+compile2 : demo/FZmain.cpp
+	$(CCC) $(CCFLAGS) demo/FZmain.cpp -o $(EXEC2) $(LDFLAGS)
 
 thermal_magnitude :
 	python3 plot/thermal_magnitude.py
@@ -38,14 +38,14 @@ plot_all :
 clean :
 	rm -f data/state.dat
 	rm -f data/wind.dat
-	rm -f data/config.txt
+	rm -f data/wind_field.dat
 	rm -f $(EXEC)
 	rm -f $(EXEC2)
 
 clean_data :
 	rm -f data/state.dat
 	rm -f data/wind.dat
-	rm -f data/config.txt
+	rm -f data/wind_field.dat
 
 help :
 	@echo “compile : compile “demo/main.cpp”, executable is $(EXEC)”

@@ -158,7 +158,6 @@ public:
     }
 
     /**
-     * @fn virtual std::vector<double> get_save() = 0;
      * @brief Get a vector containing the saved variables
      * @return {std::vector<double>}
      */

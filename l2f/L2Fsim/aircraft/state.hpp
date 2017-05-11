@@ -15,24 +15,20 @@ namespace L2Fsim {
 
 class state {
 public:
+    /** Destructor */
     virtual ~state() = default;
 
     /**
-     * @fn virtual state * duplicate() const = 0;
      * @brief Dynamically creates a copy of the state
      * @warning dynamic allocation: delete the duplicated object
      * @return a pointer to the copy
      */
     virtual state * duplicate() const = 0;
 
-    /** virtual void clear_dynamic() = 0;
-     * @fn virtual void clear_dynamic() = 0;
-     * @brief Set every dynamic variables to 0
-     */
+    /** @brief Set every dynamic variables to 0 */
     virtual void clear_dynamic() = 0;
 
     /**
-     * @fn virtual void set_dynamic(state &_s) = 0;
      * @brief Set the dynamic components i.e. the time derivatives interacting with the simulation integrator
      * @param {state &} s; state from which the dynamic components are copied
      * @warning may implement a dynamic cast from state to a derived class
@@ -40,8 +36,7 @@ public:
     virtual void set_dynamic(state &_s) = 0;
 
     /**
-     * @fn virtual void add_to_dynamic(state &_s, const double coef) = 0;
-     * Add the dynamic of a state to the current state
+     * @brief Add the dynamic of a state to the current state
      * @param {state &} s; state from which the dynamic components are added
      * @param {const double} coef; a multiplicative coefficient
      * @warning may implement a dynamic cast from state to a derived class
@@ -49,21 +44,18 @@ public:
     virtual void add_to_dynamic(state &_s, const double coef) = 0;
 
     /**
-     * @fn virtual void apply_dynamic(const double dt) = 0;
-     * Apply a first order dynamic transition based on the values of the dynamic attributes (time derivatives)
+     * @brief Apply a first order dynamic transition based on the values of the dynamic attributes (time derivatives)
      * @param {double} dt; time step
      */
     virtual void apply_dynamic(const double dt) = 0;
 
     /**
-     * @fn virtual void update_time(const double &t) = 0;
-     * Update time variable
+     * @brief Update time variable
      * @param {const double &} t; current time
      */
     virtual void update_time(const double &t) = 0;
 
     /**
-     * @fn virtual std::vector<double> get_save() = 0;
      * @brief Get a vector containing the saved variables
      * @return {std::vector<double>}
      */

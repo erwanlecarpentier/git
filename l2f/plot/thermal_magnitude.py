@@ -7,7 +7,7 @@ import pandas as pd
 
 filename="data/wind_field.dat"
 data = pd.read_csv(filename,sep = ' ')
-data_t = data[data["t"]==400]
+data_t = data[data["t"]==100]
 
 fig = plt.figure()
 ax = fig.gca(projection='3d')

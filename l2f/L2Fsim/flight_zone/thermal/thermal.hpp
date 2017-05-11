@@ -3,87 +3,80 @@
 
 #include <vector>
 
+/**
+ * @file thermal.hpp
+ * @version 1.0
+ * @brief The abstract class thermal calculates the wind vector w linked with a thermal, at time t.
+ */
+
 namespace L2Fsim {
 
-/// The abstract class thermal calculates the wind vector w linked with a thermal, at time t.
-
 class thermal {
-
-    /*--------------------------------------
-     ------------- Attributes --------------
-     -------------------------------------*/
-
 protected:
-    /// The horizontal wind in the flight zone, implying the drift of the thermal [m/s].
-    double windx,windy;
-
-    /*--------------------------------------
-     --------------- Methods ---------------
-     -------------------------------------*/
+    /**
+     * @brief Attributes
+     * @param {double} windx, windy; horizontal wind in the flight zone, responsible for thermal drift
+     */
+    double windx, windy;
 
 public:
     /** Destructor */
     virtual ~thermal() = default;
 
-    // get
-    ///Get the peak velocity of the thermal.
-    virtual double getw_star() =0;
-    ///Get the birth time of the thermal.
-    virtual double gettBirth() =0;
-    ///Get the life time of the thermal.
-    virtual double getlifeTime() =0;
-    ///Get the height of the thermal.
-    virtual double getzi() =0;
-    ///Get the model of the thermal.
-    virtual int getModel() =0;
-    ///Get the shape factor linked to thermal life cycle.
-    virtual double getksi() =0;
-    ///Get the vector of thermal centers.
-    virtual std::vector<double> getCenter() =0;
+    /** Get average updraft velocity */
+    virtual double get_w_star() = 0;
 
-    // method
-    ///Get the state of the thermal : alive or not.
-    /**
-		\param t the simulated time.
-	*/
-    virtual bool isAlive(double t) =0;
+    /** Get thermal's date of birth */
+    virtual double get_t_birth() = 0;
 
-    ///Get the age of the thermal. Affect the peak velocity.
-    /**
-		\param t the simulated time.
-	*/
-    virtual double timeCoeff(double t) =0;
+    /** Get thermal lifespan */
+    virtual double get_lifespan() = 0;
 
-    ///Get the Euclidean distance between a point (x,y,z) and the center of the thermal. If z =! 0 then it considers the drift of the thermal center at the height z.
-    /**
-		\param x the x-axis coordinate of the point.
-		\param y the y-axis coordinate of the point.
-		\param z the z-axis coordinate of the point.
-	*/
-    virtual double distToUpdraftCenter(double x, double y, double z) =0;
+    /** Get mixing layer thickness */
+    virtual double get_zi() = 0;
 
-    // set
-    ///Set the wind speed onto the x-axis and y-axis.
+    /** Get thermal model */
+    virtual int get_model() = 0;
+
+    /** Get shape parameter */
+    virtual double get_ksi() = 0;
+
+    /** Get vector of thermal centers */
+    virtual std::vector<double> get_center() = 0;
+
     /**
-		\param wx the wind speed onto the x-axis.
-		\param wy the wind speed onto the y-axis.
-	*/
-    void setwind(double wx,double wy)
-    {
-        windx=wx;
-        windy=wy;
+     * @brief Return true if the thermal is alive, else false
+     * @param {const double &} t; current time
+     */
+    virtual bool is_alive(const double &t) = 0;
+
+    /**
+     * @brief Return the thermal life cycle coefficient
+     * @param {const double &} t; current time
+     */
+    virtual double lifetime_coefficient(const double &t) = 0;
+
+    /**
+     * @brief Get the Euclidean distance between a point (x,y,z) and the center of the thermal. If z =! 0 then it considers the drift of the thermal center at the height z.
+     * @param {double} x, y, z; coordinate in the earth frame
+	 */
+    virtual double dist_to_updraft_center(double x, double y, double z) = 0;
+
+    /**
+     * @brief Set the wind speed onto the x-axis and y-axis.
+     * @param {double} wx, wy; wind velocity vector coordinates in the earth frame
+	 */
+    void setwind(double wx,double wy) {
+        windx=wx; windy=wy;
     }
 
-    // wind
-    /// Computes the wind vector w, at point (x,y,z), at time t.
 	/**
-		\param x a horizontal coordinate of the system (x,y,z).
-		\param y a horizontal coordinate of the system (x,y,z).
-		\param z the vertical coordinate of the system (x,y,z).
-		\param t the time.
-		\param w the wind vector: windx, windy, windz.
-	*/
-	virtual thermal& wind(double x,double y,double z,double t,std::vector<double> &w) =0;
+     * @brief Computes the wind vector w, at point (x,y,z), at time t.
+     * @param {double} x, y, z; coordinate in the earth frame
+     * @param {double} t; time
+     * @param {std::vector<double> &} w; wind velocity vector in the earth frame
+	 */
+	virtual thermal& wind(double x,double y,double z,double t,std::vector<double> &w) = 0;
 };
 
 }

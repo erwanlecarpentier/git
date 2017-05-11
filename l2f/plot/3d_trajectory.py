@@ -1,4 +1,3 @@
-
 from __future__ import division
 # -*- coding: utf-8 -*-
 
@@ -15,7 +14,7 @@ import mpl_toolkits.mplot3d.art3d as art3d
 ## File reading
 trajectory_path = "data/state.dat"
 trajectory_data = np.loadtxt(trajectory_path,dtype=float)
-thermal_data_path = "data/config1.csv"
+thermal_data_path = "config/thermal_config1.csv"
 thermal_data_buffer = pd.read_csv(thermal_data_path,sep = ' ')
 thermal_data = thermal_data_buffer[thermal_data_buffer["tBirth"]==0]
 

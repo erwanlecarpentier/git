@@ -3,9 +3,6 @@
 
 #include <vector>
 
-namespace L2Fsim{
-
-///
 /**
  * @file flight_zone.hpp
  * @version 1.0
@@ -16,8 +13,9 @@ namespace L2Fsim{
  * - it has an altitude z of the ground surface at all points in the flight zone;
  */
 
-class flight_zone
-{
+namespace L2Fsim {
+
+class flight_zone {
 
 public:
     virtual ~flight_zone() = default;

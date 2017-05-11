@@ -79,24 +79,22 @@ inline double sgn(double T) {
     return 0;
 }
 
-/** return a double between double "a" and double "b" */
-inline double rand_double(double a, double b)
-{
-    return ( rand()/(double)RAND_MAX ) * (b-a) + a;
+/** @return a uniformly picked double in range [fmin,fmax] */
+inline double rand_double(double fmin, double fmax) {
+    return ( rand()/(double)RAND_MAX ) * (fmax-fmin) + fmin;
 }
 
 /**
  * return an int between int "a" and int "b"
  * @note implicitly a<b
  */
-inline int rand_int(int a, int b)
-{
-    return (rand()%(b-a) +a);
+/** @return a uniformly picked int in range [fmin,fmax] */
+inline int rand_int(int fmin, int fmax) {
+    return (rand()%(fmax-fmin) +fmin);
 }
 
 /** produce a number following a normal distribution */
-inline double normalLaw()
-{
+inline double normalLaw() {
     double W,V1,V2;
     do
     {
