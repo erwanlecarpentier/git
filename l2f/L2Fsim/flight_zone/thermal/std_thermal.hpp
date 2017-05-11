@@ -141,9 +141,10 @@ public:
                 }
                 case 5: { // Lawrance model
                     Lawrance(w,x,y,z,t,windx,windy);
-                    w[0] *= lifetime_coefficient(t);
-                    w[1] *= lifetime_coefficient(t);
-                    w[2] *= lifetime_coefficient(t);
+                    double c_t = lifetime_coefficient(t);
+                    w[0] *= c_t;
+                    w[1] *= c_t;
+                    w[2] *= c_t;
                     break;
                 }
                 default: {
@@ -188,123 +189,86 @@ public:
     /**
      * @brief Childress's thermal model
      * @param {double} r, z; radius and altitude
+     * @ref An Empirical Model of thermal Updrafts Using Data Obtained From a Manned Glider, Christopher E. Childress
 	 */
     double Childress(double r, double z)
     {
-        /*
-         Reference:
-         An Empirical Model of thermal Updrafts Using Data Obtained From a Manned Glider
-         Christopher E. Childress
-         */
+        double w_total;
+        if(z>zi) {w_total=0.;} // flight level higher than CBL
+        else {
+            double z_zi = z/zi;
 
-        double w_total, w_peak,wd,w_dec, w_;
-        double d_T;
-        double r1,r2;
-        double z_star;
-        z_star = z/zi;
+            //Calculation of radius of the thermal
+            double d_T = zi*(.4 * pow(z_zi,1./3.) * (1 - .5*z_zi)) + (z*z_zi*z_zi - .6*z*z_zi)/PI;
+            double r2 = .5*d_T;
 
-        //Calculation of radius of the thermal
-        d_T = zi*(0.4 * pow(z_star,1.0/3.0) * (1 - 0.5*z_star)) + (z*z_star*z_star - 0.6*z*z_star)/PI;
-        r2 = 0.5*d_T;
+            //Core downdraft radius
+            double r1 = .5*(.17*d_T + .5*(z_zi - .6)*d_T);
 
-        //Core downdraft radius
-        r1 = 0.5*(0.17*d_T + 0.5*(z_star - 0.6)*d_T);
+            // Calculating w_ and w_peak based on Allen
+            double w_ = w_star * pow((z / zi),1./3.) * (1 - 1.1*z_zi);
+            double w_peak = 3.*w_*(r2-r1)*r2*r2 / (r2*r2*r2-r1*r1*r1);
 
-        // Calculating w_ and w_peak based on Allen
-        w_ = w_star * pow((z / zi),1.0/3.0) * (1 - 1.1*z/zi);
-        w_peak = 3 * w_ * (r2*r2*r2 - r1*r2*r2) / (r2*r2*r2 - r1*r1*r1);
+            // Calculation of downdraft terms
+            double w_dec = (-zi/(1.275*w_star*w_star))*(12.192/z);
+            double wd = w_dec*(z_zi + .45) - .5*w_peak;
 
-        // Calculation of downdraft terms
-        w_dec = (-zi/(1.275*w_star*w_star))*(12.192/z);
-        wd = w_dec*(z_star + 0.45) - 0.5*w_peak;
-
-        if(z_star>1.0)
-        //The flight level is higher than the CBL so no effect of thermal updraft.
-        {
-            return(0.0);
-        }
-
-        //Calculation of Updraft based on equations 14,15,16 from Childress
-
-        if(z_star<0.5 && r<=r2)
-        {
-            w_total = w_peak*cos((r/r2)*PI*0.5);
-        }
-        else if(z_star<0.9)
-        {
-            if(r<r1)
-            {
-                w_total = wd*cos((r/r1)*PI*0.5);
+            //Calculation of Updraft based on equations 14,15,16 from Childress
+            if(z_zi<.5 && r<=r2) {
+                w_total = w_peak*cos((r/r2)*PI*.5);
             }
-            else if(r1<=r && r<=(r1+r2))
-            {
-                w_total = w_peak*sin((r-r1)/r2 * 1.212 *PI);
-
-                if(w_total<0.0)
-                    w_total=0.0;
+            else if(z_zi<.9) {
+                if(r<r1) {
+                    w_total = wd*cos((r/r1)*PI*.5);
+                }
+                else if(r1<=r && r<=(r1+r2)) {
+                    w_total = w_peak*sin((r-r1)/r2 * 1.212 *PI);
+                    if(w_total<0.){w_total=0.;}
+                }
+                else {w_total = 0.;}
             }
-            else
-            {
-                w_total = 0.0;
+            else {
+                if(r<r1) {w_total = .5*wd*cos((r/r1)*PI*.5);}
+                else if(r1<=r && r<=(r1+r2)) {
+                    w_total = (1-z_zi)*w_peak*sin((r-r1)/r2 * 1.212 *PI);
+                    if(w_total<0.){w_total=0.;}
+                }
+                else {w_total = 0.;}
             }
         }
-        else
-        {
-            if(r<r1)
-            {
-                w_total = 0.5*wd*cos((r/r1)*PI*0.5);
-            }
-            else if(r1<=r && r<=(r1+r2))
-            {
-                w_total = (1-z_star)*w_peak*sin((r-r1)/r2 * 1.212 *PI);
-
-                if(w_total<0.0)
-                    w_total=0.0;
-            }
-            else
-            {
-                w_total=0.0;
-            }
-        }
-        return(w_total);
+        return w_total;
     }
 
     /**
      * @brief Lenschow's thermal model
      * @param {double} r, z; radius and altitude
 	 */
-    double Lenschow(double r, double z, bool choice)
-    {
-        if(z>zi)
-        {
-            //	The flight level is higher than the CBL so no effect of thermal updraft.
-            return(0.0);
+    double Lenschow(double r, double z, bool choice) {
+        double w_total;
+        if(z>zi) {w_total=0.;} // flight level higher than CBL
+        else {
+            double z_zi = z/zi;
+            double z_zi_powthird = pow(z_zi,1./3.);
+            // diameter of the thermal given by
+            double d = 0.16 * z_zi_powthird * (1 - .25*z_zi) * zi;
+
+            //normalized updraft velocity
+            double w_= w_star * z_zi_powthird * (1 - 1.1*z_zi);
+
+            // variance of the updraft velocity
+            //double var = 1.8*pow(z_zi,2./3.) * (1.-.8*z_zi)*(1.-.8*z_zi);
+
+            // w_peak assuming a gaussian distribution is
+            double w_peak = w_; //*(2./pow(PI,.5));
+
+            if (choice==1) {
+                w_total = w_peak * exp(-(4.*r*r/(d*d)));
+            }
+            else {
+                w_total = w_peak * exp(-(4.*r*r/(d*d)))*(1.-(4.*r*r/(d*d)));
+            }
         }
-
-        double w_total,w_,d;
-        double w_peak;
-
-        //The diameter of the thermal is given by
-        d = 0.16 * pow((z / zi),1.0/3.0) * (1 - 0.25*z/zi) * zi;
-
-        //normalized updraft velocity
-        w_= w_star*pow((z / zi),1.0/3.0) * (1 - 1.1*z/zi);
-
-        //variance of the updraft velocity
-        //double var = 1.8*pow((z / zi),2.0/3.0) * (1-0.8*z/zi)*(1 - 0.8*z/zi);
-
-        //w_peak assuming a gaussian distribution is
-        w_peak=w_;//*(2.0/pow(PI,0.5));
-
-        if (choice==1)
-        {
-            w_total=w_peak*exp(-(4*r*r/(d*d)));
-        }
-        else
-        {
-            w_total=w_peak*exp(-(4*r*r/(d*d)))*(1-(4*r*r/(d*d)));
-        }
-        return(w_total);
+        return w_total;
     }
 
     double integralWzAllen(double h)
@@ -316,28 +280,23 @@ public:
         return output;
     }
 
-    double simpsons( double (*f)(double x), double a, double b, int n)
+    double simpsons(double (*f)(double x), double a, double b, int n)
     {
-        double h = (b - a) / (double)n;
-        double x;
-        double r;
+        double h = (b-a) / (double)n;
+        double x, r, s=0.;
         char m = 0;
-        double s = 0.0;
 
-        for (x = a; x <= b; x+=h)
-        {
+        for (x=a; x<=b; x+=h) {
             r = f(x);
-            if (x == a || x == b)
-            {
+            if (x == a || x == b) {
                 s += r;
             }
-            else
-            {
+            else {
                 m = !m;
-                s += r * (m+1) * 2.0;
+                s += r * (m+1) * 2.;
             }
         }
-        return s * (h/3.0);
+        return s * h / 3.;
     }
 
     /**
@@ -347,75 +306,59 @@ public:
     void Lawrance(std::vector<double> &w,double x, double y, double z, double t, double Wx, double Wy)
     {
         (void)t; (void)Wx; (void)Wy; // unused by default
-        double x0=0.0,y0=0.0,z0=0.0,xt,yt,zt;
+        double r1_rT=.36;
+        double k=3.;
+        double z_zi = z/zi;
+        double z_zi_powthird = pow(z_zi,1./3.);
 
-        double rT,r1,r1_r2=0.36, k=3.0;
-        rT = 0.102 * pow((z / zi),1.0/3.0) * (1.0 - 0.25*z/zi) * zi;
-        rT = std::max(10.0, rT);
-        //std::cout<<r2<<std::endl;
-        r1 = r1_r2*rT;
-        double w_,w_core ;
+        double rT = std::max(10., .102 * z_zi_powthird * (1.-.25*z_zi) * zi);
+        double r1 = r1_rT*rT;
 
         //Calculating w_ and W_peak using
-        w_ = w_star * pow((z / zi),1.0/3.0) * (1.0 - 1.1*z/zi);
-        w_core = 3.0 * w_ * (rT*rT*rT - r1*rT*rT) / (rT*rT*rT - r1*r1*r1);
+        double w_ = w_star * z_zi_powthird * (1.-1.1*z_zi);
+        double w_core = 3.*w_*(rT-r1)*rT*rT / (rT*rT*rT - r1*r1*r1);
 
-        z0 = 800.0;
-
-        if(z0<k*rT)
-        //The bubble has not detached from the ground yet
-        {
+        double x0=0., y0=0., z0 = 800.;
+        if(z0<k*rT) { // The bubble has not detached from the ground yet
             x0=xc0;
             y0=yc0;
         }
-        else
-        //The bubble is completely formed and it can detach itself from the ground and move along with the wind
-        {
+        else { // The bubble is completely formed and it can detach itself from the ground and move along with the wind
             x0=xc0; //+ simpsons(integralWzAllen(z),100.0,z,1000)*Wx;
             y0=yc0; //+ simpsons(integralWzAllen(z),100.0,z,1000)*Wy;
         }
 
-        zt=z-z0;
-        xt=x-x0;
-        yt=y-y0;
+        double xt=x-x0;
+        double yt=y-y0;
+        double zt=z-z0;
 
-        double dH;
-        dH=sqrt(xt*xt + yt*yt);
+        double dH = sqrt(xt*xt + yt*yt);
 
         //Calculation of Wz
-        if(dH==0)
-        {
-            w[2]+= w_core * 0.5*(cos(PI*zt/(k*rT))+1.0);
+        if(dH == 0.) {
+            w[2] += w_core * .5*(cos(PI*zt/(k*rT))+1.);
         }
-        else if(dH<=2*rT)
-        {
-            w[2]+=0.5*(w_core*rT)/(PI*dH) * sin(PI*dH/rT) * (cos(PI*zt/(k*rT))+1.0);
+        else if(dH <= 2.*rT) {
+            w[2] += .5*(w_core*rT)/(PI*dH) * sin(PI*dH/rT) * (cos(PI*zt/(k*rT))+1.);
         }
-        else
-        {
-            w[2]+=0.0;
-        }
+        else {/*w[2] += 0.;*/}
 
-        if(fabs(zt)>(k*rT))
-        {
-            w[2]+=0.0;
-        }
+        //if(fabs(zt)>(k*rT)) {w[2] += 0.;}
 
         //calculation of Wx Wy
-        if(dH!=0.0||dH<rT)
-        {
-            w[0]+=-(w[2]*zt*xt)/(dH*(dH-rT)*k*k);
-            w[1]+=-(w[2]*zt*yt)/(dH*(dH-rT)*k*k);
+        if(dH!=0. || dH<rT) {
+            double coef = (w[2]*zt)/(dH*(dH-rT)*k*k);
+            w[0] -= coef*xt;
+            w[1] -= coef*yt;
         }
-        else if(dH==rT)
-        {
-            w[0]+=-w_core/(2.0*k*rT) * (1.0 + cos(PI*z/(k*rT)));
-            w[1]+=-w_core/(2.0*k*rT) * (1.0 + cos(PI*z/(k*rT)));
+        else if(dH == rT) {
+            double dw = w_core/(2.*k*rT) * (1. + cos(PI*z/(k*rT)));
+            w[0] -= dw;
+            w[1] -= dw;
         }
-        else
-        {
-            w[0]+=0;
-            w[1]+=0;
+        else {
+            //w[0]+=0.;
+            //w[1]+=0.;
         }
     }
 };
