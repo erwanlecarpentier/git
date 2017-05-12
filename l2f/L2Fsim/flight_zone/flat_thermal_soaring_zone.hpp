@@ -66,7 +66,7 @@ protected:
             counter++;
             x_new = rand_double(x_min,x_max);
             y_new = rand_double(y_min,y_max);
-            if(thermals.size()>0) {
+            if(thermals.size()>0) { // compare picked center to other thermals
                 std::vector<double> distances;
                 for(auto& th:thermals) { // compute the distances to other alive thermals
                     if(th->is_alive(t)) {
@@ -203,63 +203,47 @@ public:
     {}
 
     /**
-     * @brief Constructor; Read a saved thermal scenario in order to play an identical simulation of the flight zone
-     * @param {std::string} filename; path to the saved scenario
+     * @brief Constructor; Read a pre-saved thermal scenario (method save_scenario) in order to play an identical simulation
+     * @warning Expect same order of variables as in save_scenario method; do not modify one without the other
+     * @param {std::string} ip; input path to the saved scenario
+     * @param {const char *} sep; separator between items
      */
-    flat_thermal_soaring_zone(std::string filename) {
-        // TODO
-        /*
-        ifstream file(filename);
-        if(!file){cerr << "Unable to open the file ("<< filename<<") read by FZ !" << std::endl;}
+    flat_thermal_soaring_zone(std::string ip) {
+        std::ifstream file(ip);
+        if(!file.is_open()){std::cerr << "Unable to open input file ("<< ip <<") in flat_thermal_soaring_zone constructor" << std::endl;}
 
-        std::string  line;
-        std::vector<double> data;
-        std::vector<std::vector<double>> datavector;
-        int readline=1;
-        while(getline(file, line))
-        {
-            istringstream stream(line);
-            if(line[0]=='#')
-                continue;
-            switch(readline)
-            {
-                case 1: stream>>x_min>>x_max; break;
-                case 2: stream>>y_min>>y_max; break;
-                case 3: stream>>z_min>>z_max; break;
-                case 4: stream>>t_start>>t_limit; break;
-                case 5: stream>>windx>>windy; break;
-                case 6: stream>>zi; break;
-            }
+        std::string line;
+        std::getline(file,line); // do not take first line into account
 
-            if(readline>6)
-            {
-                double th[]={0,0.0,0,0,0,0.0,0.0,0,0.0};
-                stream>>th[0]>>th[1]>>th[2]>>th[3]>>th[4]>>th[5]>>th[6]>>th[7]>>th[8];
-                data.push_back(th[0]);
-                data.push_back(th[1]);
-                data.push_back(th[2]);
-                data.push_back(th[3]);
-                data.push_back(th[4]);
-                data.push_back(th[5]);
-                data.push_back(th[6]);
-                data.push_back(th[7]);
-                data.push_back(th[8]);
-                datavector.push_back(data);
-                data.clear();
+
+        while(file.good()) {
+            std::vector<std::string> result;
+            std::getline(file,line);
+            if(line.size()>0) { // prevent from reading last (empty) line
+                std::stringstream line_stream(line);
+                std::string cell;
+                while(std::getline(line_stream,cell,';')) {
+                    result.push_back(cell);
+                }
+                if (!line_stream && cell.empty()) { // This checks for a trailing comma with no data after it
+                    // If there was a trailing comma then add an empty element
+                    result.push_back("");
+                }
+                int model = std::stoi(result.at(0));
+                double t_birth = std::stod(result.at(1));
+                double lifespan = std::stod(result.at(2));
+                double w_star = std::stod(result.at(3));
+                double zi = std::stod(result.at(4));
+                double x = std::stod(result.at(5));
+                double y = std::stod(result.at(6));
+                double z = std::stod(result.at(7));
+                double ksi = std::stod(result.at(8));
+                std_thermal* new_th = new std_thermal(model,w_star,zi,t_birth,lifespan,x,y,z,ksi);
+                new_th->set_horizontal_wind(windx,windy);
+                thermals.push_back(new_th);
             }
-            readline++;
         }
         file.close();
-        for(auto data: datavector)
-        {
-            //TODO
-            //std_thermal(mod,tB,XC0,YC0,ZC0,Zi,wstar,Lifetime,Ksi,read):
-            std_thermal* newTH = new std_thermal(data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7],data[8]);
-            newTH->set_horizontal_wind(windx,windy);
-            thermals.push_back(newTH);
-        }
-        std::cout<<"Configurations read file : "<<filename<<" ; and thermals are created accordingly."<<std::endl;
-        */
     }
 
     /** Destructor */
@@ -338,6 +322,7 @@ public:
         std::string filename)
     {
         //TODO
+        /*
         std::cout << "--> Write scenario" << std::endl;
         std::ofstream ofs;
         ofs.open(filename);
@@ -361,56 +346,38 @@ public:
         }
         ofs.close();
         std::cout << std::endl;
-    }
-
-    /**
-     * @brief Save a scenario in '.cfg' format
-     * @param {std::string} filename; output path
-     */
-    void save_configuration(std::string filename)
-    {
-        //TODO
-        /*
-        std::cout << "--> Save config"<< std::endl;
-        std::ofstream ofs;
-        ofs.open (filename);
-        ofs<<"# Definition of the domain :\n# MinX and MaxX"<<std::endl
-        <<x_min<<" "<<x_max<<std::endl
-        <<"# MinY and MaxY"<<std::endl
-        <<y_min<<" "<<y_max<<std::endl
-        <<"# MinZ and MaxZ"<<std::endl
-        <<z_min<<" "<<z_max<<std::endl
-        <<"# t_start and t_limit"<<std::endl
-        <<t_start<<" "<<t_limit<<std::endl
-        <<"# windx and windy"<<std::endl
-        <<windx<<" "<<windy<<std::endl
-        <<"# zi "<<std::endl
-        <<zi<<std::endl;
-
-        ofs<<"# The list of Thermals created :"<<std::endl
-        <<"# model   tBirth   CentreX   CentreY   CentreZ   zi   w_star   lifetime   ksi"<<std::endl;
-
-        for(auto th: thermals) {
-            ofs<<th->get_model()<< " " <<th->get_t_birth() << " " << th->get_center()[0]<<" "<<th->get_center()[1]<<" "<<th->get_center()[2]<<" "<<th->get_zi()<< " " << th->get_w_star() << " " << th->get_lifespan()  << " " << th->get_ksi()<< std::endl;
-        }
-        ofs.close();
         */
     }
 
     /**
-     * @brief Save a scenario in '.csv' format
-     * @param {std::string} filename; output path
+     * @brief Save a scenario at the specified output path
+     * @param {std::string} op; output path
      */
-    void save_configuration_to_csv(std::string filename)
-    {
+    void save_scenario(std::string op) {
         std::ofstream ofs;
-        ofs.open(filename);
-        ofs<<"model tBirth CentreX CentreY CentreZ zi w_star lifetime ksi"<<std::endl;
-
+        ofs.open(op);
+        ofs<<"model"<<';';
+        ofs<<"t_birth"<<';';
+        ofs<<"lifespan"<<';';
+        ofs<<"w_star"<<';';
+        ofs<<"zi"<<';';
+        ofs<<"x"<<';';
+        ofs<<"y"<<';';
+        ofs<<"z"<<';';
+        ofs<<"ksi"<<std::endl;
         for(auto th: thermals) {
-            ofs<<th->get_model()<< " " <<th->get_t_birth() << " " << th->get_center()[0]<<" "<<th->get_center()[1]<<" "<<th->get_center()[2]<<" "<<th->get_zi()<< " " << th->get_w_star() << " " << th->get_lifespan()  << " " << th->get_ksi()<< std::endl;
+            std::vector<double> center = th->get_center();
+            ofs<<th->get_model()<<';';
+            ofs<<th->get_t_birth()<<';';
+            ofs<<th->get_lifespan()<<';';
+            ofs<<th->get_w_star()<<';';
+            ofs<<th->get_zi()<<';';
+            ofs<<center.at(0)<<';';
+            ofs<<center.at(1)<<';';
+            ofs<<center.at(2)<<';';
+            ofs<<th->get_ksi();
+            ofs<<std::endl;
         }
-        ofs.close();
     }
 };
 

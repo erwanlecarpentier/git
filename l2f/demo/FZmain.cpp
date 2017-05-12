@@ -58,10 +58,11 @@ int main() {
         z_min, z_max,
         ksi_min, ksi_max,
         d_min);
+    flat_thermal_soaring_zone fz_from_file("config/thermal_scenario.csv");
 
-    /// 2 : Simulate a scenario i.e. create the thermals
+    /// 2. Create a scenario i.e. create the thermals
     fz.create_scenario(dt,model);
-    fz.print_scenario();
+    //fz.print_scenario();
 
     // 3 : write data for zslice visualization
     //double deltax = 50.; // mesh precision in x direction
@@ -69,8 +70,8 @@ int main() {
     //double zslice = 500.;  // height of the windfield
     //fz.writeScenario(dt,deltax,deltay,zslice,"data/wind_field.dat");
 
-    // 4 : save this configuration
-    //fz.save_configuration("config/thermal_config.cfg");
+    /// 4. Save the scenario
+    //fz.save_scenario("config/thermal_scenario.csv");
 
     // 5 : call a previous configuration
     //flat_thermal_soaring_zone fz_bis("data/config1.txt");

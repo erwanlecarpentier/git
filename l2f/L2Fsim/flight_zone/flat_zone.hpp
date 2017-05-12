@@ -14,26 +14,22 @@ namespace L2Fsim {
 
 class flat_zone : public flight_zone {
 protected:
-    /**
-     * Attributes
-     * @param {double} windx; global wind velocity along the x-axis of the earth frame
-     * @param {double} windy; global wind velocity along the y-axis of the earth frame
-     */
+    /** @param {double} windx, windy; global wind velocity along the x and y axis of the earth frame */
 	double windx, windy;
 
 public:
-    /** Constructor */
+    /** @brief Constructor */
     flat_zone(double _windx=0., double _windy=0.) :
         windx(_windx),
         windy(_windy)
     {}
 
-    /** Destructor */
+    /** @brief Destructor */
     virtual ~flat_zone() = default;
 
     /**
-	 * Compute the wind vector w, at point (x,y,z,t)
-     * @param {double} x, y, z; coordinates in the earth frame
+	 * @brief Compute the wind vector w, at coordinate (x,y,z,t)
+     * @param {double} x, y, z; position coordinates in the earth frame
      * @param {double} t; time
 	 * @param {std::vector<double>} w; wind vector (windx,windy,windz)
 	 */
