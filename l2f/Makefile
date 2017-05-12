@@ -8,6 +8,8 @@ EXEC2=FZmain
 
 all : clean compile run
 
+all2 : clean compile2 run2
+
 run : clean_data
 	./$(EXEC)
 

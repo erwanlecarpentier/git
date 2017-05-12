@@ -47,7 +47,7 @@ protected:
     std::vector<thermal *> thermals;
 
     /** @brief Return the maximum number of thermals in the zone */
-    int nbMaxThermals() {
+    int get_max_nb_of_th() {
         double zi_avg = zi_max - zi_min;
         return floor(0.6*(x_max-x_min)*(y_max-y_min)/(d_min*zi_avg));
     }
@@ -66,15 +66,19 @@ protected:
             counter++;
             x_new = rand_double(x_min,x_max);
             y_new = rand_double(y_min,y_max);
-            std::vector<double> distances;
-            for(auto& th:thermals) { // compute the distances to other thermals
-                double x_th = th->get_center()[0];
-                double y_th = th->get_center()[1];
-                double dist_to_th = sqrt((x_new-x_th)*(x_new-x_th)+(y_new-y_th)*(y_new-y_th));
-                distances.push_back(dist_to_th);
-            }
-            double minimum_distance = *std::min_element(distances.begin(),distances.end()); // #include <algorithm>
-            if(minimum_distance>2.*d_min) {center_is_valid=true;}
+            if(thermals.size()>0) {
+                std::vector<double> distances;
+                for(auto& th:thermals) { // compute the distances to other alive thermals
+                    if(th->is_alive(t)) {
+                        double x_th = th->get_center()[0];
+                        double y_th = th->get_center()[1];
+                        double dist_to_th = sqrt((x_new-x_th)*(x_new-x_th)+(y_new-y_th)*(y_new-y_th));
+                        distances.push_back(dist_to_th);
+                    }
+                }
+                double minimum_distance = *std::min_element(distances.begin(),distances.end()); // #include <algorithm>
+                if(minimum_distance>2.*d_min) {center_is_valid=true;}
+            } else {center_is_valid=true;}
             if(counter>100) {
                 std::cout<<"Warning: more than 100 trials were performed to create a new thermal center; ";
                 std::cout<<"Make sure that you are asking something possible (d_min = "<<d_min<<")"<<std::endl;
@@ -251,7 +255,7 @@ public:
             //TODO
             //std_thermal(mod,tB,XC0,YC0,ZC0,Zi,wstar,Lifetime,Ksi,read):
             std_thermal* newTH = new std_thermal(data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7],data[8]);
-            newTH->setwind(windx,windy);
+            newTH->set_horizontal_wind(windx,windy);
             thermals.push_back(newTH);
         }
         std::cout<<"Configurations read file : "<<filename<<" ; and thermals are created accordingly."<<std::endl;
@@ -285,43 +289,39 @@ public:
     }
 
     /**
-     * @brief Create a new thermal
+     * @brief Create a new thermal and push it back to 'thermals' vector attribute
      * @param {int} model; thermal model
      * @param {double} t; current time, thermal's date of birth
      */
     void create_thermal(int model, double t) {
         std::vector<double> center;
         if(create_thermal_center(t,center)) {
-            // previous code:
-            //std_thermal(mod,tB,XC0,YC0,ZC0,Zi,wstar,Lifetime,Ksi,read):
-            //std_thermal* new_th = new std_thermal(model,t,center[0],center[1],center[2],zi,0.,0,0.,0);
             double w_star = pick_w_star();
             double zi = pick_zi();
             double lifespan = pick_lifespan(w_star);
             double ksi = pick_ksi();
             std_thermal* new_th = new std_thermal(model,w_star,zi,t,lifespan,center.at(0),center.at(1),center.at(2),ksi);
-            new_th->setwind(windx,windy);
+            new_th->set_horizontal_wind(windx,windy);
             thermals.push_back(new_th);
         }
     }
 
     /**
-     * @brief Create a scenario including thermals
+     * @brief Create a scenario i.e. fill the 'thermals' vector attribute
      * @param {double} dt, refresh rate
      * @param {int} model; thermal model
      */
     void create_scenario(double dt, int model) {
-        //TODO check what it does
-        std::cout << "--> Create scenario" << std::endl;
-        int max_nb_of_th = nbMaxThermals();
-        for(double t=t_start; t<t_limit; t+=dt) {
-            std::cout << "t = " << t << std::endl;
+        int max_nb_of_th = 12;//get_max_nb_of_th();
+        for(double t=t_start; t<=t_limit; t+=dt) {
             while(nb_th_alive_at_time(t) < max_nb_of_th) {
                 create_thermal(model,t);
             }
         }
-        std::cout << std::endl;
     }
+
+    /** @brief Print the full scenario in the standard output stream */
+    void print_scenario() {for(auto& th: thermals) {th->print_std_os();}}
 
     /**
      * @brief Write the wind data for the visualization of a 'zslice' in a file

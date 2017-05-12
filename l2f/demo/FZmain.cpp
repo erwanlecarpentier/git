@@ -15,7 +15,7 @@ int main() {
     /**
      * Parameters
      * @note See the used flight zone for description of the parameters
-     * @param {double} dt; actualization of thermals
+     * @param {double} dt; thermal refreshment rate
      * @param {int} model; thermal model selection
      * 1: Allen
      * 2: Childress
@@ -24,7 +24,7 @@ int main() {
      * 5: Lawrance
      */
     int model = 1;
-    double dt = 100.; // ???
+    double dt = 1.;
 
     double t_start = 0.;
     double t_limit = 1e3;
@@ -36,18 +36,17 @@ int main() {
     double zi_max = 1400.;
     double lifespan_min = 300.;
     double lifespan_max = 500.;
-    double x_min = -1000.;
-    double x_max = +1000.;
-    double y_min = -1000.;
-    double y_max = +1000.;
+    double x_min = -1500.;
+    double x_max = +1500.;
+    double y_min = -1500.;
+    double y_max = +1500.;
     double z_min = +0.;
     double z_max = +2000.;
     double ksi_min = .3;
     double ksi_max = .7;
     double d_min = 200.;
 
-    // 1 : create an empty box
-    //flat_thermal_soaring_zone fz(t_lim,minX,maxX,minY,maxY,minZ,maxZ,wx,wy,d_min,zi);
+    /// 1. Initialize an empty zone and define its limitations
     flat_thermal_soaring_zone fz(
         t_start, t_limit,
         windx, windy,
@@ -60,17 +59,18 @@ int main() {
         ksi_min, ksi_max,
         d_min);
 
-    // 2 : Simulate a scenario of thermals
+    /// 2 : Simulate a scenario i.e. create the thermals
     fz.create_scenario(dt,model);
+    fz.print_scenario();
 
     // 3 : write data for zslice visualization
-    double deltax = 50.; // mesh precision in x direction
-    double deltay = deltax; // mesh precision in y direction
-    double zslice = 500.;  // height of the windfield
-    fz.writeScenario(dt,deltax,deltay,zslice,"data/wind_field.dat");
+    //double deltax = 50.; // mesh precision in x direction
+    //double deltay = deltax; // mesh precision in y direction
+    //double zslice = 500.;  // height of the windfield
+    //fz.writeScenario(dt,deltax,deltay,zslice,"data/wind_field.dat");
 
     // 4 : save this configuration
-    fz.save_configuration("config/thermal_config.cfg");
+    //fz.save_configuration("config/thermal_config.cfg");
 
     // 5 : call a previous configuration
     //flat_thermal_soaring_zone fz_bis("data/config1.txt");

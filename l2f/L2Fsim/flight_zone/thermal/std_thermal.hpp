@@ -63,18 +63,29 @@ public:
     /** Destructor */
     ~std_thermal() = default;
 
-    double get_w_star() {return w_star;}
-    double get_t_birth() {return t_birth;}
-    double get_lifespan() {return lifespan;}
-    double get_zi() {return zi;}
-    int get_model() {return model;}
-    double get_ksi() {return ksi;}
+    double get_w_star() override {return w_star;}
+    double get_t_birth() override {return t_birth;}
+    double get_lifespan() override {return lifespan;}
+    double get_zi() override {return zi;}
+    int get_model() override {return model;}
+    double get_ksi() override {return ksi;}
+
+    void print_std_os() override {
+        std::cout<<"model: "<<model<<" ";
+        std::cout<<"t_birth: "<<t_birth<<" ";
+        std::cout<<"lifespan: "<<lifespan<<" ";
+        std::cout<<"w_star: "<<w_star<<" ";
+        std::cout<<"zi: "<<zi<<" ";
+        std::cout<<"center: "<<xc0<<" "<<yc0<<" "<<zc0<<" ";
+        std::cout<<"ksi: "<<ksi<<" ";
+        std::cout<<std::endl;
+    }
 
     /**
      * @brief get center coordinate in the earth frame
      * @return {std::vector<double>}
      */
-    std::vector<double> get_center() {
+    std::vector<double> get_center() override {
         std::vector<double> w;
         w.push_back(xc0);
         w.push_back(yc0);
@@ -86,7 +97,7 @@ public:
      * @brief Calculate the distance between the given point(x,y,z) and the thermals center
      * @note Effect of ambient winds and thermal drifting is considered
      */
-    double dist_to_updraft_center(double x, double y, double z) {
+    double dist_to_updraft_center(const double &x, const double &y, const double &z) override {
         double xcz = xc0 + windx*z; // drifted center at alttitude z
         double ycz = yc0 + windy*z; // drifted center at alttitude z
         return sqrt((xcz-x)*(xcz-x) + (ycz-y)*(ycz-y));
@@ -96,13 +107,15 @@ public:
      * @brief Return true if the thermal is alive, else false
      * @param {const double &} t; current time
      */
-    bool is_alive(const double &t) {return (t-t_birth>lifespan)?0:1;}
+    bool is_alive(const double &t) override {
+        return ((t_birth<=t) && (t<=(t_birth+lifespan)))?true:false;
+    }
 
     /**
      * @brief Return the thermal life cycle coefficient
      * @param {const double &} t; current time
      */
-    double lifetime_coefficient(const double & t)
+    double lifetime_coefficient(const double &t) override
     {
         double abstau = fabs(t-t_birth-lifespan/2.);
         double T = (1.+ksi) / lifespan;
@@ -118,49 +131,11 @@ public:
         return c_t;
     }
 
-    std_thermal& wind(double x, double y, double z, double t, std::vector<double> &w) {
-        if(z>zi || z<zc0) {w[2]=0.;}
-        else {
-            double r = dist_to_updraft_center(x,y,z);
-            switch(model) {
-                case 1: { // Allen model
-                    w[2] += Allen(r,z)*lifetime_coefficient(t);
-                    break;
-                }
-                case 2: { // Childress model
-                    w[2] += Childress(r,z)*lifetime_coefficient(t);
-                    break;
-                }
-                case 3: { // Lenschow with Gaussian distribution
-                    w[2] += Lenschow(r,z,1)*lifetime_coefficient(t);
-                    break;
-                }
-                case 4: { // Lenschow with Geodon model
-                    w[2] += Lenschow(r,z,0)*lifetime_coefficient(t);
-                    break;
-                }
-                case 5: { // Lawrance model
-                    Lawrance(w,x,y,z,t,windx,windy);
-                    double c_t = lifetime_coefficient(t);
-                    w[0] *= c_t;
-                    w[1] *= c_t;
-                    w[2] *= c_t;
-                    break;
-                }
-                default: {
-                    std::cout << "Warning: chosen thermal model unavailable" << std::endl;
-                    std::cout << "Method 'wind' in std_thermal unable to compute the updraft" << std::endl;
-                }
-            }
-        }
-        return *this;
-    }
-
     /**
      * @brief Allen's thermal model
-     * @param {double} r, z; radius and altitude
+     * @param {const double &} r, z; radius and altitude
 	 */
-    double Allen(double r, double z)
+    double Allen(const double &r, const double &z)
     {
         double w_total;
         double z_zi = z/zi;
@@ -188,10 +163,10 @@ public:
 
     /**
      * @brief Childress's thermal model
-     * @param {double} r, z; radius and altitude
+     * @param {const double &} r, z; radius and altitude
      * @ref An Empirical Model of thermal Updrafts Using Data Obtained From a Manned Glider, Christopher E. Childress
 	 */
-    double Childress(double r, double z)
+    double Childress(const double &r, const double &z)
     {
         double w_total;
         if(z>zi) {w_total=0.;} // flight level higher than CBL
@@ -241,9 +216,10 @@ public:
 
     /**
      * @brief Lenschow's thermal model
-     * @param {double} r, z; radius and altitude
+     * @param {const double &} r, z; radius and altitude
 	 */
-    double Lenschow(double r, double z, bool choice) {
+    double Lenschow(const double &r, const double &z, const bool &choice)
+    {
         double w_total;
         if(z>zi) {w_total=0.;} // flight level higher than CBL
         else {
@@ -271,16 +247,13 @@ public:
         return w_total;
     }
 
-    double integralWzAllen(double h)
+    double integral_wz_allen(double h)
     {
-        double output;
-        if(h>1100)
-            h=1100;
-        output = 1/(2.64 * pow((h/1400.0),1./3.) * (1. - 1.1*h/1400.));
-        return output;
+        if(h>1100){h=1100;}
+        return 1/(2.64 * pow((h/1400.0),1./3.) * (1. - 1.1*h/1400.));
     }
 
-    double simpsons(double (*f)(double x), double a, double b, int n)
+    double simpsons(double (*f)(double x), const double &a, const double &b, const int &n)
     {
         double h = (b-a) / (double)n;
         double x, r, s=0.;
@@ -303,7 +276,7 @@ public:
      * @brief Lawrance's thermal model
      * @param {double} r, z; radius and altitude
 	 */
-    void Lawrance(std::vector<double> &w,double x, double y, double z, double t, double Wx, double Wy)
+    void Lawrance(std::vector<double> &w, const double &x, const double &y, const double &z, const double &t, const double &Wx, const double &Wy)
     {
         (void)t; (void)Wx; (void)Wy; // unused by default
         double r1_rT=.36;
@@ -324,8 +297,8 @@ public:
             y0=yc0;
         }
         else { // The bubble is completely formed and it can detach itself from the ground and move along with the wind
-            x0=xc0; //+ simpsons(integralWzAllen(z),100.0,z,1000)*Wx;
-            y0=yc0; //+ simpsons(integralWzAllen(z),100.0,z,1000)*Wy;
+            x0=xc0; //+ simpsons(integral_wz_allen(z),100.0,z,1000)*Wx;
+            y0=yc0; //+ simpsons(integral_wz_allen(z),100.0,z,1000)*Wy;
         }
 
         double xt=x-x0;
@@ -360,6 +333,45 @@ public:
             //w[0]+=0.;
             //w[1]+=0.;
         }
+    }
+
+    std_thermal& wind(const double &x, const double &y, const double &z, const double &t, std::vector<double> &w) override
+    {
+        if(z>zi || z<zc0) {w[2]=0.;}
+        else {
+            double r = dist_to_updraft_center(x,y,z);
+            switch(model) {
+                case 1: { // Allen model
+                    w[2] += Allen(r,z)*lifetime_coefficient(t);
+                    break;
+                }
+                case 2: { // Childress model
+                    w[2] += Childress(r,z)*lifetime_coefficient(t);
+                    break;
+                }
+                case 3: { // Lenschow with Gaussian distribution
+                    w[2] += Lenschow(r,z,1)*lifetime_coefficient(t);
+                    break;
+                }
+                case 4: { // Lenschow with Geodon model
+                    w[2] += Lenschow(r,z,0)*lifetime_coefficient(t);
+                    break;
+                }
+                case 5: { // Lawrance model
+                    Lawrance(w,x,y,z,t,windx,windy);
+                    double c_t = lifetime_coefficient(t);
+                    w[0] *= c_t;
+                    w[1] *= c_t;
+                    w[2] *= c_t;
+                    break;
+                }
+                default: {
+                    std::cout << "Warning: chosen thermal model unavailable" << std::endl;
+                    std::cout << "Method 'wind' in std_thermal unable to compute updraft" << std::endl;
+                }
+            }
+        }
+        return *this;
     }
 };
 

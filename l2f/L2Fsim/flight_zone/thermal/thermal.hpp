@@ -6,7 +6,7 @@
 /**
  * @file thermal.hpp
  * @version 1.0
- * @brief The abstract class thermal calculates the wind vector w linked with a thermal, at time t.
+ * @brief The abstract class thermal calculates the wind vector w linked with a thermal, at time t
  */
 
 namespace L2Fsim {
@@ -60,15 +60,13 @@ public:
      * @brief Get the Euclidean distance between a point (x,y,z) and the center of the thermal. If z =! 0 then it considers the drift of the thermal center at the height z.
      * @param {double} x, y, z; coordinate in the earth frame
 	 */
-    virtual double dist_to_updraft_center(double x, double y, double z) = 0;
+    virtual double dist_to_updraft_center(const double &x, const double &y, const double &z) = 0;
 
     /**
      * @brief Set the wind speed onto the x-axis and y-axis.
      * @param {double} wx, wy; wind velocity vector coordinates in the earth frame
 	 */
-    void setwind(double wx,double wy) {
-        windx=wx; windy=wy;
-    }
+    void set_horizontal_wind(const double &wx, const double &wy) {windx=wx; windy=wy;}
 
 	/**
      * @brief Computes the wind vector w, at point (x,y,z), at time t.
@@ -76,7 +74,10 @@ public:
      * @param {double} t; time
      * @param {std::vector<double> &} w; wind velocity vector in the earth frame
 	 */
-	virtual thermal& wind(double x,double y,double z,double t,std::vector<double> &w) = 0;
+	virtual thermal& wind(const double &x, const double &y, const double &z, const double &t, std::vector<double> &w) = 0;
+
+	/** @brief Print the thermal's features in the standard output stream */
+	virtual void print_std_os() = 0;
 };
 
 }

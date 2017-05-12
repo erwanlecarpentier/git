@@ -13,6 +13,8 @@
 
 namespace L2Fsim {
 
+inline void pop(){std::cout<<"pop"<<std::endl;}
+
 /**
  * @brief Sort the indices of the input vector, not depending on its content type
  * @param {const std::vector<double> &} v; input vector
