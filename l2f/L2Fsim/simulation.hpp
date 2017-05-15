@@ -18,7 +18,7 @@
 
 namespace L2Fsim {
 
-class simulation{
+class simulation {
 public:
 	/**
 	 * Attributes

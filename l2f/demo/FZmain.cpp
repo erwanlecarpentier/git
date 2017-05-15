@@ -6,7 +6,6 @@ using namespace L2Fsim;
 /*
 Questions :
 - Formule de nbMaxThermals = floor(0.6*(x_max-x_min)*(y_max-y_min)/(d_min*zi_avg))
-- Formule du lifespan -> < 0. ?
 */
 
 int main() {
@@ -15,7 +14,7 @@ int main() {
     /**
      * Parameters
      * @note See the used flight zone for description of the parameters
-     * @param {double} dt; thermal refreshment rate
+     * @param {double} dt; thermal refreshment rate (s)
      * @param {int} model; thermal model selection
      * 1: Allen
      * 2: Childress
@@ -30,16 +29,16 @@ int main() {
     double t_limit = 1e3;
     double windx = 0.;
     double windy = 0.;
-    double w_star_min = 1.;
-    double w_star_max = 3.;
+    double w_star_min = 2.;
+    double w_star_max = 5.;
     double zi_min = 1300.;
     double zi_max = 1400.;
     double lifespan_min = 300.;
     double lifespan_max = 500.;
-    double x_min = -1500.;
-    double x_max = +1500.;
-    double y_min = -1500.;
-    double y_max = +1500.;
+    double x_min = -1000.;
+    double x_max = +1000.;
+    double y_min = -1000.;
+    double y_max = +1000.;
     double z_min = +0.;
     double z_max = +2000.;
     double ksi_min = .3;
@@ -58,23 +57,21 @@ int main() {
         z_min, z_max,
         ksi_min, ksi_max,
         d_min);
-    flat_thermal_soaring_zone fz_from_file("config/thermal_scenario.csv");
+    //flat_thermal_soaring_zone fz_from_file("config/thermal_scenario.csv");
 
     /// 2. Create a scenario i.e. create the thermals
     fz.create_scenario(dt,model);
-    //fz.print_scenario();
+    fz.print_scenario();
 
-    // 3 : write data for zslice visualization
-    //double deltax = 50.; // mesh precision in x direction
-    //double deltay = deltax; // mesh precision in y direction
-    //double zslice = 500.;  // height of the windfield
-    //fz.writeScenario(dt,deltax,deltay,zslice,"data/wind_field.dat");
+    /// 3 : Save data for visualization
+    double dx = 50.; // mesh precision in x direction
+    double dy = dx; // mesh precision in y direction
+    double z = 500.;  // altitude of the saved updraft field
+    double t = 500.;  // time of the saved updraft field
+    fz.save_updraft_values(dx,dy,z,t,"data/updraft_field.dat");
 
     /// 4. Save the scenario
-    //fz.save_scenario("config/thermal_scenario.csv");
-
-    // 5 : call a previous configuration
-    //flat_thermal_soaring_zone fz_bis("data/config1.txt");
+    fz.save_scenario("config/thermal_scenario.csv");
 
     return 0;
 }
