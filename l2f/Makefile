@@ -6,11 +6,11 @@ EXEC2=FZmain
 
 .PHONY : all compile run clean
 
-all : clean compile run
+all : clean_exe compile run
 
-all2 : clean compile2 run2
+all2 : clean_exe compile2 run2
 
-run : clean_data
+run : clean_dat
 	./$(EXEC)
 
 compile : demo/main.cpp
@@ -37,17 +37,21 @@ variables :
 plot_all :
 	python3 plot/2d_trajectory.py & python3 plot/3d_trajectory.py & python3 plot/variables.py
 
-clean :
+clean_all :
 	rm -f data/state.dat
 	rm -f data/wind.dat
-	rm -f data/wind_field.dat
+	rm -f data/updraft_field.dat
 	rm -f $(EXEC)
 	rm -f $(EXEC2)
 
-clean_data :
+clean_exe :
+	rm -f $(EXEC)
+	rm -f $(EXEC2)
+
+clean_dat :
 	rm -f data/state.dat
 	rm -f data/wind.dat
-	rm -f data/wind_field.dat
+	rm -f data/updraft_field.dat
 
 help :
 	@echo “compile : compile “demo/main.cpp”, executable is $(EXEC)”
@@ -57,6 +61,7 @@ help :
 	@echo “thermal_magnitude : run thermal_magnitude.py”
 	@echo “2d_trajectory : run 2d_trajectory.py”
 	@echo “3d_trajectory : run 3d_trajectory.py”
-	@echo “clean : remove executable and data files”
-	@echo “clean_data : remove data files”
+	@echo “clean_all : remove executables and data files”
+	@echo “clean_exe : remove executables”
+	@echo “clean_dat : remove data files”
 

@@ -298,7 +298,7 @@ public:
     void create_scenario(double dt, int model) {
         int max_nb_of_th = 12;//get_max_nb_of_th();
         for(double t=t_start; t<=t_limit; t+=dt) {
-            while(nb_th_alive_at_time(t) < max_nb_of_th) {
+            while(nb_th_alive_at_time(t) <= max_nb_of_th) {
                 create_thermal(model,t);
             }
         }
@@ -308,45 +308,35 @@ public:
     void print_scenario() {for(auto& th: thermals) {th->print_std_os();}}
 
     /**
-     * @brief Write the wind data for the visualization of a 'zslice' in a file
-     * @param {double} deltaT, period of thermal actualization
-     * @param {double} deltax, deltay; mesh precision
-     * @param {double} zslice; height of the windfield
-     * @param {std::string} filename; output path
+     * @brief Write the updraft values in a file for visualization
+     * @param {const double &} dx, dy; mesh precision
+     * @param {const double &} z; altitude of the saved updraft field
+     * @param {const double &} t; time of the saved updraft field
+     * @param {const std::string &} op; output path
      */
-    void writeScenario(
-        double deltaT,
-        double deltax,
-        double deltay,
-        double zslice,
-        std::string filename)
+    void save_updraft_values(
+        const double &dx,
+        const double &dy,
+        const double &z,
+        const double &t,
+        const std::string &op)
     {
-        //TODO
-        /*
-        std::cout << "--> Write scenario" << std::endl;
         std::ofstream ofs;
-        ofs.open(filename);
-
+        ofs.open(op);
         ofs << "t x y z updraft"<<std::endl;
-
-        for (double t=t_start; t<t_limit ; t+=deltaT) {
-            std::cout << "t = " << t << std::endl;
-            std::vector<double> w;
-            for (int x=x_min; x<x_max; x+=deltax) {
-                for (int y=y_min; y<y_max; y+=deltay) {
-                    this->wind(x,y,zslice,t,w);
-                    ofs << t << " " ;
-                    ofs << x << " " ;
-                    ofs << y << " " ;
-                    ofs << zslice << " " ;
-                    ofs << w[2];
-                    ofs << std::endl;
-                }
+        std::vector<double> w;
+        for (double x=x_min; x<=x_max; x+=dx) {
+            for (double y=y_min; y<=y_max; y+=dy) {
+                wind(x,y,z,t,w);
+                ofs << t << " ";
+                ofs << x << " ";
+                ofs << y << " ";
+                ofs << z << " ";
+                ofs << w.at(2);
+                ofs << std::endl;
             }
         }
         ofs.close();
-        std::cout << std::endl;
-        */
     }
 
     /**

@@ -14,9 +14,9 @@ import mpl_toolkits.mplot3d.art3d as art3d
 ## File reading
 trajectory_path = "data/state.dat"
 trajectory_data = np.loadtxt(trajectory_path,dtype=float)
-thermal_data_path = "config/thermal_config1.csv"
-thermal_data_buffer = pd.read_csv(thermal_data_path,sep = ' ')
-thermal_data = thermal_data_buffer[thermal_data_buffer["tBirth"]==0]
+thermal_data_path = "config/thermal_scenario.csv"
+thermal_data_buffer = pd.read_csv(thermal_data_path,sep = ';')
+thermal_data = thermal_data_buffer[thermal_data_buffer["t_birth"]==0]
 
 ## Trajectory plot
 x = trajectory_data[:,0]
@@ -32,12 +32,12 @@ ax.set_ylabel('y')
 ax.set_zlabel('z')
 
 ## Thermals center plot at t=0
-size = len(thermal_data["CentreX"])
+size = len(thermal_data["x"])
 for i in range(0,size):
-    xth=linspace(thermal_data["CentreX"][i],thermal_data["CentreX"][i],1000)
-    yth=linspace(thermal_data["CentreY"][i],thermal_data["CentreY"][i],1000)
-    zth=linspace(0,1000,1000)
-    ax.plot(xth,yth,zth,color='#ff6600')
+    x_th=linspace(thermal_data["x"][i],thermal_data["x"][i],1000)
+    y_th=linspace(thermal_data["y"][i],thermal_data["y"][i],1000)
+    z_th=linspace(0,1000,1000)
+    ax.plot(x_th,y_th,z_th,color='#ff6600')
 
 ## Border plot
 limit_circle = Circle((0, 0), 1200, color='black', fill=False)
