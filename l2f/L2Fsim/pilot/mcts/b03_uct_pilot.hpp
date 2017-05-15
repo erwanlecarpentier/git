@@ -10,7 +10,7 @@
 
 /**
  * @file b03_uct_pilot.hpp
- * @brief An online-anytime implementation of a UCT algorithm
+ * @brief An online-anytime implementation of an omniscient UCT algorithm
  * @version 1.0
  * @since 1.0
  *
@@ -27,7 +27,7 @@ namespace L2Fsim{
 class b03_uct_pilot : public pilot {
 public:
     /**
-     * Attributes
+     * @brief Attributes
      * @param {beeler_glider} ac; aircraft model
      * @param {flat_thermal_soaring_zone} fz; atmosphere model
      * @param {void (*transition_function)(aircraft &, flight_zone &, double &, const double &, const double &)}
@@ -50,6 +50,7 @@ public:
     unsigned int horizon;
     unsigned int computational_budget;
 
+    /** @brief Constructor */
     b03_uct_pilot(
         void (*_transition_function)(aircraft &, flight_zone &, double &, const double &, const double &),
         beeler_glider _ac,
@@ -180,7 +181,6 @@ public:
     }
 
     /**
-     * @fn
      * @brief Apply the tree policy from 'root' node to leaf node, there are 3 cases:
      * 1. The root node is terminal: return the root node;
      * 2. The root node is fully expanded: get the 'best' child according to UCT criteria and recursively run the function on this child;
@@ -266,7 +266,7 @@ public:
         beeler_glider_command &a = dynamic_cast <beeler_glider_command &> (_a);
         b03_node v0(s0,get_expendable_actions(),0.,1,0); // root node
         for(unsigned int i=0; i<computational_budget; ++i) {
-            b03_node v(get_expendable_actions(),0.,0,0);
+            b03_node v(get_expendable_actions(),0.,0,0);pop();
             double reward=0.;
             tree_policy(v0,v);
             default_policy(v.get_state(),reward);

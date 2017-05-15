@@ -6,25 +6,31 @@
 #include <cstdio>
 #include <cstdlib>
 
+/**
+ * @file rk4_integrator.hpp
+ * @brief RK4 stepper
+ * @version 1.1
+ * @since 1.0
+ */
+
 namespace L2Fsim {
 
 class rk4_integrator : public stepper {
 public:
     /**
-     * Attributes
-     * @param {double} dt; width of the sub integration step
+     * @brief Attributes
+     * @param {double} dt; width of the integration sub-step
      * @param {std::string} state_log_filename; file name for log
      */
     double dt;
     std::string state_log_path = "data/state.dat";
     std::string wind_log_path = "data/wind.dat";
 
-	/** Constructor */
+	/** @brief Constructor */
 	rk4_integrator(double _dt=.001) : dt(_dt) {}
 
     /**
-     * Transition function
-     * @brief Perform a transition given: an aircraft model with a correct state and command; an atmospheric model; the current time; the time-step-width and the sub-time-step-width
+     * @brief Transition function; perform a transition given: an aircraft model with a correct state and command; an atmospheric model; the current time; the time-step-width and the sub-time-step-width
      * @note static method for use within an external simulator
      * @param {aircraft &} ac; aircraft model
      * @param {flight_zone &} fz; atmosphere model

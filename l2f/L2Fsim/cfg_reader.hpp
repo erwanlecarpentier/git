@@ -31,6 +31,7 @@ struct cfg_reader {
         std::cout << "Error: variable initialisation in config file" << std::endl;
     }
 
+    /** @brief Read and initialise the time variables */
     void read_time_variables(const libconfig::Config &cfg, double &t_lim, double &Dt, double &nb_dt) {
         if(cfg.exists("limit_time")
         && cfg.exists("time_step_width")
@@ -42,6 +43,7 @@ struct cfg_reader {
         else {display_error_msg();}
     }
 
+    /** @brief Read and initialise an environment */
     flight_zone * read_environment_variables(const libconfig::Config &cfg) {
         if(cfg.exists("envt_selector")
         && cfg.exists("wx")
@@ -64,6 +66,7 @@ struct cfg_reader {
         return NULL;
     }
 
+    /** @brief Read and initialise the state variables */
     void read_state_variables(
         const libconfig::Config &cfg,
         double &_x0,
@@ -98,6 +101,7 @@ struct cfg_reader {
         else {display_error_msg();}
     }
 
+    /** @brief Read and initialise a stepper */
     stepper * read_stepper_variable(const libconfig::Config &cfg, const double &sub_dt) {
         if(cfg.exists("stepper_selector")) {
             unsigned int sl = cfg.lookup("stepper_selector");

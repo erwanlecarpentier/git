@@ -5,6 +5,13 @@
 #include <L2Fsim/aircraft/aircraft.hpp>
 #include <L2Fsim/pilot/pilot.hpp>
 
+/**
+ * @file stepper.hpp
+ * @brief Stepper virtual class
+ * @version 1.1
+ * @since 1.0
+ */
+
 namespace L2Fsim {
 
 struct stepper {

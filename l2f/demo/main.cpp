@@ -51,25 +51,29 @@ void run_with_config(const char *cfg_path) {
 
     /** Pilot */
     double angle_rate_magnitude = 1e-2;
-    //double ep=1e-2, lr=1e-3;
-    //double df=.9;
-    //double uct_parameter = 1./sqrt(2.);
-    //double uct_tsw=2., uct_stsw=uct_tsw/1.;
-    //unsigned int horizon=100, computational_budget=10000;
-    passive_pilot my_pilot(angle_rate_magnitude);
+    //passive_pilot my_pilot(angle_rate_magnitude);
     //heuristic_pilot my_pilot(angle_rate_magnitude);
+
+    //double ep=1e-2, lr=1e-3, df=.9;
     //q_learning_pilot my_pilot(angle_rate_magnitude,ep,lr,df);
-    /*b03_uct_pilot my_pilot(
-        my_stepper.transition_function, // todo: create a new stepper (euler for simplicity)
+
+    double uct_df=.9;
+    double uct_parameter = 1./sqrt(2.);
+    double uct_tsw=2., uct_stsw=uct_tsw/1.;
+    unsigned int uct_horizon=100, uct_computational_budget=1000;
+    euler_integrator uct_stepper(uct_stsw);
+    flat_thermal_soaring_zone uct_fz("config/thermal_scenario.csv");
+    b03_uct_pilot my_pilot(
+        uct_stepper.transition_function,
         my_glider,
-        my_zone,
+        uct_fz,
         angle_rate_magnitude,
         uct_parameter,
         uct_tsw,
         uct_stsw,
-        df,
-        horizon,
-        computational_budget);*/
+        uct_df,
+        uct_horizon,
+        uct_computational_budget);
 
     /** Initialize the simulation */
     simulation mysim;
