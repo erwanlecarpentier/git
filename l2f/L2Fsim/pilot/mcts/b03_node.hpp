@@ -24,7 +24,7 @@ public:
      * @param {unsigned int} number_of_visits;
      * @param {unsigned int} depth;
      * @param {b03_node *} parent; pointer to the parent node
-     * @param {std::vector<beeler_glider_command>} expendable_actions; actions available from the node's state
+     * @param {std::vector<beeler_glider_command>} avail_actions; actions available from the node's state
      * @param {std::vector<b03_node>} children; vector containing the children of the node, initialy empty
      *
      * @warning the pointer to the parent 'parent' is obsolete if the node is root, make use of the boolean 'is_root_node'
@@ -35,13 +35,16 @@ public:
     unsigned int number_of_visits;
     unsigned int depth;
     b03_node *parent;
-    std::vector<beeler_glider_command> expendable_actions;
+    std::vector<beeler_glider_command> avail_actions;
     std::vector<b03_node> children;
+
+    /** @brief Empty constructor */
+    b03_node() {}
 
     /** @brief Constructor with given state */
     b03_node(
         beeler_glider_state _s,
-        std::vector<beeler_glider_command> _expendable_actions,
+        std::vector<beeler_glider_command> _avail_actions,
         double _cumulative_reward=0.,
         unsigned int _number_of_visits=0,
         unsigned int _depth=0) :
@@ -49,12 +52,12 @@ public:
         cumulative_reward(_cumulative_reward),
         number_of_visits(_number_of_visits),
         depth(_depth),
-        expendable_actions(_expendable_actions)
+        avail_actions(_avail_actions)
     {}
 
-    /** @brief Constructor with default state */
+    /** @brief Constructor without state */
     b03_node(
-        std::vector<beeler_glider_command> _expendable_actions,
+        std::vector<beeler_glider_command> _avail_actions,
         double _cumulative_reward=0.,
         unsigned int _number_of_visits=0,
         unsigned int _depth=0) :
@@ -62,7 +65,7 @@ public:
         cumulative_reward(_cumulative_reward),
         number_of_visits(_number_of_visits),
         depth(_depth),
-        expendable_actions(_expendable_actions)
+        avail_actions(_avail_actions)
     {}
 
     /** @brief Return a reference on the state attribute */
@@ -70,8 +73,7 @@ public:
 
     /** @brief Boolean test for a node being fully expanded or not */
     bool is_fully_expanded() {
-        bool answer = (expendable_actions.size() == 0) ? true : false;
-        return answer;
+        return (avail_actions.size() == 0) ? true : false;
     }
 
     /** @brief Get the average reward */

@@ -38,7 +38,7 @@ protected:
     double ksi;
 
 public:
-    /** Constructor */
+    /** @brief Constructor */
     std_thermal(
         int _model,
         double _w_star,
@@ -60,8 +60,10 @@ public:
         ksi(_ksi)
     {}
 
-    /** Destructor */
+    /** @brief Destructor */
     ~std_thermal() = default;
+
+    void print_my_class() override {std::cout<<"std_thermal"<<std::endl;}//TRM
 
     double get_w_star() override {return w_star;}
     double get_t_birth() override {return t_birth;}
@@ -82,7 +84,7 @@ public:
     }
 
     /**
-     * @brief get center coordinate in the earth frame
+     * @brief Get center coordinate in the earth frame
      * @return {std::vector<double>}
      */
     std::vector<double> get_center() override {
@@ -258,8 +260,7 @@ public:
         double h = (b-a) / (double)n;
         double x, r, s=0.;
         char m = 0;
-
-        for (x=a; x<=b; x+=h) {
+        for(x=a; x<=b; x+=h) {
             r = f(x);
             if (x == a || x == b) {
                 s += r;

@@ -19,8 +19,7 @@
 
 namespace L2Fsim {
 
-class flat_thermal_soaring_zone : public flat_zone
-{
+class flat_thermal_soaring_zone : public flat_zone {
 protected:
     /**
      * Attributes
@@ -68,7 +67,7 @@ protected:
             y_new = rand_double(y_min,y_max);
             if(thermals.size()>0) { // compare picked center to other thermals
                 std::vector<double> distances;
-                for(auto& th:thermals) { // compute the distances to other alive thermals
+                for(auto& th : thermals) { // compute the distances to other alive thermals
                     if(th->is_alive(t)) {
                         double x_th = th->get_center()[0];
                         double y_th = th->get_center()[1];
@@ -97,7 +96,7 @@ protected:
      */
     int nb_th_alive_at_time(double t) {
         int counter = 0;
-        for(auto th: thermals) {if(th->is_alive(t)) {++counter;}}
+        for(auto &th : thermals) {if(th->is_alive(t)) {++counter;}}
         return counter;
     }
 
@@ -107,7 +106,7 @@ protected:
      */
     double global_sink_rate(double z, double t) {
         double thermals_area=0., mass_flow=0.;
-        for(auto th: thermals) {
+        for(auto &th : thermals) {
             if (th->is_alive(t)) {
                 double z_zi = z / th->get_zi();
                 double s_wd_th = ((.5 < (z_zi)) && ((z_zi) < .9)) ? 2.5*(z_zi - .5) : 0.;
@@ -115,7 +114,7 @@ protected:
                 double radius_th = .102 * pow((z_zi),1./3.) * (1 - .25*z_zi) * (z/z_zi);
                 if(radius_th<10.){radius_th=10.;}
                 double rsq = radius_th*radius_th;
-                mass_flow += avg_updraft_th*M_PI*rsq*(1.-s_wd_th)*th->lifetime_coefficient(t);
+                mass_flow += avg_updraft_th*M_PI*rsq*(1.-s_wd_th) * th->lifetime_coefficient(t);
                 thermals_area += M_PI*rsq;
             }
         }
@@ -211,11 +210,8 @@ public:
     flat_thermal_soaring_zone(std::string ip) {
         std::ifstream file(ip);
         if(!file.is_open()){std::cerr << "Unable to open input file ("<< ip <<") in flat_thermal_soaring_zone constructor" << std::endl;}
-
         std::string line;
         std::getline(file,line); // do not take first line into account
-
-
         while(file.good()) {
             std::vector<std::string> result;
             std::getline(file,line);
@@ -238,7 +234,7 @@ public:
                 double y = std::stod(result.at(6));
                 double z = std::stod(result.at(7));
                 double ksi = std::stod(result.at(8));
-                std_thermal* new_th = new std_thermal(model,w_star,zi,t_birth,lifespan,x,y,z,ksi);
+                std_thermal *new_th = new std_thermal(model,w_star,zi,t_birth,lifespan,x,y,z,ksi);
                 new_th->set_horizontal_wind(windx,windy);
                 thermals.push_back(new_th);
             }
@@ -246,22 +242,26 @@ public:
         file.close();
     }
 
-    /** Destructor */
+    /** @brief Destructor */
     ~flat_thermal_soaring_zone() {
-        for(auto th: thermals) {
-            delete th;
-        }
+        for(auto &th : thermals) {delete th;}
     }
+
+    /** @brief Print the full scenario in the standard output stream */
+    void print_scenario() {for(auto &th : thermals) {th->print_std_os();}}
+
+    /** @brief Return the total number of thermals in the whole scenario */
+    unsigned int get_total_nb_of_th() {return thermals.size();}
 
 	/**
      * @brief Compute the wind velocity vector w at coordinate (x,y,z,t)
      * @param {double} x, y, z, t; coordinates
      * @param {std::vector<double> &} w; wind velocity vector [wx, wy, wz]
      */
-    flat_thermal_soaring_zone& wind(double x, double y, double z, double t, std::vector<double> &w) {
-        std::vector<double>(3, 0.).swap(w);
-        w[0]=windx; w[1]=windy; w[2]=0.;
-        for(auto& th: thermals) {
+    flat_thermal_soaring_zone& wind(double x, double y, double z, double t, std::vector<double> &w) override
+    {
+        w.assign({windx,windy,0.});
+        for(auto &th : thermals) {
             if(th->is_alive(t)) {
                 th->wind(x,y,z,t,w);
             }
@@ -284,7 +284,7 @@ public:
             double zi = pick_zi();
             double lifespan = pick_lifespan(w_star);
             double ksi = pick_ksi();
-            std_thermal* new_th = new std_thermal(model,w_star,zi,t,lifespan,center.at(0),center.at(1),center.at(2),ksi);
+            std_thermal *new_th = new std_thermal(model,w_star,zi,t,lifespan,center.at(0),center.at(1),center.at(2),ksi);
             new_th->set_horizontal_wind(windx,windy);
             thermals.push_back(new_th);
         }
@@ -304,14 +304,10 @@ public:
         }
     }
 
-    /** @brief Print the full scenario in the standard output stream */
-    void print_scenario() {for(auto& th: thermals) {th->print_std_os();}}
-
     /**
      * @brief Write the updraft values in a file for visualization
      * @param {const double &} dx, dy; mesh precision
-     * @param {const double &} z; altitude of the saved updraft field
-     * @param {const double &} t; time of the saved updraft field
+     * @param {const double &} z, t; altitude and time of the saved updraft field
      * @param {const std::string &} op; output path
      */
     void save_updraft_values(
@@ -325,8 +321,8 @@ public:
         ofs.open(op);
         ofs << "t x y z updraft"<<std::endl;
         std::vector<double> w;
-        for (double x=x_min; x<=x_max; x+=dx) {
-            for (double y=y_min; y<=y_max; y+=dy) {
+        for(double x=x_min; x<=x_max; x+=dx) {
+            for(double y=y_min; y<=y_max; y+=dy) {
                 wind(x,y,z,t,w);
                 ofs << t << " ";
                 ofs << x << " ";
@@ -355,7 +351,7 @@ public:
         ofs<<"y"<<';';
         ofs<<"z"<<';';
         ofs<<"ksi"<<std::endl;
-        for(auto th: thermals) {
+        for(auto &th : thermals) {
             std::vector<double> center = th->get_center();
             ofs<<th->get_model()<<';';
             ofs<<th->get_t_birth()<<';';

@@ -36,9 +36,9 @@ void run_with_config(const char *cfg_path) {
     flight_zone *my_zone = cfgr.read_environment_variables(cfg);
 
     /** Initial state */
-	double x0, y0, z0, V0, gamma0, khi0, alpha0, beta0, sigma0;
-	cfgr.read_state_variables(cfg,x0,y0,z0,V0,gamma0,khi0,alpha0,beta0,sigma0);
-    beeler_glider_state my_state(x0,y0,z0,V0,gamma0,khi0,alpha0,beta0,sigma0);
+	double x0, y0, z0, V0, gamma0, khi0, alpha0, beta0, sigma0, mam;
+	cfgr.read_state_variables(cfg,x0,y0,z0,V0,gamma0,khi0,alpha0,beta0,sigma0,mam);
+    beeler_glider_state my_state(x0,y0,z0,V0,gamma0,khi0,alpha0,beta0,sigma0,mam);
 
     /** Initial command */
     beeler_glider_command my_command;
@@ -59,21 +59,22 @@ void run_with_config(const char *cfg_path) {
 
     double uct_df=.9;
     double uct_parameter = 1./sqrt(2.);
-    double uct_tsw=2., uct_stsw=uct_tsw/1.;
-    unsigned int uct_horizon=100, uct_computational_budget=1000;
+    double uct_tsw=1., uct_stsw=uct_tsw/1.;
+    unsigned int uct_horizon=100, uct_budget=1000;
     euler_integrator uct_stepper(uct_stsw);
     flat_thermal_soaring_zone uct_fz("config/thermal_scenario.csv");
     b03_uct_pilot my_pilot(
-        uct_stepper.transition_function,
         my_glider,
         uct_fz,
+        uct_stepper.transition_function,
         angle_rate_magnitude,
         uct_parameter,
         uct_tsw,
         uct_stsw,
         uct_df,
         uct_horizon,
-        uct_computational_budget);
+        uct_budget);
+
 
     /** Initialize the simulation */
     simulation mysim;
@@ -84,9 +85,9 @@ void run_with_config(const char *cfg_path) {
 
 	/** Run the simulation */
     while(t<t_lim) {
-        //std::cout << "t = " << t << std::endl;
-		mysim.step(t,Dt);
-	}
+        std::cout<<"t = "<<t<<std::endl;
+        mysim.step(t,Dt);
+    }
 
 	/** Delete the dynamically created variables */
 	delete my_zone;

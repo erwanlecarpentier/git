@@ -18,6 +18,7 @@ namespace L2Fsim {
 class flight_zone {
 
 public:
+    /** @brief Default destructor */
     virtual ~flight_zone() = default;
 
     /**
@@ -25,16 +26,15 @@ public:
 	 * @param {double} x, y, z, t; coordinates in earth frame
 	 * @param {std::vector<double> &} w; wind velocity vector [wx, wy, wz]
 	 */
-	virtual flight_zone& wind(double x, double y, double z, double t, std::vector<double> &w) =0;
+	virtual flight_zone& wind(double x, double y, double z, double t, std::vector<double> &w) = 0;
 
     /**
 	 * @brief Compute the altitude at (x,y)
 	 * @param {const double &} x, y; coordinates in earth frame
 	 * @param {double &} z; altitude
 	 */
-    flight_zone& ground(const double &x, const double &y, double &z)
-    {
-        (void) x; (void) y; z=0.;// this is default
+    flight_zone& ground(const double &x, const double &y, double &z) {
+        (void) x; (void) y; z=0.; // this is default
         return *this;
     }
 };

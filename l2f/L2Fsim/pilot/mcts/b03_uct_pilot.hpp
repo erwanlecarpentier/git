@@ -16,7 +16,7 @@
  *
  * @note compatibility: 'flat_thermal_soaring_zone.hpp'; 'beeler_glider.hpp'; 'beeler_glider_state.hpp'; 'beeler_glider_command.hpp'
  * @note make use of: 'b03_node.hpp'
- * @note the different actions available from a node's state are set via the method 'get_expendable_actions'
+ * @note the different actions available from a node's state are set via the method 'get_actions'
  * @note transition model is defined in function 'transition_model'
  * @note reward model is defined in function 'reward_model'
  * @note termination criterion for a node is set in 'is_terminal' method
@@ -37,7 +37,7 @@ public:
      * @param {double} sub_time_step_width;
      * @param {double} df; discount factor
      * @param {unsigned int} horizon; time limit for online simulations
-     * @param {unsigned int} computational_budget; number of expanded nodes in the tree
+     * @param {unsigned int} budget; number of expanded nodes in the tree
      */
     beeler_glider ac;
     flat_thermal_soaring_zone fz;
@@ -48,20 +48,20 @@ public:
     double sub_time_step_width;
     double df;
     unsigned int horizon;
-    unsigned int computational_budget;
+    unsigned int budget;
 
     /** @brief Constructor */
     b03_uct_pilot(
+        beeler_glider &_ac,
+        flat_thermal_soaring_zone &_fz,
         void (*_transition_function)(aircraft &, flight_zone &, double &, const double &, const double &),
-        beeler_glider _ac,
-        flat_thermal_soaring_zone _fz,
         double _angle_rate_magnitude=.01,
         double _uct_parameter=1.,
         double _time_step_width=1e-1,
         double _sub_time_step_width=1e-1,
         double _df=.9,
         unsigned int _horizon=100,
-        unsigned int _computational_budget=1000) :
+        unsigned int _budget=1000) :
         ac(_ac),
         fz(_fz),
         transition_function(_transition_function),
@@ -71,7 +71,7 @@ public:
         sub_time_step_width(_sub_time_step_width),
         df(_df),
         horizon(_horizon),
-        computational_budget(_computational_budget)
+        budget(_budget)
     {}
 
     /**
@@ -79,8 +79,7 @@ public:
      * @param {const beeler_glider_state &} _s; tested state
      */
     bool is_terminal(const beeler_glider_state &_s) {
-        bool answer = (_s.z < 0.) ? true : false;
-        return answer;
+        return (_s.z <= 0.) ? true : false;
     }
 
     /**
@@ -104,25 +103,31 @@ public:
     b03_node & best_uct_child(b03_node &parent) {
         std::vector<double> scores;
         std::vector<unsigned int> max_indices;
-        for(unsigned int i=0; i<parent.children.size(); ++i) {
-            scores.push_back(uct_score(parent.children[i]));
+        for(b03_node &ch : parent.children) {
+            scores.push_back(uct_score(ch));
         }
-        sort_indices(scores,max_indices);
-        //std::cout<<"best uct child ("<<parent.children.size()<<" children)";//TRM
-        //std::cout<<" scores: "<<scores[0]<<" "<<scores[1]<<" "<<scores[2];//TRM
-        //std::cout<<" - hence max_indices has size "<<max_indices.size()<<std::endl;//TRM
-        return parent.children.at(rand_element(max_indices));
+        argmax(scores,max_indices);
+        unsigned int ind = rand_element(max_indices);
+        return parent.children.at(ind);
     }
 
     /**
-     * @brief Get the available actions for a node
+     * @brief Get the available actions for a node, given its state
+     * @param {const beeler_glider_state &} s; state of the node
      * @return {std::vector<beeler_glider_command>} vector of the available actions
      */
-    std::vector<beeler_glider_command> get_expendable_actions() {
+    std::vector<beeler_glider_command> get_actions(const beeler_glider_state &s) {
         std::vector<beeler_glider_command> v;
-        v.push_back(beeler_glider_command(0.,0.,+angle_rate_magnitude));
+        double sig = s.sigma;
+        double mam = s.max_angle_magnitude;
+        assert(mam != 0.);//TRM
+        if(sig+angle_rate_magnitude < +mam) {
+            v.push_back(beeler_glider_command(0.,0.,+angle_rate_magnitude));
+        }
+        if(sig-angle_rate_magnitude > -mam) {
+            v.push_back(beeler_glider_command(0.,0.,-angle_rate_magnitude));
+        }
         v.push_back(beeler_glider_command(0.,0.,0.));
-        v.push_back(beeler_glider_command(0.,0.,-angle_rate_magnitude));
         return v;
     }
 
@@ -134,13 +139,13 @@ public:
      * @warning dynamic cast
      */
     beeler_glider_state transition_model(const beeler_glider_state &s, const beeler_glider_command &a) {
-        beeler_glider_state s_prime = s;
-        ac.set_state(s_prime);
+        beeler_glider_state s_p = s;
+        ac.set_state(s_p);
         ac.set_command(a);
-        double current_time = s_prime.time;
+        double current_time = s_p.time;
         transition_function(ac,fz,current_time,time_step_width,sub_time_step_width);
-        s_prime = dynamic_cast <beeler_glider_state &> (ac.get_state()); // retrieve the computed state
-        return s_prime;
+        s_p = dynamic_cast <beeler_glider_state &> (ac.get_state()); // retrieve the computed state
+        return s_p;
     }
 
     /**
@@ -157,49 +162,45 @@ public:
     {
         (void)a_t; (void)s_tp; // unused by default
         double edot = s_t.zdot + s_t.V * s_t.Vdot / 9.81;
-        double rwd=0.;
-        if(edot>0.){rwd=1.;}
-        return rwd;
+        return edot;
     }
 
     /**
      * @brief Create a new child corresponding to an untried action
      * @param {b03_node &} v; parent node
      * @note link the child to the current node as a parent
-     * @note remove the selected action from 'expendable_actions' attribute
+     * @note remove the selected action from 'avail_actions' attribute
      * @return {void}
      */
     void create_child(b03_node &v) {
-        int indice = rand_indice(v.expendable_actions);
-        beeler_glider_command a = v.expendable_actions.at(indice);
-        v.expendable_actions.erase(v.expendable_actions.begin()+indice);
-        beeler_glider_state s_prime = transition_model(v.s,a);
-        b03_node new_child(s_prime,get_expendable_actions(),0.,1,v.depth+1);
+        int indice = rand_indice(v.avail_actions);
+        beeler_glider_command a = v.avail_actions.at(indice);
+        v.avail_actions.erase(v.avail_actions.begin()+indice);
+        beeler_glider_state s_p = transition_model(v.s,a);
+        b03_node new_child(s_p,get_actions(s_p),0.,1,v.depth+1);
         new_child.incoming_action = a;
         new_child.parent = &v;
         v.children.push_back(new_child);
     }
 
     /**
-     * @brief Apply the tree policy from 'root' node to leaf node, there are 3 cases:
-     * 1. The root node is terminal: return the root node;
-     * 2. The root node is fully expanded: get the 'best' child according to UCT criteria and recursively run the function on this child;
-     * 3. The root node is not fully expanded: return a new child
+     * @brief Apply the tree policy from a 'current' node to a 'leaf' node; there are 3 cases:
+     * 1. The current node is terminal: return the current node;
+     * 2. The current node is fully expanded: get the 'best' child according to UCT criteria and recursively run the function on this child;
+     * 3. The current node is not fully expanded: return a new child
      * @param {b03_node &} v0; parent node
      * @param {b03_node &} v; child node
      * @note recursive function
      */
     void tree_policy(b03_node &v0, b03_node &v) {
-        //std::cout<<"    - tree plc with "<<v0.children.size()<<" children and ";//TRM
-        //std::cout<<v0.expendable_actions.size()<<" expendable actions";
         if(is_terminal(v0.s)) {
             v = v0;
         } else {
             if(v0.is_fully_expanded()) {
-                assert(v0.expendable_actions.size() == 0); //TODO: remove
+                assert(v0.avail_actions.size() == 0); //TRM
                 tree_policy(best_uct_child(v0),v);
             } else {
-                create_child(v0);
+                create_child(v0);//here
                 v = v0.get_last_child();
             }
         }
@@ -211,11 +212,10 @@ public:
      * @param {double &} reward; computed reward
      */
     void default_policy(const beeler_glider_state &s, double &reward) {
-        std::vector<beeler_glider_command> actions = get_expendable_actions();
         beeler_glider_state s_tp, s_t=s;
         beeler_glider_command a_t;
         for(unsigned int t=0; t<horizon; ++t) {
-            //std::cout<<"dft policy"<<std::endl;//TRM
+            std::vector<beeler_glider_command> actions = get_actions(s_t);
             a_t = rand_element(actions);
             s_tp = transition_model(s_t,a_t);
             reward += pow(df,(double)t) * reward_model(s_t,a_t,s_tp);
@@ -248,8 +248,7 @@ public:
         for(unsigned int i=0; i<v0.children.size(); ++i) {
             scores.push_back(v0.children[i].get_average_reward());
         }
-        sort_indices(scores,max_indices);
-        //std::cout<<"best actions"<<std::endl;//TRM
+        argmax(scores,max_indices);
         b03_node v = v0.children.at(rand_element(max_indices));
         a = v.incoming_action;
     }
@@ -264,10 +263,11 @@ public:
 	{
         beeler_glider_state &s0 = dynamic_cast <beeler_glider_state &> (_s);
         beeler_glider_command &a = dynamic_cast <beeler_glider_command &> (_a);
-        b03_node v0(s0,get_expendable_actions(),0.,1,0); // root node
-        for(unsigned int i=0; i<computational_budget; ++i) {
-            b03_node v(get_expendable_actions(),0.,0,0);pop();
-            double reward=0.;
+        b03_node v0(s0,get_actions(s0),0.,1,0); // root node
+        for(unsigned int i=0; i<budget; ++i) {
+            //b03_node v(get_actions(),0.,0,0); //TRM
+            b03_node v; // new node
+            double reward = 0.;
             tree_policy(v0,v);
             default_policy(v.get_state(),reward);
             backup(v,reward);
@@ -279,7 +279,7 @@ public:
         a.dalpha = kd * (gammadot_ref - s0.gammadot);
 
         //// TO REMOVE //////////////////////////////////////////////////////////////////
-        if(true){//TRM
+        if(false){//TRM
         for(unsigned int l=0; l<v0.children.size(); ++l) {
             std::cout<<"visit "<<v0.children[l].number_of_visits;
             std::cout<<" avgreward "<<v0.children[l].get_average_reward();

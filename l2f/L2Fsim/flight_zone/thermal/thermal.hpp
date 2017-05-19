@@ -78,6 +78,8 @@ public:
 
 	/** @brief Print the thermal's features in the standard output stream */
 	virtual void print_std_os() = 0;
+
+	virtual void print_my_class() {std::cout<<"thermal"<<std::endl;}//TRM
 };
 
 }

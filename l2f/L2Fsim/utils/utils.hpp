@@ -11,6 +11,13 @@
 #include <algorithm>
 #include <cmath>
 
+/**
+ * @file utils.hpp
+ * @brief Helpful methods for 'l2f' project
+ * @version 1.1
+ * @since 1.0
+ */
+
 namespace L2Fsim {
 
 inline void pop(){std::cout<<"pop"<<std::endl;}
@@ -20,31 +27,35 @@ inline void pop(){std::cout<<"pop"<<std::endl;}
  * @param {const std::vector<double> &} v; input vector
  * @param {std::vector<unsigned int> &} up_ind; indices of the elements of v reaching the maximum values
  * @param {std::vector<unsigned int> &} dw_ind; indices of the other elements of v
+ * @note template method
  */
 template <class content_type>
-inline void sort_indices(const std::vector<content_type> &v,
+inline void sort_indices(
+    const std::vector<content_type> &v,
     std::vector<unsigned int> &up_ind,
     std::vector<unsigned int> &dw_ind)
 {
     double maxval = *std::max_element(v.begin(),v.end());
     for (unsigned int j=0; j<v.size(); ++j) {
-        if(v[j]<maxval) {dw_ind.push_back(j);}
+        if(v[j] < maxval) {dw_ind.push_back(j);}
         else {up_ind.push_back(j);}
     }
 }
 
 /**
- * @brief Overload of 'sort_indices' function only retrieving the indices of the elements of v reaching the maximum values
+ * @brief Get the vector of indices of 'v' for which 'v' content is maximum
  * @param {const std::vector<double> &} v; input vector
  * @param {std::vector<unsigned int> &} up_ind; indices of the elements of v reaching the maximum values
+ * @note template method
  */
 template <class content_type>
-inline void sort_indices(const std::vector<content_type> &v,
+inline void argmax(
+    const std::vector<content_type> &v,
     std::vector<unsigned int> &up_ind)
 {
     double maxval = *std::max_element(v.begin(),v.end());
     for (unsigned int j=0; j<v.size(); ++j) {
-        if(v[j]>=maxval) {up_ind.push_back(j);}
+        if(v[j] >= maxval) {up_ind.push_back(j);}
     }
 }
 
@@ -83,7 +94,7 @@ inline double sgn(double T) {
 
 /** @return a uniformly picked double in range [fmin,fmax] */
 inline double rand_double(double fmin, double fmax) {
-    return ( rand()/(double)RAND_MAX ) * (fmax-fmin) + fmin;
+    return (rand() / (double)RAND_MAX) * (fmax-fmin) + fmin;
 }
 
 /**
@@ -132,12 +143,9 @@ inline void save_vector(
     outfile.close();
 }
 
-inline double sigmoid(double x,double a,double c) {
-    double exp_value;
-    float return_value;
-    exp_value = exp( -1/a*(x-c));
-    return_value = 1 / (1 + exp_value);
-    return return_value;
+/** @brief Sigmoid function */
+inline double sigmoid(double x, double a, double c) {
+    return 1. / (1.+exp(-(x-c)/a));
 }
 
 }

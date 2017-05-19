@@ -77,7 +77,8 @@ struct cfg_reader {
         double &_khi0,
         double &_alpha0,
         double &_beta0,
-        double &_sigma0)
+        double &_sigma0,
+        double &_mam)
     {
         if(cfg.lookupValue("x0", _x0)
         && cfg.lookupValue("y0", _y0)
@@ -87,7 +88,8 @@ struct cfg_reader {
         && cfg.lookupValue("khi0", _khi0)
         && cfg.lookupValue("alpha0", _alpha0)
         && cfg.lookupValue("beta0", _beta0)
-        && cfg.lookupValue("sigma0", _sigma0)) {
+        && cfg.lookupValue("sigma0", _sigma0)
+        && cfg.lookupValue("maximum_angle_magnitude", _mam)) {
             _x0 = cfg.lookup("x0");
             _y0 = cfg.lookup("y0");
             _z0 = cfg.lookup("z0");
@@ -97,6 +99,7 @@ struct cfg_reader {
             _alpha0 = cfg.lookup("alpha0"); _alpha0 *= TO_RAD;
             _beta0 = cfg.lookup("beta0"); _beta0 *= TO_RAD;
             _sigma0 = cfg.lookup("sigma0"); _sigma0 *= TO_RAD;
+            _mam = cfg.lookup("maximum_angle_magnitude"); _mam *= TO_RAD;
         }
         else {display_error_msg();}
     }

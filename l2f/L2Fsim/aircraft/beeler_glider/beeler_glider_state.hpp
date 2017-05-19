@@ -6,9 +6,9 @@
 
 /**
  * @file beeler_glider_state.hpp
+ * @brief Beeler's glider state from a Control point of view
  * @version 1.0
  * @since 1.0
- * Beeler's glider state from a Control point of view
  */
 
 namespace L2Fsim {
@@ -16,18 +16,20 @@ namespace L2Fsim {
 class beeler_glider_state : public state {
 public:
     /**
-     * Attributes
+     * @brief Attributes
      * @param {double} x, y, z; the absolute position in the earth frame
      * @param {double} gamma; elevation angle
      * @param {double} khi; azimuth angle
      * @param {double} alpha; angle of attack
      * @param {double} beta; sideslip angle
      * @param {double} sigma; bank angle
+     * @param {double} max_angle_magnitude; maximum angle magnitude
      * @param {double} xdot, ydot, zdot, Vdot, gammadot, khidot; rates
      * @param {double} time; current time (may be used by a planning module)
      */
     double x, y, z, V, gamma, khi;
     double alpha, beta, sigma;
+    double max_angle_magnitude;
     double xdot, ydot, zdot, Vdot, gammadot, khidot;
     double time;
 
@@ -41,9 +43,7 @@ public:
                         double _alpha=0.,
                         double _beta=0.,
                         double _sigma=0.,
-                        double _xdot=0.,
-                        double _ydot=0.,
-                        double _zdot=0.,
+                        double _max_angle_magnitude=.5,
                         double _Vdot=0.,
                         double _gammadot=0.,
                         double _khidot=0.,
@@ -57,9 +57,7 @@ public:
         alpha(_alpha),
         beta(_beta),
         sigma(_sigma),
-        xdot(_xdot),
-        ydot(_ydot),
-        zdot(_zdot),
+        max_angle_magnitude(_max_angle_magnitude),
         Vdot(_Vdot),
         gammadot(_gammadot),
         khidot(_khidot),
@@ -178,15 +176,16 @@ public:
         return v;
     }
 
-    /**
-     * @fn virtual double getx() = 0; @brief Get x coordinate in earth frame
-     * @fn virtual double gety() = 0; @brief Get y coordinate in earth frame
-     * @fn virtual double getz() = 0; @brief Get z coordinate in earth frame
-     * @fn virtual double gett() = 0; @brief Get time coordinate
-    */
+    /** @brief Get x coordinate in the earth frame */
     double getx() {return x;}
+
+    /** @brief Get y coordinate in the earth frame */
     double gety() {return y;}
+
+    /** @brief Get z coordinate in the earth frame */
     double getz() {return z;}
+
+    /** @brief Get time coordinate */
     double gett() {return time;}
 };
 
