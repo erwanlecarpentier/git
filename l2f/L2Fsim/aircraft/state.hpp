@@ -61,6 +61,9 @@ public:
      */
     virtual std::vector<double> get_save() = 0;
 
+    /** @brief Return true if the state exceeds the admissible boundaries */
+    virtual bool is_out_of_bounds() = 0;
+
     /**
      * @fn virtual double getx() = 0; @brief Get x coordinate in earth frame
      * @fn virtual double gety() = 0; @brief Get y coordinate in earth frame

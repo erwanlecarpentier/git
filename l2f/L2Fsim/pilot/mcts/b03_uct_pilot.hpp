@@ -76,10 +76,20 @@ public:
 
     /**
      * @brief Boolean test for termination criterion
-     * @param {const beeler_glider_state &} _s; tested state
+     * @param {beeler_glider_state &} _s; tested state
      */
-    bool is_terminal(const beeler_glider_state &_s) {
-        return (_s.z <= 0.) ? true : false;
+    bool is_terminal(beeler_glider_state &_s) {
+        return _s.is_out_of_bounds();
+    }
+
+    /**
+     * @brief Set the value of dalpha with a D-controller in order to soften the phugoid behaviour
+     * @param {beeler_glider_state &} s; state
+     * @param {beeler_glider_command &} a; modified action
+     */
+    void alpha_d_ctrl(beeler_glider_state &s, beeler_glider_command &a) {
+        //double kd = 1e-2, gammadot_ref=0.;
+        a.dalpha = .01 * (0. - s.gammadot);
     }
 
     /**
@@ -120,7 +130,6 @@ public:
         std::vector<beeler_glider_command> v;
         double sig = s.sigma;
         double mam = s.max_angle_magnitude;
-        assert(mam != 0.);//TRM
         if(sig+angle_rate_magnitude < +mam) {
             v.push_back(beeler_glider_command(0.,0.,+angle_rate_magnitude));
         }
@@ -136,7 +145,7 @@ public:
      * @param {const beeler_glider_state &} s; current state
      * @param {const beeler_glider_command &} a; applied command
      * @return {beeler_glider_state} resulting state
-     * @warning dynamic cast
+     * @warning dynamic cast to beeler_glider_state
      */
     beeler_glider_state transition_model(const beeler_glider_state &s, const beeler_glider_command &a) {
         beeler_glider_state s_p = s;
@@ -176,8 +185,9 @@ public:
         int indice = rand_indice(v.avail_actions);
         beeler_glider_command a = v.avail_actions.at(indice);
         v.avail_actions.erase(v.avail_actions.begin()+indice);
+        alpha_d_ctrl(v.s,a);
         beeler_glider_state s_p = transition_model(v.s,a);
-        b03_node new_child(s_p,get_actions(s_p),0.,1,v.depth+1);
+        b03_node new_child(s_p,get_actions(s_p),0.,0,v.depth+1);
         new_child.incoming_action = a;
         new_child.parent = &v;
         v.children.push_back(new_child);
@@ -185,24 +195,21 @@ public:
 
     /**
      * @brief Apply the tree policy from a 'current' node to a 'leaf' node; there are 3 cases:
-     * 1. The current node is terminal: return the current node;
+     * 1. The current node is terminal: return a reference on the current node;
      * 2. The current node is fully expanded: get the 'best' child according to UCT criteria and recursively run the function on this child;
-     * 3. The current node is not fully expanded: return a new child
-     * @param {b03_node &} v0; parent node
-     * @param {b03_node &} v; child node
+     * 3. The current node is not fully expanded: create a new child and return a reference on this new child
+     * @param {b03_node &} v; current node of the tree exploration
+     * @return {b03_node &} Reference on the resulting node
      * @note recursive function
      */
-    void tree_policy(b03_node &v0, b03_node &v) {
-        if(is_terminal(v0.s)) {
-            v = v0;
+    b03_node & tree_policy(b03_node &v0) {
+        if (is_terminal(v0.s)) {
+            return v0;
+        } else if (v0.is_fully_expanded()) {
+            return tree_policy(best_uct_child(v0));
         } else {
-            if(v0.is_fully_expanded()) {
-                assert(v0.avail_actions.size() == 0); //TRM
-                tree_policy(best_uct_child(v0),v);
-            } else {
-                create_child(v0);//here
-                v = v0.get_last_child();
-            }
+            create_child(v0);
+            return v0.get_last_child();
         }
     }
 
@@ -214,12 +221,14 @@ public:
     void default_policy(const beeler_glider_state &s, double &reward) {
         beeler_glider_state s_tp, s_t=s;
         beeler_glider_command a_t;
+        std::vector<beeler_glider_command> actions;
         for(unsigned int t=0; t<horizon; ++t) {
-            std::vector<beeler_glider_command> actions = get_actions(s_t);
+            actions = get_actions(s_t);
             a_t = rand_element(actions);
+            alpha_d_ctrl(s_t,a_t);
             s_tp = transition_model(s_t,a_t);
             reward += pow(df,(double)t) * reward_model(s_t,a_t,s_tp);
-            if(is_terminal(s_tp)){break;}
+            if(is_terminal(s_tp)){break;} // penalty when reaching terminal states ?
             s_t = s_tp;
         }
     }
@@ -266,17 +275,19 @@ public:
         b03_node v0(s0,get_actions(s0),0.,1,0); // root node
         for(unsigned int i=0; i<budget; ++i) {
             //b03_node v(get_actions(),0.,0,0); //TRM
-            b03_node v; // new node
+            //b03_node v;//TRM
+            //tree_policy(v0,v);//TRM
+
             double reward = 0.;
-            tree_policy(v0,v);
+            b03_node &v = tree_policy(v0);
+            //b03_node &v = tree_policy(v0);
             default_policy(v.get_state(),reward);
             backup(v,reward);
         }
         best_action(v0,a);
 
         // D-controller
-        double kd=1e-2, gammadot_ref=0.;
-        a.dalpha = kd * (gammadot_ref - s0.gammadot);
+        alpha_d_ctrl(s0,a);
 
         //// TO REMOVE //////////////////////////////////////////////////////////////////
         if(false){//TRM
@@ -301,20 +312,19 @@ public:
 	}
 
     /**
-     * @brief Policy for 'out of range' situations
+     * @brief Policy for 'out of boundaries' case
      * @param {state &} s; reference on the state
      * @param {command &} a; reference on the command
      */
-    pilot & out_of_range(state &_s, command &_a) override
-    {
+    pilot & out_of_boundaries(state &_s, command &_a) override {
         beeler_glider_state &s = dynamic_cast <beeler_glider_state &> (_s);
         beeler_glider_command &a = dynamic_cast <beeler_glider_command &> (_a);
-        a.dalpha = 0.;
-        a.dbeta = 0.;
-        if(s.sigma < 0.4) {
+        double ang_max = .3;
+        a.set_to_neutral();
+        if(0. < s.sigma && s.sigma < ang_max) {
             a.dsigma = +angle_rate_magnitude;
-        } else {
-            a.dsigma = 0.;
+        } else if (-ang_max < s.sigma && s.sigma < 0.){
+            a.dsigma = -angle_rate_magnitude;
         }
 		return *this;
     }

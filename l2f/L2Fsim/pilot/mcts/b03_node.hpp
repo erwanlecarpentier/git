@@ -19,7 +19,7 @@ public:
     /**
      * @brief Attributes
      * @param {beeler_glider_state} s; state of the node
-     * @param {beeler_glider_command} incoming_action; action leading from the node's parent to the node itself
+     * @param {beeler_glider_command} incoming_action; action leading the node's parent to the node itself
      * @param {double} cumulative_reward; sum of the backed-up rewards
      * @param {unsigned int} number_of_visits;
      * @param {unsigned int} depth;
@@ -83,7 +83,7 @@ public:
 
     /**
      * @brief Get a reference on the last child that was created i.e. end position of 'children' attribute
-     * @return {b03_node}
+     * @return {b03_node &} reference on the last child
      */
     b03_node & get_last_child() {
         return children.back();

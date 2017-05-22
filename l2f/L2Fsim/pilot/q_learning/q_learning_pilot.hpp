@@ -210,7 +210,7 @@ public:
      * @param {state &} s; reference on the state
      * @param {command &} a; reference on the command
      */
-    pilot & out_of_range(state &_s, command &_a) override
+    pilot & out_of_boundaries(state &_s, command &_a) override
     {
         beeler_glider_state &s = dynamic_cast <beeler_glider_state &> (_s);
         beeler_glider_command &a = dynamic_cast <beeler_glider_command &> (_a);

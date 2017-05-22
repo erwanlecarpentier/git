@@ -73,7 +73,7 @@ public:
     {
         /// 1. Apply the policy and store the command into command attribute of aircraft
         if (ac.get_distance_to_center() > 1200.) {
-            pl.out_of_range(ac.get_state(),ac.get_command());
+            pl.out_of_boundaries(ac.get_state(),ac.get_command());
         } else {
             pl(ac.get_state(),ac.get_command());
         }

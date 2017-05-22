@@ -29,7 +29,7 @@ void run_with_config(const char *cfg_path) {
     libconfig::Config cfg;
     cfg.readFile(cfg_path);
 
-    double t_lim, Dt, nb_dt, t=0.;
+    double Dt, t_lim=1e3, nb_dt=1., t=0.; // default values
     cfgr.read_time_variables(cfg,t_lim,Dt,nb_dt);
 
     /** Environment */

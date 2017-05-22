@@ -22,7 +22,7 @@ public:
      * @param {state &} s; reference on the state
      * @param {command &} u; reference on the command
      */
-    virtual pilot& out_of_range(state &s, command &u) = 0;
+    virtual pilot& out_of_boundaries(state &s, command &u) = 0;
 };
 
 }

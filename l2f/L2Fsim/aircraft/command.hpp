@@ -20,6 +20,8 @@ public:
 
     /** Set the command */
 	virtual void set_command(command &_u) = 0;
+
+	virtual void set_to_neutral() = 0;
 };
 
 }

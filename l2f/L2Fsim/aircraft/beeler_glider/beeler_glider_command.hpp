@@ -35,6 +35,11 @@ public:
         dbeta = u.dbeta;
         dsigma = u.dsigma;
     }
+
+    /** @brief Set the command to neutral */
+    void set_to_neutral() override {
+        dalpha = dbeta = dsigma = 0.;
+    }
 };
 
 }

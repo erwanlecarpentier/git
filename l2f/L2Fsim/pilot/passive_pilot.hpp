@@ -51,16 +51,14 @@ public:
      * @param {command &} _u; reference on the command
      * @warning dynamic cast
      */
-    pilot & out_of_range(state &_s, command &_u) override
-    {
+    pilot & out_of_boundaries(state &_s, command &_a) override {
         beeler_glider_state &s = dynamic_cast <beeler_glider_state &> (_s);
-        beeler_glider_command &u = dynamic_cast <beeler_glider_command &> (_u);
-        u.dalpha = 0.;
-        u.dbeta = 0.;
-        if(s.sigma < 0.4) {
-            u.dsigma = +angle_rate_magnitude;
-        } else {
-            u.dsigma = 0.;
+        beeler_glider_command &a = dynamic_cast <beeler_glider_command &> (_a);
+        a.set_to_neutral();
+        if(0. < s.sigma && s.sigma < .3) {
+            a.dsigma = +angle_rate_magnitude;
+        } else if (-.3 < s.sigma && s.sigma < 0.){
+            a.dsigma = -angle_rate_magnitude;
         }
 		return *this;
     }
