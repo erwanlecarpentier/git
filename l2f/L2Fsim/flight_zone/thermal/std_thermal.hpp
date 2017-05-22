@@ -63,8 +63,6 @@ public:
     /** @brief Destructor */
     ~std_thermal() = default;
 
-    void print_my_class() override {std::cout<<"std_thermal"<<std::endl;}//TRM
-
     double get_w_star() override {return w_star;}
     double get_t_birth() override {return t_birth;}
     double get_lifespan() override {return lifespan;}
@@ -135,32 +133,30 @@ public:
 
     /**
      * @brief Allen's thermal model
-     * @param {const double &} r, z; radius and altitude
+     * @param {const double &} r, z, t; radius, altitude and time
+     * @note The time normally does not have an influence in the Allen model; However, here we compute the lifetime coefficient inside the 'allen_model' method in order to optimize the code
 	 */
-    double Allen(const double &r, const double &z)
+    double allen_model(const double &r, const double &z, const double &t)
     {
-        double w_total;
         double z_zi = z/zi;
         double r2 = std::max(10.,.102*pow(z_zi,1./3.)*(1.-.25*z_zi)*zi);
         if(r > 2.*r2) {
-            w_total=0.;
+            return 0.;
         } else {
-            double r1_r2 = 0.36;
-            double r1 = r1_r2*r2;
+            //double r1_r2 = .36;
+            double r1 = .36*r2;
             double r_r2 = r/r2;
             double w_ = w_star * pow(z_zi,1./3.) * (1. - 1.1*z_zi);
             double w_peak = 3. * w_ * (r2-r1)*r2*r2 / (r2*r2*r2 - r1*r1*r1);
             double w_l = ((r1 < r) && (r < (2.*r2))) ? -PI/6.*sin(PI*r_r2) : 0.;
-            double s_wd = ((.5 < z_zi) && (z_zi < .9)) ? 2.5*(z_zi-0.5) : 0.;
+            double s_wd = ((.5 < z_zi) && (z_zi < .9)) ? 2.5*(z_zi-.5) : 0.;
             //double w_d = s_wd*w_l;
             //double k1 = 1.4866; // ki values valid for r1_r2 = 0.36
             //double k2 = 4.8354;
             //double k3 = -.0320;
             //double k4 = .0001;
-            w_total = w_peak * (1./(1.+pow(fabs(1.4866*r_r2 - .0320),4.8354)) + .0001*r_r2 + s_wd*w_l);
-            w_total += w_total*normalLaw()/100.;
+            return lifetime_coefficient(t) * w_peak * (1./(1.+pow(fabs(1.4866*r_r2 - .0320),4.8354)) + .0001*r_r2 + s_wd*w_l);
         }
-        return w_total;
     }
 
     /**
@@ -168,7 +164,7 @@ public:
      * @param {const double &} r, z; radius and altitude
      * @ref An Empirical Model of thermal Updrafts Using Data Obtained From a Manned Glider, Christopher E. Childress
 	 */
-    double Childress(const double &r, const double &z)
+    double childress_model(const double &r, const double &z)
     {
         double w_total;
         if(z>zi) {w_total=0.;} // flight level higher than CBL
@@ -182,7 +178,7 @@ public:
             //Core downdraft radius
             double r1 = .5*(.17*d_T + .5*(z_zi - .6)*d_T);
 
-            // Calculating w_ and w_peak based on Allen
+            // Calculating w_ and w_peak based on Allen model
             double w_ = w_star * pow((z / zi),1./3.) * (1 - 1.1*z_zi);
             double w_peak = 3.*w_*(r2-r1)*r2*r2 / (r2*r2*r2-r1*r1*r1);
 
@@ -220,7 +216,7 @@ public:
      * @brief Lenschow's thermal model
      * @param {const double &} r, z; radius and altitude
 	 */
-    double Lenschow(const double &r, const double &z, const bool &choice)
+    double lenschow_model(const double &r, const double &z, const bool &choice)
     {
         double w_total;
         if(z>zi) {w_total=0.;} // flight level higher than CBL
@@ -239,7 +235,7 @@ public:
             // w_peak assuming a gaussian distribution is
             double w_peak = w_; //*(2./pow(PI,.5));
 
-            if (choice==1) {
+            if (choice == 1) {
                 w_total = w_peak * exp(-(4.*r*r/(d*d)));
             }
             else {
@@ -251,8 +247,8 @@ public:
 
     double integral_wz_allen(double h)
     {
-        if(h>1100){h=1100;}
-        return 1/(2.64 * pow((h/1400.0),1./3.) * (1. - 1.1*h/1400.));
+        if (h>1100.) {h=1100.;}
+        return 1./(2.64 * pow((h/1400.),1./3.) * (1. - 1.1*h/1400.));
     }
 
     double simpsons(double (*f)(double x), const double &a, const double &b, const int &n)
@@ -275,11 +271,17 @@ public:
 
     /**
      * @brief Lawrance's thermal model
-     * @param {double} r, z; radius and altitude
+     * @param {std::vector<double> &} w; wind vector
+     * @param {double} x, y, z, t; spatio-temporal coordinates
 	 */
-    void Lawrance(std::vector<double> &w, const double &x, const double &y, const double &z, const double &t, const double &Wx, const double &Wy)
+    void lawrance_model(
+        std::vector<double> &w,
+        const double &x,
+        const double &y,
+        const double &z,
+        const double &t)
     {
-        (void)t; (void)Wx; (void)Wy; // unused by default
+        (void) t; // Unused by default
         double r1_rT=.36;
         double k=3.;
         double z_zi = z/zi;
@@ -298,8 +300,8 @@ public:
             y0=yc0;
         }
         else { // The bubble is completely formed and it can detach itself from the ground and move along with the wind
-            x0=xc0; //+ simpsons(integral_wz_allen(z),100.0,z,1000)*Wx;
-            y0=yc0; //+ simpsons(integral_wz_allen(z),100.0,z,1000)*Wy;
+            x0=xc0; //+ simpsons(integral_wz_allen(z),100.0,z,1000)*windx;
+            y0=yc0; //+ simpsons(integral_wz_allen(z),100.0,z,1000)*windy;
         }
 
         double xt=x-x0;
@@ -319,7 +321,7 @@ public:
 
         //if(fabs(zt)>(k*rT)) {w[2] += 0.;}
 
-        //calculation of Wx Wy
+        //calculation of windx and windy
         if(dH!=0. || dH<rT) {
             double coef = (w[2]*zt)/(dH*(dH-rT)*k*k);
             w[0] -= coef*xt;
@@ -338,28 +340,28 @@ public:
 
     std_thermal& wind(const double &x, const double &y, const double &z, const double &t, std::vector<double> &w) override
     {
-        if(z>zi || z<zc0) {w[2]=0.;}
+        if (z>zi || z<zc0) {w[2]=0.;}
         else {
             double r = dist_to_updraft_center(x,y,z);
             switch(model) {
                 case 1: { // Allen model
-                    w[2] += Allen(r,z)*lifetime_coefficient(t);
+                    w[2] += allen_model(r,z,t);
                     break;
                 }
                 case 2: { // Childress model
-                    w[2] += Childress(r,z)*lifetime_coefficient(t);
+                    w[2] += childress_model(r,z)*lifetime_coefficient(t);
                     break;
                 }
                 case 3: { // Lenschow with Gaussian distribution
-                    w[2] += Lenschow(r,z,1)*lifetime_coefficient(t);
+                    w[2] += lenschow_model(r,z,1)*lifetime_coefficient(t);
                     break;
                 }
                 case 4: { // Lenschow with Geodon model
-                    w[2] += Lenschow(r,z,0)*lifetime_coefficient(t);
+                    w[2] += lenschow_model(r,z,0)*lifetime_coefficient(t);
                     break;
                 }
                 case 5: { // Lawrance model
-                    Lawrance(w,x,y,z,t,windx,windy);
+                    lawrance_model(w,x,y,z,t);
                     double c_t = lifetime_coefficient(t);
                     w[0] *= c_t;
                     w[1] *= c_t;

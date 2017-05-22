@@ -35,7 +35,6 @@ public:
 	 */
 	virtual flat_zone& wind(double x, double y, double z, double t, std::vector<double> &w) override {
         (void)x; (void)y; (void)z; (void)t; // unused by default
-        //std::vector<double>(3,0.).swap(w);
         w.assign(3,0.);
         w.at(0) = windx;
         w.at(1) = windy;

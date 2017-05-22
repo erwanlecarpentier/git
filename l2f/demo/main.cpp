@@ -62,7 +62,7 @@ void run_with_config(const char *cfg_path) {
     double uct_tsw=1., uct_stsw=uct_tsw/1.;
     unsigned int uct_horizon=100, uct_budget=1000;
     euler_integrator uct_stepper(uct_stsw);
-    flat_thermal_soaring_zone uct_fz("config/thermal_scenario.csv");
+    flat_thermal_soaring_zone uct_fz("config/thermal_scenario.csv",0.);
     b03_uct_pilot my_pilot(
         my_glider,
         uct_fz,

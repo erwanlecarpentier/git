@@ -48,7 +48,8 @@ struct cfg_reader {
         if(cfg.exists("envt_selector")
         && cfg.exists("wx")
         && cfg.exists("wy")
-        && cfg.exists("envt_path")) {
+        && cfg.exists("envt_path")
+        && cfg.exists("noise_stddev")) {
             unsigned int sl = cfg.lookup("envt_selector");
             switch(sl) {
             case 0: { // flat_zone
@@ -58,7 +59,8 @@ struct cfg_reader {
             }
             case 1: { // flat_thermal_soaring_zone
                 std::string path = cfg.lookup("envt_path");
-                return new flat_thermal_soaring_zone(path);
+                double noise_stddev = cfg.lookup("noise_stddev");
+                return new flat_thermal_soaring_zone(path,noise_stddev);
             }
             }
         }

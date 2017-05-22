@@ -85,11 +85,10 @@ inline content_type rand_element(const std::vector<content_type> &v) {
     return v.at(rand_indice(v));
 }
 
+/** @brief Return the sign of the input */
 inline double sgn(double T) {
-    if (T > 0){ return 1.0;}
-    if (T < 0){ return -1.0;}
-    if (T == 0){ return 1.0;}
-    return 0;
+    if (T >= 0) {return 1.;}
+    else {return -1.;}
 }
 
 /** @return a uniformly picked double in range [fmin,fmax] */
@@ -97,28 +96,9 @@ inline double rand_double(double fmin, double fmax) {
     return (rand() / (double)RAND_MAX) * (fmax-fmin) + fmin;
 }
 
-/**
- * return an int between int "a" and int "b"
- * @note implicitly a<b
- */
 /** @return a uniformly picked int in range [fmin,fmax] */
 inline int rand_int(int fmin, int fmax) {
     return (rand()%(fmax-fmin) +fmin);
-}
-
-/** produce a number following a normal distribution */
-inline double normalLaw() {
-    double W,V1,V2;
-    do
-    {
-        double U1=rand_double(0., 1.);
-        double U2=rand_double(0., 1.);
-        V1=2*U1-1;
-        V2=2*U2-1;
-        W=V1*V1+V2*V2;
-    }while(W>1);
-    double W_function=sqrt(-2*log(W)/W);
-    return V1*W_function;
 }
 
 /**

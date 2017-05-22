@@ -7,6 +7,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <chrono>
 
 /**
  * @file flat_thermal_soaring_zone.hpp
@@ -33,8 +34,11 @@ protected:
      * @param {double} ksi_min, ksi_max; minimum and maximum roll-off parameter
      * @param {double} d_min; minimum radius of a thermal
      * @param {std::vector<thermal *>} thermals; list of the thermals created in the simulation
+     * @param {double} noise_stddev; standard deviation of the normal law whose samples are added to each component of the wind velocity vector
+     * @note No seed selection is done - you would have to implement this if you want to re-generate matching pseudo-random sequences
+     * @note Default setting is noiseless
      */
-    double t_start=0.;
+    double t_start = 0.;
     double t_limit;
     double windx, windy;
     double w_star_min, w_star_max;
@@ -44,6 +48,7 @@ protected:
     double ksi_min, ksi_max;
     double d_min;
     std::vector<thermal *> thermals;
+    double noise_stddev = 0.;
 
     /** @brief Return the maximum number of thermals in the zone */
     int get_max_nb_of_th() {
@@ -207,7 +212,7 @@ public:
      * @param {std::string} ip; input path to the saved scenario
      * @param {const char *} sep; separator between items
      */
-    flat_thermal_soaring_zone(std::string ip) {
+    flat_thermal_soaring_zone(std::string ip, double _noise_stddev) : noise_stddev(_noise_stddev) {
         std::ifstream file(ip);
         if(!file.is_open()){std::cerr << "Unable to open input file ("<< ip <<") in flat_thermal_soaring_zone constructor" << std::endl;}
         std::string line;
@@ -268,6 +273,16 @@ public:
         }
         if(thermals.size()!=0 && thermals[0]->get_model()==1){
             w[2] += global_sink_rate(z,t);
+        }
+        if (noise_stddev != 0.) {
+            //std::default_random_engine generator;
+            unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+            std::default_random_engine generator (seed);
+
+            std::normal_distribution<double> distribution(0.,noise_stddev);
+            //w[0] = distribution(generator);
+            //w[1] = distribution(generator);
+            w[2] = distribution(generator);
         }
         return *this;
     }
