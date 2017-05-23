@@ -120,13 +120,10 @@ public:
         double abstau = fabs(t-t_birth-lifespan/2.);
         double T = (1.+ksi) / lifespan;
         double D = (1.-ksi) / (2.*T);
-        double c_t;
+        double c_t = 0.;
         if (abstau <= D) {c_t = 1.;}
-        else {
-            if(abstau <= (1.+ksi)/(2.*T)) {
-                c_t = .5*(1.+cos(M_PI*T*(abstau-D)/ksi));
-            }
-            else {c_t = 0.;}
+        else if(abstau <= (1.+ksi)/(2.*T)) {
+            c_t = .5*(1.+cos(M_PI*T*(abstau-D)/ksi));
         }
         return c_t;
     }
@@ -166,7 +163,7 @@ public:
 	 */
     double childress_model(const double &r, const double &z)
     {
-        double w_total;
+        double w_total = 0.;
         if(z>zi) {w_total=0.;} // flight level higher than CBL
         else {
             double z_zi = z/zi;
@@ -215,10 +212,11 @@ public:
     /**
      * @brief Lenschow's thermal model
      * @param {const double &} r, z; radius and altitude
+     * @param {const bool &} choice; 1: with Gaussian distribution; 2: with Geodon model
 	 */
     double lenschow_model(const double &r, const double &z, const bool &choice)
     {
-        double w_total;
+        double w_total = 0.;
         if(z>zi) {w_total=0.;} // flight level higher than CBL
         else {
             double z_zi = z/zi;
@@ -254,7 +252,7 @@ public:
     double simpsons(double (*f)(double x), const double &a, const double &b, const int &n)
     {
         double h = (b-a) / (double)n;
-        double x, r, s=0.;
+        double x=0., r=0., s=0.;
         char m = 0;
         for(x=a; x<=b; x+=h) {
             r = f(x);
@@ -282,32 +280,31 @@ public:
         const double &t)
     {
         (void) t; // Unused by default
-        double r1_rT=.36;
-        double k=3.;
+        double r1_rT = .36;
+        double k = 3.;
         double z_zi = z/zi;
         double z_zi_powthird = pow(z_zi,1./3.);
 
         double rT = std::max(10., .102 * z_zi_powthird * (1.-.25*z_zi) * zi);
-        double r1 = r1_rT*rT;
+        double r1 = r1_rT * rT;
 
         //Calculating w_ and W_peak using
         double w_ = w_star * z_zi_powthird * (1.-1.1*z_zi);
         double w_core = 3.*w_*(rT-r1)*rT*rT / (rT*rT*rT - r1*r1*r1);
 
-        double x0=0., y0=0., z0 = 800.;
+        double x0=0., y0=0., z0=800.;
         if(z0<k*rT) { // The bubble has not detached from the ground yet
-            x0=xc0;
-            y0=yc0;
+            x0 = xc0;
+            y0 = yc0;
         }
         else { // The bubble is completely formed and it can detach itself from the ground and move along with the wind
-            x0=xc0; //+ simpsons(integral_wz_allen(z),100.0,z,1000)*windx;
-            y0=yc0; //+ simpsons(integral_wz_allen(z),100.0,z,1000)*windy;
+            x0 = xc0; //+ simpsons(integral_wz_allen(z),100.0,z,1000)*windx;
+            y0 = yc0; //+ simpsons(integral_wz_allen(z),100.0,z,1000)*windy;
         }
 
-        double xt=x-x0;
-        double yt=y-y0;
-        double zt=z-z0;
-
+        double xt = x-x0;
+        double yt = y-y0;
+        double zt = z-z0;
         double dH = sqrt(xt*xt + yt*yt);
 
         //Calculation of Wz
@@ -332,10 +329,10 @@ public:
             w[0] -= dw;
             w[1] -= dw;
         }
-        else {
-            //w[0]+=0.;
-            //w[1]+=0.;
-        }
+        /*else {
+            w[0]+=0.;
+            w[1]+=0.;
+        }*/
     }
 
     std_thermal& wind(const double &x, const double &y, const double &z, const double &t, std::vector<double> &w) override

@@ -8,6 +8,7 @@ namespace L2Fsim {
 
 class pilot {
 public:
+    /** @brief Destructor */
     virtual ~pilot() = default;
 
     /**

@@ -321,7 +321,7 @@ public:
         beeler_glider_command &a = dynamic_cast <beeler_glider_command &> (_a);
         double ang_max = .3;
         a.set_to_neutral();
-        if(0. < s.sigma && s.sigma < ang_max) {
+        if(0. <= s.sigma && s.sigma < ang_max) {
             a.dsigma = +angle_rate_magnitude;
         } else if (-ang_max < s.sigma && s.sigma < 0.){
             a.dsigma = -angle_rate_magnitude;

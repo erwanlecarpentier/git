@@ -88,7 +88,7 @@ public:
      */
     double get_q_value(const beeler_glider_state &s, const beeler_glider_command &a)
     {
-        double score;
+        double score = 0.;
         std::vector<double> phi = get_feature_vector(s,a);
         for(unsigned int i=0; i<phi.size(); ++i) {
             score += phi.at(i) * parameters.at(i);
@@ -116,7 +116,7 @@ public:
      */
     void epsilon_greedy_policy(const beeler_glider_state &s, beeler_glider_command &a)
     {
-        std::default_random_engine generator;
+        std::default_random_engine generator; //TODO randomize (cf randomization in wind method for thermal zone)
         std::uniform_real_distribution<double> distribution(0.0,1.0);
         std::vector<beeler_glider_command> available_actions;
         std::vector<unsigned int> max_ind, non_max_ind;
@@ -210,16 +210,15 @@ public:
      * @param {state &} s; reference on the state
      * @param {command &} a; reference on the command
      */
-    pilot & out_of_boundaries(state &_s, command &_a) override
-    {
+    pilot & out_of_boundaries(state &_s, command &_a) override {
         beeler_glider_state &s = dynamic_cast <beeler_glider_state &> (_s);
         beeler_glider_command &a = dynamic_cast <beeler_glider_command &> (_a);
-        a.dalpha = 0.;
-        a.dbeta = 0.;
-        if(s.sigma < 0.4) {
+        double ang_max = .3;
+        a.set_to_neutral();
+        if(0. <= s.sigma && s.sigma < ang_max) {
             a.dsigma = +angle_rate_magnitude;
-        } else {
-            a.dsigma = 0.;
+        } else if (-ang_max < s.sigma && s.sigma < 0.) {
+            a.dsigma = -angle_rate_magnitude;
         }
 		return *this;
     }

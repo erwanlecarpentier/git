@@ -5,13 +5,13 @@
 #include <L2Fsim/aircraft/beeler_glider/beeler_glider_state.hpp>
 #include <L2Fsim/aircraft/beeler_glider/beeler_glider_command.hpp>
 
+#include <L2Fsim/flight_zone/flat_thermal_soaring_zone.hpp>
+#include <L2Fsim/flight_zone/flat_zone.hpp>
+
 #include <L2Fsim/pilot/passive_pilot.hpp>
 #include <L2Fsim/pilot/heuristic_pilot.hpp>
 #include <L2Fsim/pilot/q_learning/q_learning_pilot.hpp>
 #include <L2Fsim/pilot/mcts/b03_uct_pilot.hpp>
-
-#include <L2Fsim/flight_zone/flat_thermal_soaring_zone.hpp>
-#include <L2Fsim/flight_zone/flat_zone.hpp>
 
 #include <L2Fsim/stepper/euler_integrator.hpp>
 #include <L2Fsim/stepper/rk4_integrator.hpp>
@@ -29,7 +29,7 @@ void run_with_config(const char *cfg_path) {
     libconfig::Config cfg;
     cfg.readFile(cfg_path);
 
-    double Dt, t_lim=1e3, nb_dt=1., t=0.; // default values
+    double Dt=.1, t_lim=1e3, nb_dt=1., t=0.; // default values
     cfgr.read_time_variables(cfg,t_lim,Dt,nb_dt);
 
     /** Environment */
@@ -50,12 +50,12 @@ void run_with_config(const char *cfg_path) {
 	stepper *my_stepper = cfgr.read_stepper_variable(cfg,Dt/nb_dt);
 
     /** Pilot */
-    double angle_rate_magnitude = 1e-2;
+    double angle_rate_magnitude = 1e-1;
     //passive_pilot my_pilot(angle_rate_magnitude);
     //heuristic_pilot my_pilot(angle_rate_magnitude);
 
     //double ep=1e-2, lr=1e-3, df=.9;
-    //q_learning_pilot my_pilot(angle_rate_magnitude,ep,lr,df);
+    //q_learning_pilot my_pilot(angle_rate_magnitude,ep,lr,df);*/
 
     double uct_df=.9;
     double uct_parameter = 1./sqrt(2.);
@@ -75,7 +75,6 @@ void run_with_config(const char *cfg_path) {
         uct_horizon,
         uct_budget);
 
-
     /** Initialize the simulation */
     simulation mysim;
 	mysim.fz = my_zone;
@@ -84,14 +83,15 @@ void run_with_config(const char *cfg_path) {
 	mysim.pl = &my_pilot;
 
 	/** Run the simulation */
+	bool eos = false;
     while(t<t_lim) {
         std::cout<<"t = "<<t<<std::endl;
-        mysim.step(t,Dt);
+        mysim.step(t,Dt,eos);
     }
 
 	/** Delete the dynamically created variables */
-	delete my_zone;
 	delete my_stepper;
+	delete my_zone;
 	std::cout << "Program run successfully" << std::endl;
 }
 

@@ -18,8 +18,11 @@ namespace L2Fsim {
 
 class passive_pilot : public pilot {
 public:
+    /** @brief Destructor */
+    ~passive_pilot() = default;
+
     /**
-     * Attributes
+     * @brief Attributes
      * @param {double} angle_rate_magnitude; magnitude of the increment that one can apply to the angle
      */
     double angle_rate_magnitude;
@@ -29,7 +32,7 @@ public:
     {}
 
     /**
-     * Apply the policy
+     * @brief Apply the policy
      * @param {state &} s; reference on the state
      * @param {command &} u; reference on the command
      * @warning dynamic cast
@@ -46,7 +49,7 @@ public:
 	}
 
     /**
-     * Steer the glider back in the valid zone
+     * @brief Steer the glider back in the valid zone
      * @param {state &} _s; reference on the state
      * @param {command &} _u; reference on the command
      * @warning dynamic cast
@@ -54,10 +57,11 @@ public:
     pilot & out_of_boundaries(state &_s, command &_a) override {
         beeler_glider_state &s = dynamic_cast <beeler_glider_state &> (_s);
         beeler_glider_command &a = dynamic_cast <beeler_glider_command &> (_a);
+        double ang_max = .3;
         a.set_to_neutral();
-        if(0. < s.sigma && s.sigma < .3) {
+        if(0. <= s.sigma && s.sigma < ang_max) {
             a.dsigma = +angle_rate_magnitude;
-        } else if (-.3 < s.sigma && s.sigma < 0.){
+        } else if (-ang_max < s.sigma && s.sigma < 0.) {
             a.dsigma = -angle_rate_magnitude;
         }
 		return *this;

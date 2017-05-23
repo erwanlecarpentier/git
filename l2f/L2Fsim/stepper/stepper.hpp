@@ -25,13 +25,15 @@ public:
      * @param {pilot &} pl; pilot
      * @param {double &} current_time; current time
      * @param {const double &} time_step_width; period of time during which we perform integration
+     * @param {bool &} eos; end of simulation, the simulation reached the bounds of its model and must be stopped (e.g. limit of aircraft model validity)
      */
 	virtual void operator()(
         flight_zone &fz,
         aircraft &ac,
         pilot &pl,
         double &current_time,
-        const double &time_step_width) = 0;
+        const double &time_step_width,
+        bool &eos) = 0;
 };
 
 }

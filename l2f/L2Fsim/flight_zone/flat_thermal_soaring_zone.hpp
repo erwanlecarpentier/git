@@ -63,7 +63,7 @@ protected:
      * @param {std::vector<double> &} center; computed center
      */
     bool create_thermal_center(double t, std::vector<double> &center) {
-        double x_new, y_new;
+        double x_new=0., y_new=0.;
         unsigned int counter = 0;
         bool center_is_valid = false;
         while(!center_is_valid) {
@@ -249,7 +249,7 @@ public:
 
     /** @brief Destructor */
     ~flat_thermal_soaring_zone() {
-        for(auto &th : thermals) {delete th;}
+        for(auto th : thermals) {delete th;}
     }
 
     /** @brief Print the full scenario in the standard output stream */
@@ -275,7 +275,6 @@ public:
             w[2] += global_sink_rate(z,t);
         }
         if (noise_stddev != 0.) {
-            //std::default_random_engine generator;
             unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
             std::default_random_engine generator (seed);
 

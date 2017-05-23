@@ -7,10 +7,15 @@
 #include <L2Fsim/stepper/euler_integrator.hpp>
 #include <L2Fsim/stepper/rk4_integrator.hpp>
 
+#include <L2Fsim/pilot/passive_pilot.hpp>
+#include <L2Fsim/pilot/heuristic_pilot.hpp>
+#include <L2Fsim/pilot/q_learning/q_learning_pilot.hpp>
+
 #include <L2Fsim/flight_zone/flight_zone.hpp>
 #include <L2Fsim/aircraft/aircraft.hpp>
 #include <L2Fsim/stepper/stepper.hpp>
 #include <L2Fsim/pilot/pilot.hpp>
+
 #include <libconfig.h++>
 
 #define TO_RAD 0.01745329251
@@ -45,22 +50,22 @@ struct cfg_reader {
 
     /** @brief Read and initialise an environment */
     flight_zone * read_environment_variables(const libconfig::Config &cfg) {
-        if(cfg.exists("envt_selector")
-        && cfg.exists("wx")
-        && cfg.exists("wy")
-        && cfg.exists("envt_path")
-        && cfg.exists("noise_stddev")) {
-            unsigned int sl = cfg.lookup("envt_selector");
+        unsigned int sl=0;
+        if(cfg.lookupValue("envt_selector", sl)) {
             switch(sl) {
             case 0: { // flat_zone
-                double wx = cfg.lookup("wx");
-                double wy = cfg.lookup("wy");
-                return new flat_zone(wx,wy);
+                double wx=0., wy=0.;
+                if(cfg.lookupValue("wx", wx) && cfg.lookupValue("wy", wy)) {
+                    return new flat_zone(wx,wy);
+                }else {display_error_msg();}
             }
             case 1: { // flat_thermal_soaring_zone
-                std::string path = cfg.lookup("envt_path");
-                double noise_stddev = cfg.lookup("noise_stddev");
-                return new flat_thermal_soaring_zone(path,noise_stddev);
+                std::string path;
+                double noise_stddev=0.;
+                if (cfg.lookupValue("envt_path", path) &&
+                    cfg.lookupValue("noise_stddev", noise_stddev)) {
+                    return new flat_thermal_soaring_zone(path,noise_stddev);
+                }else {display_error_msg();}
             }
             }
         }
@@ -116,6 +121,74 @@ struct cfg_reader {
             }
             case 1: { // rk4_integrator
                 return new rk4_integrator(sub_dt);
+            }
+            }
+        }
+        else {display_error_msg();}
+        return NULL;
+    }
+
+    /** @brief Read and initialise a pilot
+     * @todo write a method for each case
+     */
+    pilot * read_pilot_variable(const libconfig::Config &cfg) {
+        if(cfg.exists("pilot_selector")) {
+            unsigned int sl = cfg.lookup("pilot_selector");
+            switch(sl) {
+            case 0: { // passive_pilot
+                double arm=.1;
+                if(cfg.lookupValue("angle_rate_magnitude",arm)) {
+                    return new passive_pilot(arm);
+                } else {display_error_msg();}
+            }
+            case 1: { // heuristic_pilot
+                double arm=.1;
+                if(cfg.lookupValue("angle_rate_magnitude",arm)) {
+                    return new heuristic_pilot(arm);
+                } else {display_error_msg();}
+            }
+            case 2: { // q_learning_pilot
+                double arm=.1, ep=.1, lr=.01, df=.9;
+                if (cfg.lookupValue("angle_rate_magnitude",arm),
+                    cfg.lookupValue("q_epsilon",ep),
+                    cfg.lookupValue("q_learning_rate",lr),
+                    cfg.lookupValue("q_discount_factor",df))
+                {
+                    return new q_learning_pilot(arm,ep,lr,df);
+                } else {display_error_msg();}
+            }
+            case 3: { // b03_uct_pilot
+                /* TODO
+
+                // envt
+                unsigned int envt_sl=0;
+                if(cfg.lookupValue("uct_envt_selector",envt_sl)) {
+                    if(envt_sl == 0) {
+                        //todo
+                    }
+                } else {display_error_msg();}
+
+
+
+
+
+
+
+                double arm=.1, pr=.7, dt=.1, sdt=.1, df=.9, hz=100., bd=1e4;
+                if (cfg.lookupValue("angle_rate_magnitude",arm),
+                    cfg.lookupValue("uct_parameter",pr),
+                    cfg.lookupValue("uct_time_step_width",dt),
+                    cfg.lookupValue("uct_sub_time_step_width",sdt),
+                    cfg.lookupValue("uct_discount_factor",df),
+                    cfg.lookupValue("uct_horizon",hz),
+                    cfg.lookupValue("uct_budget",bd))
+                {
+                    return new b03_uct_pilot(
+                        my_glider, fz,
+                        uct_stepper.transition_function,
+                        arm, pr, dt, sdt, df, hz, bd);
+                } else {display_error_msg();}
+                */
             }
             }
         }

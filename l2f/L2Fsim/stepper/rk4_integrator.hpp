@@ -90,13 +90,15 @@ public:
      * @param {pilot &} pl; pilot
      * @param {double &} current_time; current time
      * @param {const double &} time_step_width; period of time during which we perform integration
+     * @param {bool &} eos; end of simulation, the simulation reached the bounds of its model and must be stopped (e.g. limit of aircraft model validity)
      */
     void operator()(
         flight_zone &fz,
         aircraft &ac,
         pilot &pl,
         double &current_time,
-        const double &time_step_width) override
+        const double &time_step_width,
+        bool &eos) override
     {
         /// 1. Apply the policy
         if (ac.get_distance_to_center() > 1200.) {
@@ -119,7 +121,7 @@ public:
         transition_function(ac,fz,current_time,time_step_width,dt);
 
         /// 4. Check aircraft's configuration validity
-        ac.is_in_model();
+        if(!ac.is_in_model()){eos=true;}
     }
 };
 

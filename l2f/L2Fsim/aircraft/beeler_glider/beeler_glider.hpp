@@ -172,34 +172,35 @@ public:
 
     /**
      * @brief Check if the state vector contains values that are out of the model's range of validity
+     * @return true if the aircraft still is in its validity model
      */
-    aircraft & is_in_model() override {
+    bool is_in_model() override {
         double z = s.z;
         double gamma = s.gamma;
         double alpha = s.alpha;
-        double limit_gamma_angle = 45. * M_PI / 180.;
-        double limit_alpha_gamma_angle = 45. * M_PI / 180.;
+        double limit_gamma_angle = .78539816339; //45. * M_PI / 180.;
+        double limit_alpha_gamma_angle = .78539816339; //45. * M_PI / 180.;
         if(z < 0) {
             std::cout << "STOP: altitude 'z' < 0" << std::endl;
-            exit(-1);
+            return false;
         }
-        if(gamma > limit_gamma_angle) {
+        else if(gamma > limit_gamma_angle) {
             std::cout << "STOP: elevation angle 'gamma' > " << limit_gamma_angle << " rad" << std::endl;
-            exit(-1);
+            return false;
         }
-        if(gamma < -limit_gamma_angle) {
+        else if(gamma < -limit_gamma_angle) {
             std::cout << "STOP: elevation angle 'gamma' < " << -limit_gamma_angle << " rad" << std::endl;
-            exit(-1);
+            return false;
         }
-        if(gamma + alpha > limit_alpha_gamma_angle) {
+        else if(gamma + alpha > limit_alpha_gamma_angle) {
             std::cout << "STOP: inclination angle 'gamma+alpha' > " << limit_alpha_gamma_angle << " rad" << std::endl;
-            exit(-1);
+            return false;
         }
-        if(gamma + alpha < -limit_alpha_gamma_angle) {
+        else if(gamma + alpha < -limit_alpha_gamma_angle) {
             std::cout << "STOP: inclination angle 'gamma+alpha' < " << -limit_alpha_gamma_angle << " rad" << std::endl;
-            exit(-1);
+            return false;
         }
-        return *this;
+        return true;
     }
 
 protected:
