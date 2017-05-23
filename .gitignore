@@ -1,5 +1,6 @@
 # Untracked files:
-l2f/data/*
-l2f/main
+data/*
+main
+FZmain
 # ignore objects and archives, anywhere in the tree.
 *.[oa]
