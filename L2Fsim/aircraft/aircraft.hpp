@@ -14,8 +14,7 @@
  *
  * An aircraft holds three important concepts:
  * - it has an internal state s which characterizes uniquely the aircraft's configuration at a given time;
- * - it has a dynamics function f, such that, given a command u, x'=f(x,u);
- * - @deprecated it has an observation function on the current state.
+ * - it has a dynamics function f, such that, given a command u, x'=f(x,u).
  */
 
 namespace L2Fsim {

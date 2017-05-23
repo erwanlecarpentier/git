@@ -25,8 +25,8 @@ int main() {
     int model = 1;
     double dt = 1.;
 
-    double t_start = 0.;
-    double t_limit = 1e3;
+    double t_start = -500.;
+    double t_limit = 1000.;
     double windx = 0.;
     double windy = 0.;
     double w_star_min = 2.;
@@ -34,7 +34,7 @@ int main() {
     double zi_min = 1300.;
     double zi_max = 1400.;
     double lifespan_min = 300.;
-    double lifespan_max = 500.;
+    double lifespan_max = 600.;
     double x_min = -1000.;
     double x_max = +1000.;
     double y_min = -1000.;

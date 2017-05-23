@@ -36,22 +36,23 @@ public:
      * @param {flight_zone &} fz; atmosphere model
      * @param {double &} current_time; current time
      * @param {const double &} time_step_width; time-step-width
-     * @param {const double &} dt; sub-time-step-width
+     * @param {const double &} sdt; sub-time-step-width
      */
     static void transition_function(
         aircraft &ac,
         flight_zone &fz,
         double &current_time,
         const double &time_step_width,
-        const double &dt)
+        const double &sdt)
     {
-        for(int n=0; n<time_step_width/dt; ++n) {
+        unsigned int niter = (int)(time_step_width/sdt);
+        for(unsigned int n=0; n<niter; ++n) {
             ac.apply_command();
             //// EULER UPDATE
             ac.update_state_dynamic(fz,current_time,ac.get_state());
-            ac.get_state().apply_dynamic(dt);
+            ac.get_state().apply_dynamic(sdt);
             //// END EULER UPDATE
-            current_time += dt;
+            current_time += sdt;
             ac.get_state().update_time(current_time);
         }
     }
