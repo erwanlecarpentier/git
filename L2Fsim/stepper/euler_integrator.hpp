@@ -82,10 +82,11 @@ public:
         }
 
         /// 2. Save the data
-        /// @note output files should be cleared first
+        /// @warning output files should be cleared first
         save_vector(ac.get_state().get_save(),state_log_path,std::ofstream::app);
         std::vector<double> w;
-        fz.wind(ac.get_state().getx(),
+        fz.wind(
+            ac.get_state().getx(),
             ac.get_state().gety(),
             ac.get_state().getz(),
             ac.get_state().gett(),w);

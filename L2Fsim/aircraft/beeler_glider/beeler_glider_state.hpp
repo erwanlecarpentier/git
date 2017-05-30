@@ -34,20 +34,21 @@ public:
     double time;
 
     /** Constructor */
-    beeler_glider_state(double _x=0.,
-                        double _y=0.,
-                        double _z=0.,
-                        double _V=0.,
-                        double _gamma=0.,
-                        double _khi=0.,
-                        double _alpha=0.,
-                        double _beta=0.,
-                        double _sigma=0.,
-                        double _max_angle_magnitude=.5,
-                        double _Vdot=0.,
-                        double _gammadot=0.,
-                        double _khidot=0.,
-                        double _time=0.) :
+    beeler_glider_state(
+        double _x=0.,
+        double _y=0.,
+        double _z=0.,
+        double _V=0.,
+        double _gamma=0.,
+        double _khi=0.,
+        double _alpha=0.,
+        double _beta=0.,
+        double _sigma=0.,
+        double _max_angle_magnitude=.5,
+        double _Vdot=0.,
+        double _gammadot=0.,
+        double _khidot=0.,
+        double _time=0.) :
         x(_x),
         y(_y),
         z(_z),

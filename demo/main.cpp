@@ -24,6 +24,76 @@
 
 using namespace L2Fsim;
 
+/** @brief Method creating an environment and saving it at the specified location */
+void create_environment() {
+    /**
+     * Parameters
+     * @note See the used flight zone for description of the parameters
+     * @param {double} dt; thermal refreshment rate (s)
+     * @param {int} model; thermal model selection
+     * 1: Allen
+     * 2: Childress
+     * 3: Lenschow
+     * 4: Geodon
+     * 5: Lawrance
+     */
+    int model = 1;
+    double dt = 1.;
+
+    double t_start = -500.;
+    double t_limit = 1000.;
+    double windx = 0.;
+    double windy = 0.;
+    double w_star_min = 2.;
+    double w_star_max = 5.;
+    double zi_min = 1300.;
+    double zi_max = 1400.;
+    double lifespan_min = 300.;
+    double lifespan_max = 600.;
+    double x_min = -1000.;
+    double x_max = +1000.;
+    double y_min = -1000.;
+    double y_max = +1000.;
+    double z_min = +0.;
+    double z_max = +2000.;
+    double ksi_min = .3;
+    double ksi_max = .7;
+    double d_min = 200.;
+
+    /// 1. Initialize an empty zone and define its limitations
+    flat_thermal_soaring_zone fz(
+        t_start, t_limit,
+        windx, windy,
+        w_star_min, w_star_max,
+        zi_min, zi_max,
+        lifespan_min, lifespan_max,
+        x_min, x_max,
+        y_min, y_max,
+        z_min, z_max,
+        ksi_min, ksi_max,
+        d_min);
+    //flat_thermal_soaring_zone fz_from_file("config/thermal_scenario.csv");
+
+    /// 2. Create a scenario i.e. create the thermals
+    fz.create_scenario(dt,model);
+    fz.print_scenario();
+
+    /// 3 : Save data for visualization
+    double dx = 50.; // mesh precision in x direction
+    double dy = dx; // mesh precision in y direction
+    double z = 500.;  // altitude of the saved updraft field
+    double t = 500.;  // time of the saved updraft field
+    fz.save_updraft_values(dx,dy,z,t,"data/updraft_field.dat");
+
+    /// 4. Save the scenario
+    fz.save_scenario("config/thermal_scenario.csv");
+}
+
+/**
+ * @brief Method running a simulation using a configuration file
+ * @param {const char *} cfg_path; path to the configuration file
+ * @note WORK IN PROGRESS -> config file handling note done
+ */
 void run_with_config(const char *cfg_path) {
     cfg_reader cfgr;
     libconfig::Config cfg;
@@ -51,13 +121,13 @@ void run_with_config(const char *cfg_path) {
 
     /** Pilot */
     double angle_rate_magnitude = 1e-1;
-    //passive_pilot my_pilot(angle_rate_magnitude);
+    passive_pilot my_pilot(angle_rate_magnitude);
     //heuristic_pilot my_pilot(angle_rate_magnitude);
 
     //double ep=1e-2, lr=1e-3, df=.9;
     //q_learning_pilot my_pilot(angle_rate_magnitude,ep,lr,df);*/
 
-    double uct_df=.9;
+    /*double uct_df=.9;
     double uct_parameter = 1./sqrt(2.);
     double uct_tsw=1., uct_stsw=uct_tsw/1.;
     unsigned int uct_horizon=100, uct_budget=1000;
@@ -73,7 +143,7 @@ void run_with_config(const char *cfg_path) {
         uct_stsw,
         uct_df,
         uct_horizon,
-        uct_budget);
+        uct_budget);*/
 
     /** Initialize the simulation */
     simulation mysim;
@@ -84,9 +154,13 @@ void run_with_config(const char *cfg_path) {
 
 	/** Run the simulation */
 	bool eos = false;
-    while(t<t_lim) {
+    while(t<=t_lim) {
         std::cout<<"t = "<<t<<std::endl;
         mysim.step(t,Dt,eos);
+        //todo: save
+        //save_vector(mysim.fz->get_save());
+        //save_vector(mysim.pl->get_save());
+        //save_vector(mysim.ac->get_save());
     }
 
 	/** Delete the dynamically created variables */
@@ -97,6 +171,7 @@ void run_with_config(const char *cfg_path) {
 
 int main() {
     srand(time(NULL));
+    //create_environment();
     run_with_config("config/main_config.cfg");
     return 0;
 }

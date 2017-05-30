@@ -11,16 +11,22 @@ from pylab import *
 from mpl_toolkits.mplot3d import Axes3D
 import mpl_toolkits.mplot3d.art3d as art3d
 
+## Parameters
+t_plot = 1000 # time step until which we plot
+
 ## File reading
-trajectory_path = "data/state.dat"
-trajectory_data = np.loadtxt(trajectory_path,dtype=float)
-thermal_data_path = "config/thermal_scenario.csv"
-thermal_data_buffer = pd.read_csv(thermal_data_path,sep = ';')
-thermal_data = thermal_data_buffer[thermal_data_buffer["t_birth"]==0]
+traj_path = "data/state.dat"
+traj_data = np.loadtxt(traj_path,dtype=float)
+traj_data = traj_data[traj_data[:,10] <= t_plot]
+
+th_data_path = "config/thermal_scenario.csv"
+th_data = pd.read_csv(th_data_path,sep = ';')
+th_data = th_data[th_data["t_birth"]<=t_plot]
+th_data = th_data[th_data["t_birth"]+th_data["lifespan"]>=t_plot]
 
 ## Trajectory plot
-x = trajectory_data[:,0]
-y = trajectory_data[:,1]
+x = traj_data[:,0]
+y = traj_data[:,1]
 fig = plt.figure()
 ax = fig.add_subplot(111)
 ax.plot(x,y,color='#6699ff')
@@ -29,12 +35,18 @@ ax.set_ylim((-1300, 1300))
 ax.set_xlabel('x')
 ax.set_ylabel('y')
 
+x_end = x[-1]
+y_end = y[-1]
+ax.scatter(x_end,y_end,color='black',marker="x")
+
 ## Thermals plot
-size = len(thermal_data["x"])
-for i in range(0,size):
-    x_th=linspace(thermal_data["x"][i],thermal_data["x"][i],1000)
-    y_th=linspace(thermal_data["y"][i],thermal_data["y"][i],1000)
-    ax.scatter(x_th,y_th,color='#ff6600')
+nbth = len(th_data["x"])
+th_x_dat = th_data["x"].tolist()
+th_y_dat = th_data["y"].tolist()
+for i in range(0,nbth):
+    x_th = th_x_dat[i]
+    y_th = th_y_dat[i]
+    ax.scatter(x_th,y_th,color='#ff6600',marker="x")
 
 ## Border plot
 limit_circle = Circle((0, 0), 1200, color='black', fill=False)

@@ -14,6 +14,8 @@ data = np.loadtxt("data/state.dat",dtype=float)
 data_wind = np.loadtxt("data/wind.dat",dtype=float)
 
 x = data[:,0]
+
+
 y = data[:,1]
 z = data[:,2]
 V = data[:,3]

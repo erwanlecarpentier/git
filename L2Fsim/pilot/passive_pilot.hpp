@@ -18,18 +18,19 @@ namespace L2Fsim {
 
 class passive_pilot : public pilot {
 public:
-    /** @brief Destructor */
-    ~passive_pilot() = default;
-
     /**
      * @brief Attributes
      * @param {double} angle_rate_magnitude; magnitude of the increment that one can apply to the angle
      */
     double angle_rate_magnitude;
 
+    /** @brief Constructor */
     passive_pilot(double _angle_rate_magnitude=.03) :
         angle_rate_magnitude(_angle_rate_magnitude)
     {}
+
+    /** @brief Destructor */
+    ~passive_pilot() = default;
 
     /**
      * @brief Apply the policy

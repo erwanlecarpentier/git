@@ -100,9 +100,9 @@ public:
     double uct_score(b03_node &v) {
         double nvis = (double) v.number_of_visits;
         assert(nvis != 0.);
-        double nparent = (double) v.parent->number_of_visits;
+        double nvisparent = (double) v.parent->number_of_visits;
         double avg_rwd = v.get_average_reward();
-        return avg_rwd + 2. * uct_parameter * sqrt(2. * log(nparent) / nvis);
+        return avg_rwd + 2. * uct_parameter * sqrt(2. * log(nvisparent) / nvis);
     }
 
     /**

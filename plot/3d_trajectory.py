@@ -11,17 +11,23 @@ from pylab import *
 from mpl_toolkits.mplot3d import Axes3D
 import mpl_toolkits.mplot3d.art3d as art3d
 
+## Parameters
+t_plot = 1000 # time step until which we plot
+
 ## File reading
-trajectory_path = "data/state.dat"
-trajectory_data = np.loadtxt(trajectory_path,dtype=float)
-thermal_data_path = "config/thermal_scenario.csv"
-thermal_data_buffer = pd.read_csv(thermal_data_path,sep = ';')
-thermal_data = thermal_data_buffer[thermal_data_buffer["t_birth"]==0]
+traj_path = "data/state.dat"
+traj_data = np.loadtxt(traj_path,dtype=float)
+traj_data = traj_data[traj_data[:,10] <= t_plot]
+
+th_data_path = "config/thermal_scenario.csv"
+th_data = pd.read_csv(th_data_path,sep = ';')
+th_data = th_data[th_data["t_birth"]<=t_plot]
+th_data = th_data[th_data["t_birth"]+th_data["lifespan"]>=t_plot]
 
 ## Trajectory plot
-x = trajectory_data[:,0]
-y = trajectory_data[:,1]
-z = trajectory_data[:,2]
+x = traj_data[:,0]
+y = traj_data[:,1]
+z = traj_data[:,2]
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 ax.plot(x,y,z,color='#6699ff')
@@ -31,11 +37,14 @@ ax.set_xlabel('x')
 ax.set_ylabel('y')
 ax.set_zlabel('z')
 
-## Thermals center plot at t=0
-size = len(thermal_data["x"])
-for i in range(0,size):
-    x_th=linspace(thermal_data["x"][i],thermal_data["x"][i],1000)
-    y_th=linspace(thermal_data["y"][i],thermal_data["y"][i],1000)
+## Thermals plot
+nbth = len(th_data["x"])
+th_x_dat = th_data["x"].tolist()
+th_y_dat = th_data["y"].tolist()
+th_wstar_dat = th_data["w_star"].tolist()
+for i in range(0,nbth):
+    x_th=linspace(th_x_dat[i],th_x_dat[i],1000)
+    y_th=linspace(th_y_dat[i],th_y_dat[i],1000)
     z_th=linspace(0,1000,1000)
     ax.plot(x_th,y_th,z_th,color='#ff6600')
 
