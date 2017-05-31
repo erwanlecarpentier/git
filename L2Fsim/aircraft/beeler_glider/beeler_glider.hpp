@@ -46,48 +46,53 @@ public:
      * @param {double} mass; mass in [0.23kg; 5.44kg]
      * @param {double} wingspan; wing span in [1.52m; 3.55m]
      * @param {double} aspect_ratio; aspect ratio in [6; 16]
-     * @param {double} ARv; aspect ratio of vertical tail
-     * @param {double} Sf; fuselage area
+     * @param {double} AR_V; aspect ratio of vertical tail
      * @param {double} lt; fuselage moment arm length
-     * @param {double} Vh; horizontal tail volume ratio
-     * @param {double} Vv; vertical tail volume ratio
+     * @param {double} V_H; horizontal tail volume ratio
+     * @param {double} V_V; vertical tail volume ratio
      * @param {double} c_; mean aerodynamic cord
      * @param {double} S; wing surface area
-     * @param {double} St; horizontal tail surface
-     * @param {double} Sv; vertical tail surface
+     * @param {double} S_F; fuselage area
+     * @param {double} S_T; horizontal tail surface
+     * @param {double} S_V; vertical tail surface
      * @param {double} e; Oswald efficiency number
      * @param {double} Re; Reynolds number
      * @param {double} a0; lift curve slope
      * @param {double} alpha0; zero point
-     * @param {double} Cd0, Cdl; minimum wing profile drag
-     * @param {double} Clmin, Cl_alpha, Cl_beta; minimum lift
+     * @param {double} C_d_0, C_d_L; wing profile drag coefficients
+     * @param {double} C_L_min, C_L_alpha, C_C_beta; minimum lift
+     * @param {double} C_D_F; fuselage drag coefficient
+     * @param {double} C_D_T; tail drag coefficient
+     * @param {double} C_D_E; miscellaneous "extra drag" coefficient
+     * @param {double} C_D_0; constant part of the drag coefficient with wind
      */
     beeler_glider_state s;
     beeler_glider_command u;
     double mass;
     double wingspan;
     double aspect_ratio;
-    double ARv = 0.5*aspect_ratio;
-	//double Sf = 0.01553571429*wingspan*wingspan + .01950357142*wingspan - 0.01030412685; // polynomial regression - unused
-    double lt = 0.28*wingspan;
-    double Vh = 0.4;
-    double Vv = 0.02;
+    double AR_V = .5*aspect_ratio;
+    double lt = .28*wingspan;
+    double V_H = .4;
+    double V_V = .02;
     double c_ = 1.03 * wingspan / aspect_ratio;
     double S = wingspan * wingspan / aspect_ratio;
-    //double St = Vh * c_ * S / lt; //unused
-    double Sv = Vv * wingspan * S / lt;
-    double e = 0.95;
+	double S_F = .01553571429*wingspan*wingspan + .01950357142*wingspan - .01030412685;
+    double S_T = V_H * c_ * S / lt;
+    double S_V = V_V * wingspan * S / lt;
+    double e = .95;
     //double Re = 150000.; //unused
-    double a0 = 0.1*(180./M_PI);
+    double a0 = .1*(180./M_PI);
     double alpha0 = -2.5*(M_PI/180.);
-    double Cd0 = 0.01;
-    double Cdl = 0.05;
-    double Clmin = 0.4;
-    double Cl_alpha = a0/(1.+a0/(M_PI*e*aspect_ratio));
-    double Cc_beta = (a0/(1.+a0/(M_PI*e*ARv))) * (Sv/S);
-	//double Cdf = .008; //unused
-	//double Cdt = .01; //unused
-	//double Cde = .002; //unused
+    double C_d_0 = .01;
+    double C_d_L = .05;
+    double C_L_min = .4;
+    double C_L_alpha = a0/(1.+a0/(M_PI*e*aspect_ratio));
+    double C_C_beta = (a0/(1.+a0/(M_PI*e*AR_V))) * (S_V/S);
+	double C_D_F = .008;
+	double C_D_T = .01;
+	double C_D_E = .002;
+	double C_D_0 = C_D_F * S_F / S + C_D_T * (S_T + S_V) / S + C_D_E + C_d_0;
 
     /**
      * Constructor
@@ -219,8 +224,6 @@ protected:
                         double &lift,
                         double &drag,
                         double &sideforce) {
-
-        // Retrieve aircraft's state
         double x = s.x;
         double y = s.y;
         double z = s.z;
@@ -230,9 +233,6 @@ protected:
         double alpha = s.alpha;
         double beta = s.beta;
         double sigma = s.sigma;
-		//double xdot = s.xdot;
-		//double ydot = s.ydot;
-		//double zdot = s.zdot;
 		double cos_gamma = cos(gamma);
 		double cos_alpha = cos(alpha);
 		double sin_alpha = sin(alpha);
@@ -248,10 +248,7 @@ protected:
         std::vector<double> X_w(3);
 
         /** Wind relative angles */
-        double alpha_w, beta_w, gamma_w, khi_w, sigma_w;
-
-        /** Aerodynamic force coefficients with wind */
-        double Cc_w, Cl_w, Cd_w;
+        double alpha_w=0., beta_w=0., gamma_w=0., khi_w=0., sigma_w=0.;
 
         /** Rotation matrices and quaternions */
         quaternion rviq; // quaternion version of the Euler rotation sequence {khi,gamma,sigma}
@@ -286,11 +283,11 @@ protected:
 		double cos_gamma_w = cos(gamma_w);
 		double sin_gamma_w = sin(gamma_w);
 
-        if(X_w.at(0) / cos_gamma_w > 1) {
-            khi_w = 0;
-        }else if(X_w.at(0) / cos_gamma_w < -1){
+        if(X_w.at(0) / cos_gamma_w > 1.) {
+            khi_w = 0.;
+        } else if (X_w.at(0) / cos_gamma_w < -1.) {
             khi_w = M_1_PI;
-        }else{
+        } else {
             khi_w = sgn(X_w.at(1) / cos_gamma_w) * acos(X_w.at(0) / cos_gamma_w);
         }
 		double cos_khi_w = cos(khi_w);
@@ -360,28 +357,25 @@ protected:
             beta_w = sgn(m.at(1) / cos_alpha_w) * acos(m.at(0) / cos_alpha_w);
         }
 
-        // Calc of the aerodynamic force coefficients with wind
-        Cc_w = Cc_beta * beta_w;
-        Cl_w = Cl_alpha * (alpha_w - alpha0);
-        Cd_w = Cd0 + Cdl * (Cl_w - Clmin) * (Cl_w - Clmin) + Cl_w * Cl_w / (M_PI*e*aspect_ratio) + Cc_w * Cc_w / (M_PI*e*aspect_ratio) * (S / Sv);
+        /** Calc of the aerodynamic force coefficients with wind */
+        double C_C_w = C_C_beta * beta_w;
+        double C_L_w = C_L_alpha * (alpha_w - alpha0);
+        double C_D_w = C_D_0 + C_d_L * (C_L_w - C_L_min) * (C_L_w - C_L_min) + (C_L_w*C_L_w + C_C_w*C_C_w*(S / S_V)) / (M_PI*e*aspect_ratio);
 
         // Dynamic pressure
-        double q = 0.5 * 1.225 * V_w_2norm * V_w_2norm;
+        double q = .5 * 1.225 * V_w_2norm * V_w_2norm;
 		double qS = q*S;
 
         // Calc of the aerodynamic forces in wind frame
-        double drag_w = qS * Cd_w;
-        double sideforce_w = qS * Cc_w;
-        double lift_w = qS * Cl_w;
-		std::vector<double> forces_w(3); // forces in the wind frame
-		forces_w.at(0) = -drag_w;
-		forces_w.at(1) = -sideforce_w;
-		forces_w.at(2) = -lift_w;
+        double drag_w = qS * C_D_w;
+        double sideforce_w = qS * C_C_w;
+        double lift_w = qS * C_L_w;
+		std::vector<double> forces_w = {-drag_w, -sideforce_w, -lift_w};
 
 		// Transformation to the velocity frame
         rwiq.fromEuler(khi_w, gamma_w, sigma_w);
-		rviq.invert(); // rviq is rivq
-		rviq.multRight(rwiq); //rviq is rivq*rwiq
+		rviq.invert(); // variable 'rviq' is rivq
+		rviq.multRight(rwiq); // variable 'rviq' is rivq*rwiq
 		rviq.rotateVector(forces_w);
 
 		drag = -forces_w.at(0);

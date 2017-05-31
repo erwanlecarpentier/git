@@ -76,11 +76,11 @@ void create_environment() {
 
     /// 2. Create a scenario i.e. create the thermals
     fz.create_scenario(dt,model);
-    fz.print_scenario();
+    fz.print_scenario(); // print the created thermals (optional)
 
-    /// 3 : Save data for visualization
+    /// 3 : Save data for visualization (optional)
     double dx = 50.; // mesh precision in x direction
-    double dy = dx; // mesh precision in y direction
+    double dy = 50.; // mesh precision in y direction
     double z = 500.;  // altitude of the saved updraft field
     double t = 500.;  // time of the saved updraft field
     fz.save_updraft_values(dx,dy,z,t,"data/updraft_field.dat");
