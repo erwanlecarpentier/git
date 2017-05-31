@@ -8,7 +8,7 @@ MAIN_CPP=demo/main.cpp
 
 all : clean_exe compile run
 
-run : clean_dat
+run :
 	./${EXEC}
 
 compile : ${MAIN_CPP}
@@ -44,22 +44,28 @@ clean_dat :
 	rm -f data/updraft_field.dat
 
 help :
-	@echo Learning to fly project - Help section:
+	@echo ----------------------------------------------------------------------
+	@echo Learning to fly project
+	@echo Help section
+	@echo ----------------------------------------------------------------------
 	@echo
-	@echo General:
+	@echo Makefile commands:
+	@echo
+	@echo - General:
 	@echo compile : compile ”${MAIN_CPP}”, executable is ”${EXEC}”
-	@echo run : clean_dat and execute ”${EXEC}”
-	@echo all : clean_exe, compile, clean_dat and execute ”${EXEC}”
+	@echo run     : execute ”${EXEC}”
+	@echo all     : clean_exe, compile and execute ”${EXEC}”
 	@echo
 	@echo - Plot:
 	@echo thermal_magnitude : run ”/plot/thermal_magnitude.py” with python3
-	@echo 2d_trajectory : run ”/plot/2d_trajectory.py” with python3
-	@echo 3d_trajectory : run ”/plot/3d_trajectory.py” with python3
-	@echo variables : run ”/plot/variables.py” with python3
+	@echo 2d_trajectory     : run ”/plot/2d_trajectory.py” with python3
+	@echo 3d_trajectory     : run ”/plot/3d_trajectory.py” with python3
+	@echo variables         : run ”/plot/variables.py” with python3
 	@echo
 	@echo - Clean:
 	@echo clean_all : remove executables and data files
 	@echo clean_exe : remove executables
 	@echo clean_dat : remove data files
 	@echo
+	@echo ----------------------------------------------------------------------
 

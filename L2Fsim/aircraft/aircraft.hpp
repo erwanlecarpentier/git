@@ -49,6 +49,9 @@ public:
      * @return true if the aircraft still is in its validity model
      */
     virtual bool is_in_model() = 0;
+
+    /** @brief Return the saved data at each time step */
+    virtual std::vector<double> get_save() = 0;
 };
 
 }

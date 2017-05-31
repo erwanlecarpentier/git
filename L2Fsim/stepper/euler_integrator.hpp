@@ -81,21 +81,10 @@ public:
             pl(ac.get_state(),ac.get_command());
         }
 
-        /// 2. Save the data
-        /// @warning output files should be cleared first
-        save_vector(ac.get_state().get_save(),state_log_path,std::ofstream::app);
-        std::vector<double> w;
-        fz.wind(
-            ac.get_state().getx(),
-            ac.get_state().gety(),
-            ac.get_state().getz(),
-            ac.get_state().gett(),w);
-        save_vector(w,wind_log_path,std::ofstream::app);
-
-        /// 3. Apply the transition with Euler method
+        /// 2. Apply the transition with Euler method
         transition_function(ac,fz,current_time,time_step_width,dt);
 
-        /// 4. Check aircraft's configuration validity
+        /// 3. Check aircraft's configuration validity
         if(!ac.is_in_model()){eos=true;}
     }
 };

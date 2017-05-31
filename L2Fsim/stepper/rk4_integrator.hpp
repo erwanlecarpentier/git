@@ -101,27 +101,17 @@ public:
         const double &time_step_width,
         bool &eos) override
     {
-        /// 1. Apply the policy
+        /// 1. Apply the policy and store the command into command attribute of aircraft
         if (ac.get_distance_to_center() > 1200.) {
             pl.out_of_boundaries(ac.get_state(),ac.get_command());
         } else {
             pl(ac.get_state(),ac.get_command());
         }
 
-        /// 2. Save the data
-        /// @note output files should be cleared first
-        save_vector(ac.get_state().get_save(),state_log_path,std::ofstream::app);
-        std::vector<double> w;
-        fz.wind(ac.get_state().getx(),
-            ac.get_state().gety(),
-            ac.get_state().getz(),
-            ac.get_state().gett(),w);
-        save_vector(w,wind_log_path,std::ofstream::app);
-
-        /// 3. Apply the transition with RK4 method
+        /// 2. Apply the transition with RK4 method
         transition_function(ac,fz,current_time,time_step_width,dt);
 
-        /// 4. Check aircraft's configuration validity
+        /// 3. Check aircraft's configuration validity
         if(!ac.is_in_model()){eos=true;}
     }
 };

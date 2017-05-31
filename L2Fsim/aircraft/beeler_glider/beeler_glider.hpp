@@ -175,32 +175,35 @@ public:
      * @return true if the aircraft still is in its validity model
      */
     bool is_in_model() override {
-        double z = s.z;
-        double gamma = s.gamma;
-        double alpha = s.alpha;
-        double limit_gamma_angle = .78539816339; //45. * M_PI / 180.;
-        double limit_alpha_gamma_angle = .78539816339; //45. * M_PI / 180.;
-        if(z < 0) {
+        double gm = s.gamma;
+        double alpgm = s.alpha + gm;
+        double mam = s.max_angle_magnitude;
+        if(s.z < 0.) {
             std::cout << "STOP: altitude 'z' < 0" << std::endl;
             return false;
         }
-        else if(gamma > limit_gamma_angle) {
-            std::cout << "STOP: elevation angle 'gamma' > " << limit_gamma_angle << " rad" << std::endl;
+        else if(gm > mam) {
+            std::cout << "STOP: elevation angle 'gamma' > " << mam << " (rad)" << std::endl;
             return false;
         }
-        else if(gamma < -limit_gamma_angle) {
-            std::cout << "STOP: elevation angle 'gamma' < " << -limit_gamma_angle << " rad" << std::endl;
+        else if(gm < -mam) {
+            std::cout << "STOP: elevation angle 'gamma' < " << -mam << " (rad)" << std::endl;
             return false;
         }
-        else if(gamma + alpha > limit_alpha_gamma_angle) {
-            std::cout << "STOP: inclination angle 'gamma+alpha' > " << limit_alpha_gamma_angle << " rad" << std::endl;
+        else if(alpgm > mam) {
+            std::cout << "STOP: inclination angle 'gamma+alpha' > " << mam << " (rad)" << std::endl;
             return false;
         }
-        else if(gamma + alpha < -limit_alpha_gamma_angle) {
-            std::cout << "STOP: inclination angle 'gamma+alpha' < " << -limit_alpha_gamma_angle << " rad" << std::endl;
+        else if(alpgm < -mam) {
+            std::cout << "STOP: inclination angle 'gamma+alpha' < " << -mam << " (rad)" << std::endl;
             return false;
         }
         return true;
+    }
+
+    /** @brief Return the saved data at each time step */
+    std::vector<double> get_save() override {
+        return s.get_save();
     }
 
 protected:

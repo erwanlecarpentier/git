@@ -92,15 +92,18 @@ void create_environment() {
 /**
  * @brief Method running a simulation using a configuration file
  * @param {const char *} cfg_path; path to the configuration file
- * @note WORK IN PROGRESS -> config file handling note done
+ * @note WORK IN PROGRESS -> config file handling
  */
 void run_with_config(const char *cfg_path) {
     cfg_reader cfgr;
     libconfig::Config cfg;
     cfg.readFile(cfg_path);
 
+    /** General settings */
     double Dt=.1, t_lim=1e3, nb_dt=1., t=0.; // default values
     cfgr.read_time_variables(cfg,t_lim,Dt,nb_dt);
+    std::string ac_save_path = "data/state.dat";
+    std::string fz_save_path = "data/wind.dat";
 
     /** Environment */
     flight_zone *my_zone = cfgr.read_environment_variables(cfg);
@@ -151,16 +154,15 @@ void run_with_config(const char *cfg_path) {
 	mysim.ac = &my_glider;
 	mysim.st = my_stepper;
 	mysim.pl = &my_pilot;
+	mysim.ac_save_path = ac_save_path;
+	mysim.fz_save_path = fz_save_path;
 
 	/** Run the simulation */
 	bool eos = false;
-    while(t<=t_lim) {
-        std::cout<<"t = "<<t<<std::endl;
+	mysim.clear_saves();
+    while(t <= t_lim && !eos) {
+        mysim.save();
         mysim.step(t,Dt,eos);
-        //todo: save
-        //save_vector(mysim.fz->get_save());
-        //save_vector(mysim.pl->get_save());
-        //save_vector(mysim.ac->get_save());
     }
 
 	/** Delete the dynamically created variables */
