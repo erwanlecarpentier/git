@@ -11,12 +11,11 @@ from pylab import *
 from mpl_toolkits.mplot3d import Axes3D
 import mpl_toolkits.mplot3d.art3d as art3d
 
-## Parameters
-t_plot = 1000 # time step until which we plot
-
 ## File reading
 traj_path = "data/state.dat"
 traj_data = np.loadtxt(traj_path,dtype=float)
+#t_plot = 1000 				 # time step until which we plot
+t_plot = traj_data[:,10][-1] # time step until which we plot
 traj_data = traj_data[traj_data[:,10] <= t_plot]
 
 th_data_path = "config/thermal_scenario.csv"

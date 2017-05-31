@@ -145,7 +145,7 @@ public:
             double r_r2 = r/r2;
             double w_ = w_star * pow(z_zi,1./3.) * (1. - 1.1*z_zi);
             double w_peak = 3. * w_ * (r2-r1)*r2*r2 / (r2*r2*r2 - r1*r1*r1);
-            double w_l = ((r1 < r) && (r < (2.*r2))) ? -PI/6.*sin(PI*r_r2) : 0.;
+            double w_l = ((r1 < r) && (r < (2.*r2))) ? -M_PI/6.*sin(M_PI*r_r2) : 0.;
             double s_wd = ((.5 < z_zi) && (z_zi < .9)) ? 2.5*(z_zi-.5) : 0.;
             //double w_d = s_wd*w_l;
             //double k1 = 1.4866; // ki values valid for r1_r2 = 0.36
@@ -169,7 +169,7 @@ public:
             double z_zi = z/zi;
 
             //Calculation of radius of the thermal
-            double d_T = zi*(.4 * pow(z_zi,1./3.) * (1 - .5*z_zi)) + (z*z_zi*z_zi - .6*z*z_zi)/PI;
+            double d_T = zi*(.4 * pow(z_zi,1./3.) * (1 - .5*z_zi)) + (z*z_zi*z_zi - .6*z*z_zi)/M_PI;
             double r2 = .5*d_T;
 
             //Core downdraft radius
@@ -185,22 +185,22 @@ public:
 
             //Calculation of Updraft based on equations 14,15,16 from Childress
             if(z_zi<.5 && r<=r2) {
-                w_total = w_peak*cos((r/r2)*PI*.5);
+                w_total = w_peak*cos((r/r2)*M_PI*.5);
             }
             else if(z_zi<.9) {
                 if(r<r1) {
-                    w_total = wd*cos((r/r1)*PI*.5);
+                    w_total = wd*cos((r/r1)*M_PI*.5);
                 }
                 else if(r1<=r && r<=(r1+r2)) {
-                    w_total = w_peak*sin((r-r1)/r2 * 1.212 *PI);
+                    w_total = w_peak*sin((r-r1)/r2 * 1.212 *M_PI);
                     if(w_total<0.){w_total=0.;}
                 }
                 else {w_total = 0.;}
             }
             else {
-                if(r<r1) {w_total = .5*wd*cos((r/r1)*PI*.5);}
+                if(r<r1) {w_total = .5*wd*cos((r/r1)*M_PI*.5);}
                 else if(r1<=r && r<=(r1+r2)) {
-                    w_total = (1-z_zi)*w_peak*sin((r-r1)/r2 * 1.212 *PI);
+                    w_total = (1-z_zi)*w_peak*sin((r-r1)/r2 * 1.212 *M_PI);
                     if(w_total<0.){w_total=0.;}
                 }
                 else {w_total = 0.;}
@@ -231,7 +231,7 @@ public:
             //double var = 1.8*pow(z_zi,2./3.) * (1.-.8*z_zi)*(1.-.8*z_zi);
 
             // w_peak assuming a gaussian distribution is
-            double w_peak = w_; //*(2./pow(PI,.5));
+            double w_peak = w_; //*(2./pow(M_PI,.5));
 
             if (choice == 1) {
                 w_total = w_peak * exp(-(4.*r*r/(d*d)));
@@ -309,10 +309,10 @@ public:
 
         //Calculation of Wz
         if(dH == 0.) {
-            w[2] += w_core * .5*(cos(PI*zt/(k*rT))+1.);
+            w[2] += w_core * .5*(cos(M_PI*zt/(k*rT))+1.);
         }
         else if(dH <= 2.*rT) {
-            w[2] += .5*(w_core*rT)/(PI*dH) * sin(PI*dH/rT) * (cos(PI*zt/(k*rT))+1.);
+            w[2] += .5*(w_core*rT)/(M_PI*dH) * sin(M_PI*dH/rT) * (cos(M_PI*zt/(k*rT))+1.);
         }
         else {/*w[2] += 0.;*/}
 
@@ -325,7 +325,7 @@ public:
             w[1] -= coef*yt;
         }
         else if(dH == rT) {
-            double dw = w_core/(2.*k*rT) * (1. + cos(PI*z/(k*rT)));
+            double dw = w_core/(2.*k*rT) * (1. + cos(M_PI*z/(k*rT)));
             w[0] -= dw;
             w[1] -= dw;
         }

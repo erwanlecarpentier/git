@@ -11,12 +11,11 @@ from pylab import *
 from mpl_toolkits.mplot3d import Axes3D
 import mpl_toolkits.mplot3d.art3d as art3d
 
-## Parameters
-t_plot = 1000 # time step until which we plot
-
 ## File reading
 traj_path = "data/state.dat"
 traj_data = np.loadtxt(traj_path,dtype=float)
+#t_plot = 1000 				 # time step until which we plot
+t_plot = traj_data[:,10][-1] # time step until which we plot
 traj_data = traj_data[traj_data[:,10] <= t_plot]
 
 th_data_path = "config/thermal_scenario.csv"
@@ -30,8 +29,8 @@ y = traj_data[:,1]
 fig = plt.figure()
 ax = fig.add_subplot(111)
 ax.plot(x,y,color='#6699ff')
-ax.set_xlim((-1300, 1300))
-ax.set_ylim((-1300, 1300))
+ax.set_xlim((-1500, 1500))
+ax.set_ylim((-1500, 1500))
 ax.set_xlabel('x')
 ax.set_ylabel('y')
 ax.scatter(x[0], y[0], color='black', marker="x") # starting point

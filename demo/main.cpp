@@ -44,8 +44,8 @@ void create_environment() {
     double t_limit = 1000.;
     double windx = 0.;
     double windy = 0.;
-    double w_star_min = 2.;
-    double w_star_max = 5.;
+    double w_star_min = 4.;
+    double w_star_max = 6.;
     double zi_min = 1300.;
     double zi_max = 1400.;
     double lifespan_min = 300.;
@@ -76,14 +76,14 @@ void create_environment() {
 
     /// 2. Create a scenario i.e. create the thermals
     fz.create_scenario(dt,model);
-    fz.print_scenario(); // print the created thermals (optional)
+    //fz.print_scenario(); // print the created thermals (optional)
 
     /// 3 : Save data for visualization (optional)
-    double dx = 50.; // mesh precision in x direction
-    double dy = 50.; // mesh precision in y direction
-    double z = 500.;  // altitude of the saved updraft field
-    double t = 500.;  // time of the saved updraft field
+    /*
+    double dx=50., dy=50.; // mesh precision
+    double z=500., t=500.;  // altitude and time of the saved updraft field
     fz.save_updraft_values(dx,dy,z,t,"data/updraft_field.dat");
+    */
 
     /// 4. Save the scenario
     fz.save_scenario("config/thermal_scenario.csv");
@@ -123,16 +123,16 @@ void run_with_config(const char *cfg_path) {
 	stepper *my_stepper = cfgr.read_stepper_variable(cfg,Dt/nb_dt);
 
     /** Pilot */
-    double angle_rate_magnitude = 1e-1;
-    passive_pilot my_pilot(angle_rate_magnitude);
+    double angle_rate_magnitude = .01;
+    //passive_pilot my_pilot(angle_rate_magnitude);
     //heuristic_pilot my_pilot(angle_rate_magnitude);
 
     //double ep=1e-2, lr=1e-3, df=.9;
     //q_learning_pilot my_pilot(angle_rate_magnitude,ep,lr,df);*/
 
-    /*double uct_df=.9;
+    double uct_df=.9;
     double uct_parameter = 1./sqrt(2.);
-    double uct_tsw=1., uct_stsw=uct_tsw/1.;
+    double uct_tsw=Dt, uct_stsw=uct_tsw;
     unsigned int uct_horizon=100, uct_budget=1000;
     euler_integrator uct_stepper(uct_stsw);
     flat_thermal_soaring_zone uct_fz("config/thermal_scenario.csv",0.);
@@ -146,7 +146,7 @@ void run_with_config(const char *cfg_path) {
         uct_stsw,
         uct_df,
         uct_horizon,
-        uct_budget);*/
+        uct_budget);
 
     /** Initialize the simulation */
     simulation mysim;
@@ -160,7 +160,9 @@ void run_with_config(const char *cfg_path) {
 	/** Run the simulation */
 	bool eos = false;
 	mysim.clear_saves();
-    while(t <= t_lim && !eos) {
+    while((t < t_lim || is_equal_to(t,t_lim)) && !eos) {
+    //while(t <= t_lim && !eos) {
+        std::cout<<t<<std::endl;
         mysim.save();
         mysim.step(t,Dt,eos);
     }

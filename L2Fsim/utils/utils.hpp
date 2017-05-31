@@ -1,7 +1,3 @@
-#ifndef PI
-#define PI 3.14159265358979323846
-#endif
-
 #ifndef L2FSIM_UTILS_HPP_
 #define L2FSIM_UTILS_HPP_
 
@@ -20,7 +16,28 @@
 
 namespace L2Fsim {
 
+constexpr double TO_RAD = 0.01745329251;
+constexpr double COMPARISON_THRESHOLD = 1e-6;
+
 inline void pop(){std::cout<<"pop"<<std::endl;}
+
+/** @brief Return true if a == b up to a certain precision */
+template <class T1, class T2>
+constexpr bool is_equal_to(T1 a, T2 b) {
+    return std::fabs(a-b)<COMPARISON_THRESHOLD;
+}
+
+/** @brief Return true if a < b  up to a certain precision */
+template <class T1, class T2>
+constexpr bool is_less_than(T1 a, T2 b) {
+    return a<b-COMPARISON_THRESHOLD;
+}
+
+/** @brief Return true if a > b  up to a certain precision */
+template <class T1, class T2>
+constexpr bool is_greater_than(T1 a, T2 b) {
+    return a>b+COMPARISON_THRESHOLD;
+}
 
 /**
  * @brief Sort the indices of the input vector, not depending on its content type

@@ -18,8 +18,6 @@
 
 #include <libconfig.h++>
 
-#define TO_RAD 0.01745329251
-
 /**
  * @file cfg_reader.hpp
  * @brief Configuration reader
