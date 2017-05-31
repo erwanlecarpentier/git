@@ -36,17 +36,19 @@ ax.set_ylim3d((-1300, 1300))
 ax.set_xlabel('x')
 ax.set_ylabel('y')
 ax.set_zlabel('z')
+ax.scatter(x[0], y[0], z[0], color='black', marker="x") # starting point
+ax.scatter(x[-1],y[-1],z[-1],color='black', marker="x") # ending point
+ax.text(x[0]+10,  y[0]+10,  z[0]+10,  "Start")
+ax.text(x[-1]+10, y[-1]+10, z[-1]+10, "End")
+
 
 ## Thermals plot
-nbth = len(th_data["x"])
 th_x_dat = th_data["x"].tolist()
 th_y_dat = th_data["y"].tolist()
-th_wstar_dat = th_data["w_star"].tolist()
-for i in range(0,nbth):
-    x_th=linspace(th_x_dat[i],th_x_dat[i],1000)
-    y_th=linspace(th_y_dat[i],th_y_dat[i],1000)
-    z_th=linspace(0,1000,1000)
-    ax.plot(x_th,y_th,z_th,color='#ff6600')
+height = th_data["w_star"].tolist()
+for i in range(0,len(th_x_dat)):
+	height[i] = int(200.*height[i])
+	ax.plot([th_x_dat[i],th_x_dat[i]], [th_y_dat[i],th_y_dat[i]],zs=[0,height[i]],color='#ff6600')
 
 ## Border plot
 limit_circle = Circle((0, 0), 1200, color='black', fill=False)

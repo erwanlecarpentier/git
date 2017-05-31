@@ -34,10 +34,10 @@ ax.set_xlim((-1300, 1300))
 ax.set_ylim((-1300, 1300))
 ax.set_xlabel('x')
 ax.set_ylabel('y')
-
-x_end = x[-1]
-y_end = y[-1]
-ax.scatter(x_end,y_end,color='black',marker="x")
+ax.scatter(x[0], y[0], color='black', marker="x") # starting point
+ax.scatter(x[-1],y[-1],color='black', marker="x") # ending point
+ax.text(x[0]+10,  y[0]+10,  "Start")
+ax.text(x[-1]+10, y[-1]+10, "End")
 
 ## Thermals plot
 nbth = len(th_data["x"])
