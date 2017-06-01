@@ -58,7 +58,7 @@ public:
     pilot & out_of_boundaries(state &_s, command &_a) override {
         beeler_glider_state &s = dynamic_cast <beeler_glider_state &> (_s);
         beeler_glider_command &a = dynamic_cast <beeler_glider_command &> (_a);
-        double ang_max = .3;
+        double ang_max = .4;
         a.set_to_neutral();
         if(0. <= s.sigma && s.sigma < ang_max) {
             a.dsigma = +angle_rate_magnitude;

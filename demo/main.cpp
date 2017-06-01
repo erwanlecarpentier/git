@@ -124,14 +124,14 @@ void run_with_config(const char *cfg_path) {
 	stepper *my_stepper = cfgr.read_stepper_variable(cfg,Dt/nb_dt);
 
     /** Pilot */
-    double angle_rate_magnitude = .05;
+    double angle_rate_magnitude = .01;
     //passive_pilot my_pilot(angle_rate_magnitude);
-    //heuristic_pilot my_pilot(angle_rate_magnitude);
+    heuristic_pilot my_pilot(angle_rate_magnitude);
 
     //double ep=1e-2, lr=1e-3, df=.9;
     //q_learning_pilot my_pilot(angle_rate_magnitude,ep,lr,df);*/
 
-    double uct_df=.9;
+    /*double uct_df=.9;
     double uct_parameter = 1./sqrt(2.);
     double uct_tsw=Dt, uct_stsw=uct_tsw;
     unsigned int uct_horizon=100, uct_budget=1000;
@@ -147,7 +147,7 @@ void run_with_config(const char *cfg_path) {
         uct_stsw,
         uct_df,
         uct_horizon,
-        uct_budget);
+        uct_budget);*/
 
     /** Initialize the simulation */
     simulation mysim;
@@ -161,7 +161,7 @@ void run_with_config(const char *cfg_path) {
 	/** Run the simulation */
 	bool eos = false;
 	mysim.clear_saves();
-    while((t < t_lim || is_equal_to(t,t_lim)) && !eos) {
+    while(!(is_greater_than(t,t_lim)) && !eos) {
         std::cout<<t<<std::endl;
         mysim.save();
         mysim.step(t,Dt,eos);
@@ -176,6 +176,6 @@ void run_with_config(const char *cfg_path) {
 int main() {
     srand(time(NULL));
     create_environment();
-    //run_with_config("config/main_config.cfg");
+    run_with_config("config/main_config.cfg");
     return 0;
 }

@@ -75,7 +75,7 @@ public:
         bool &eos) override
     {
         /// 1. Apply the policy and store the command into command attribute of aircraft
-        if (fz.is_within_fz(ac.get_state().getx(),ac.get_state().gety(),ac.get_state().getz())) {
+        if (!fz.is_within_fz(ac.get_state().getx(),ac.get_state().gety(),ac.get_state().getz())) {
             pl.out_of_boundaries(ac.get_state(),ac.get_command());
         } else {
             pl(ac.get_state(),ac.get_command());

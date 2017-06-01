@@ -163,11 +163,14 @@ public:
         cf_file.close();
     }
 
-    /** @brief Return the maximum number of thermals in the zone */
-    int get_max_nb_of_th() {
+    /**
+     * @brief Return the maximum number of thermals in the zone
+     * @deprecated This method is not used anymore, we rather use nbth that defines this number directly
+     */
+    /*int get_max_nb_of_th() {
         double zi_avg = zi_max - zi_min;
         return floor(0.6*(x_max-x_min)*(y_max-y_min)/(d_min*zi_avg));
-    }
+    }*/
 
     /**
      * @brief Define the center of a new thermal depending on positions of other thermals
@@ -236,8 +239,7 @@ public:
                 thermals_area += M_PI*rsq;
             }
         }
-        double region_area = (x_max-x_min)*(y_max-y_min);
-        double w_e = - mass_flow / (region_area - thermals_area);
+        double w_e = - mass_flow / ((x_max-x_min)*(y_max-y_min) - thermals_area);
         if(w_e>0.){w_e=0.;}
         return w_e;
     }
@@ -300,7 +302,7 @@ public:
         if(thermals.size()!=0 && thermals[0]->get_model()==1){
             w[2] += global_sink_rate(z,t);
         }
-        if (noise_stddev != 0.) {
+        if (!is_equal_to(noise_stddev,0.)) {
             unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
             std::default_random_engine generator (seed);
 
@@ -370,7 +372,7 @@ public:
         std::ofstream ofs;
         ofs.open(op);
         ofs << "t x y z updraft"<<std::endl;
-        std::vector<double> w;
+        std::vector<double> w(3);
         for(double x=x_min; x<=x_max; x+=dx) {
             for(double y=y_min; y<=y_max; y+=dy) {
                 wind(x,y,z,t,w);
@@ -391,26 +393,27 @@ public:
      */
     void save_scenario(std::string op) {
         std::ofstream ofs;
+        std::string sep = ";";
         ofs.open(op);
-        ofs<<"model"<<';';
-        ofs<<"t_birth"<<';';
-        ofs<<"lifespan"<<';';
-        ofs<<"w_star"<<';';
-        ofs<<"zi"<<';';
-        ofs<<"x"<<';';
-        ofs<<"y"<<';';
-        ofs<<"z"<<';';
+        ofs<<"model"<<sep;
+        ofs<<"t_birth"<<sep;
+        ofs<<"lifespan"<<sep;
+        ofs<<"w_star"<<sep;
+        ofs<<"zi"<<sep;
+        ofs<<"x"<<sep;
+        ofs<<"y"<<sep;
+        ofs<<"z"<<sep;
         ofs<<"ksi"<<std::endl;
         for(auto &th : thermals) {
             std::vector<double> center = th->get_center();
-            ofs<<th->get_model()<<';';
-            ofs<<th->get_t_birth()<<';';
-            ofs<<th->get_lifespan()<<';';
-            ofs<<th->get_w_star()<<';';
-            ofs<<th->get_zi()<<';';
-            ofs<<center.at(0)<<';';
-            ofs<<center.at(1)<<';';
-            ofs<<center.at(2)<<';';
+            ofs<<th->get_model()<<sep;
+            ofs<<th->get_t_birth()<<sep;
+            ofs<<th->get_lifespan()<<sep;
+            ofs<<th->get_w_star()<<sep;
+            ofs<<th->get_zi()<<sep;
+            ofs<<center.at(0)<<sep;
+            ofs<<center.at(1)<<sep;
+            ofs<<center.at(2)<<sep;
             ofs<<th->get_ksi();
             ofs<<std::endl;
         }
@@ -422,20 +425,21 @@ public:
      */
     void save_fz_cfg(std::string op) {
         std::ofstream ofs;
+        std::string sep = ";";
         ofs.open(op);
-        ofs<<"x_min"<<';';
-        ofs<<"x_max"<<';';
-        ofs<<"y_min"<<';';
-        ofs<<"y_max"<<';';
-        ofs<<"z_min"<<';';
-        ofs<<"z_max"<<';';
+        ofs<<"x_min"<<sep;
+        ofs<<"x_max"<<sep;
+        ofs<<"y_min"<<sep;
+        ofs<<"y_max"<<sep;
+        ofs<<"z_min"<<sep;
+        ofs<<"z_max"<<sep;
         ofs<<"d_min"<<std::endl;
-        ofs<<x_min<<';';
-        ofs<<x_max<<';';
-        ofs<<y_min<<';';
-        ofs<<y_max<<';';
-        ofs<<z_min<<';';
-        ofs<<z_max<<';';
+        ofs<<x_min<<sep;
+        ofs<<x_max<<sep;
+        ofs<<y_min<<sep;
+        ofs<<y_max<<sep;
+        ofs<<z_min<<sep;
+        ofs<<z_max<<sep;
         ofs<<d_min<<std::endl;
     }
 };
