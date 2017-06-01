@@ -21,9 +21,9 @@
 namespace L2Fsim {
 
 class flat_thermal_soaring_zone : public flat_zone {
-protected:
+public:
     /**
-     * Attributes
+     * @brief Attributes
      * @param {double} t_start; starting time of the simulation
      * @param {double} t_limit; ending time of the simulation
      * @param {double} windx, windy; horizontal components of the wind velocity
@@ -33,6 +33,7 @@ protected:
      * @param {double} x_min, x_max, y_min, y_max, z_min, z_max; boundaries
      * @param {double} ksi_min, ksi_max; minimum and maximum roll-off parameter
      * @param {double} d_min; minimum radius of a thermal
+     * @param {unsigned int} nbth; maximum number of thermals in the scenario
      * @param {std::vector<thermal *>} thermals; list of the thermals created in the simulation
      * @param {double} noise_stddev; standard deviation of the normal law whose samples are added to each component of the wind velocity vector
      * @note No seed selection is done - you would have to implement this if you want to re-generate matching pseudo-random sequences
@@ -47,8 +48,120 @@ protected:
     double x_min, x_max, y_min, y_max, z_min, z_max;
     double ksi_min, ksi_max;
     double d_min;
+    unsigned int nbth;
     std::vector<thermal *> thermals;
     double noise_stddev = 0.;
+
+    /** @brief Constructor; create an empty zone defined by its extremum dimensions */
+    flat_thermal_soaring_zone(
+        double _t_start,
+        double _t_limit,
+        double _windx,
+        double _windy,
+        double _w_star_min,
+        double _w_star_max,
+        double _zi_min,
+        double _zi_max,
+        double _lifespan_min,
+        double _lifespan_max,
+        double _x_min,
+        double _x_max,
+        double _y_min,
+        double _y_max,
+        double _z_min,
+        double _z_max,
+        double _ksi_min,
+        double _ksi_max,
+        double _d_min,
+        unsigned int _nbth) :
+        t_start(_t_start),
+        t_limit(_t_limit),
+        windx(_windx),
+        windy(_windy),
+        w_star_min(_w_star_min),
+        w_star_max(_w_star_max),
+        zi_min(_zi_min),
+        zi_max(_zi_max),
+        lifespan_min(_lifespan_min),
+        lifespan_max(_lifespan_max),
+        x_min(_x_min),
+        x_max(_x_max),
+        y_min(_y_min),
+        y_max(_y_max),
+        z_min(_z_min),
+        z_max(_z_max),
+        ksi_min(_ksi_min),
+        ksi_max(_ksi_max),
+        d_min(_d_min),
+        nbth(_nbth)
+    {}
+
+    /**
+     * @brief Constructor; Read a pre-saved thermal scenario (method save_scenario) in order to play an identical simulation
+     * @warning Expect same order of variables as in save_scenario and save_fz_cfg method; do not modify one without the other
+     * @param {std::string} th_sc_p; thermal scenario input path
+     * @param {std::string} fz_cfg_p; flight zone configuration input path
+     */
+    flat_thermal_soaring_zone(std::string th_sc_p, std::string fz_cfg_p, double _noise_stddev=0.) : noise_stddev(_noise_stddev) {
+        // 1. Read thermal scenario
+        std::ifstream sc_file(th_sc_p);
+        if(!sc_file.is_open()){std::cerr << "Unable to open input file ("<< th_sc_p <<") in flat_thermal_soaring_zone constructor" << std::endl;}
+        std::string line;
+        std::getline(sc_file,line); // do not take first line into account
+        while(sc_file.good()) {
+            std::vector<std::string> result;
+            std::getline(sc_file,line);
+            if(line.size()>0) { // prevent from reading last (empty) line
+                std::stringstream line_stream(line);
+                std::string cell;
+                while(std::getline(line_stream,cell,';')) {
+                    result.push_back(cell);
+                }
+                if (!line_stream && cell.empty()) { // This checks for a trailing comma with no data after it
+                    // If there was a trailing comma then add an empty element
+                    result.push_back("");
+                }
+                int model = std::stoi(result.at(0));
+                double t_birth = std::stod(result.at(1));
+                double lifespan = std::stod(result.at(2));
+                double w_star = std::stod(result.at(3));
+                double zi = std::stod(result.at(4));
+                double x = std::stod(result.at(5));
+                double y = std::stod(result.at(6));
+                double z = std::stod(result.at(7));
+                double ksi = std::stod(result.at(8));
+                std_thermal *new_th = new std_thermal(model,w_star,zi,t_birth,lifespan,x,y,z,ksi);
+                new_th->set_horizontal_wind(windx,windy);
+                thermals.push_back(new_th);
+            }
+        }
+        sc_file.close();
+        // 2. Read flight zone configuration
+        std::ifstream cf_file(fz_cfg_p);
+        if(!cf_file.is_open()){std::cerr << "Unable to open input file ("<< fz_cfg_p <<") in flat_thermal_soaring_zone constructor" << std::endl;}
+        std::getline(cf_file,line); // do not take first line into account
+        std::getline(cf_file,line); // take 2nd line
+        if(line.size()>0) { // prevent from reading empty line
+            std::vector<std::string> result;
+            std::stringstream line_stream(line);
+            std::string cell;
+            while(std::getline(line_stream,cell,';')) {
+                result.push_back(cell);
+            }
+            if (!line_stream && cell.empty()) { // This checks for a trailing comma with no data after it
+                // If there was a trailing comma then add an empty element
+                result.push_back("");
+            }
+            x_min = stod(result.at(0));
+            x_max = stod(result.at(1));
+            y_min = stod(result.at(2));
+            y_max = stod(result.at(3));
+            z_min = stod(result.at(4));
+            z_max = stod(result.at(5));
+            d_min = stod(result.at(6));
+        } else {std::cout << "Unable to read 2nd line in fz configuration reader in flat_thermal_soaring_zone constructor"<<std::endl;}
+        cf_file.close();
+    }
 
     /** @brief Return the maximum number of thermals in the zone */
     int get_max_nb_of_th() {
@@ -161,92 +274,6 @@ protected:
      */
     double pick_ksi() {return rand_double(ksi_min,ksi_max);}
 
-public:
-    /**
-     * @brief Constructor; create an empty zone defined by its extremum dimensions
-     */
-    flat_thermal_soaring_zone(
-        double _t_start,
-        double _t_limit,
-        double _windx,
-        double _windy,
-        double _w_star_min,
-        double _w_star_max,
-        double _zi_min,
-        double _zi_max,
-        double _lifespan_min,
-        double _lifespan_max,
-        double _x_min,
-        double _x_max,
-        double _y_min,
-        double _y_max,
-        double _z_min,
-        double _z_max,
-        double _ksi_min,
-        double _ksi_max,
-        double _d_min) :
-        t_start(_t_start),
-        t_limit(_t_limit),
-        windx(_windx),
-        windy(_windy),
-        w_star_min(_w_star_min),
-        w_star_max(_w_star_max),
-        zi_min(_zi_min),
-        zi_max(_zi_max),
-        lifespan_min(_lifespan_min),
-        lifespan_max(_lifespan_max),
-        x_min(_x_min),
-        x_max(_x_max),
-        y_min(_y_min),
-        y_max(_y_max),
-        z_min(_z_min),
-        z_max(_z_max),
-        ksi_min(_ksi_min),
-        ksi_max(_ksi_max),
-        d_min(_d_min)
-    {}
-
-    /**
-     * @brief Constructor; Read a pre-saved thermal scenario (method save_scenario) in order to play an identical simulation
-     * @warning Expect same order of variables as in save_scenario method; do not modify one without the other
-     * @param {std::string} ip; input path to the saved scenario
-     * @param {const char *} sep; separator between items
-     */
-    flat_thermal_soaring_zone(std::string ip, double _noise_stddev) : noise_stddev(_noise_stddev) {
-        std::ifstream file(ip);
-        if(!file.is_open()){std::cerr << "Unable to open input file ("<< ip <<") in flat_thermal_soaring_zone constructor" << std::endl;}
-        std::string line;
-        std::getline(file,line); // do not take first line into account
-        while(file.good()) {
-            std::vector<std::string> result;
-            std::getline(file,line);
-            if(line.size()>0) { // prevent from reading last (empty) line
-                std::stringstream line_stream(line);
-                std::string cell;
-                while(std::getline(line_stream,cell,';')) {
-                    result.push_back(cell);
-                }
-                if (!line_stream && cell.empty()) { // This checks for a trailing comma with no data after it
-                    // If there was a trailing comma then add an empty element
-                    result.push_back("");
-                }
-                int model = std::stoi(result.at(0));
-                double t_birth = std::stod(result.at(1));
-                double lifespan = std::stod(result.at(2));
-                double w_star = std::stod(result.at(3));
-                double zi = std::stod(result.at(4));
-                double x = std::stod(result.at(5));
-                double y = std::stod(result.at(6));
-                double z = std::stod(result.at(7));
-                double ksi = std::stod(result.at(8));
-                std_thermal *new_th = new std_thermal(model,w_star,zi,t_birth,lifespan,x,y,z,ksi);
-                new_th->set_horizontal_wind(windx,windy);
-                thermals.push_back(new_th);
-            }
-        }
-        file.close();
-    }
-
     /** @brief Destructor */
     ~flat_thermal_soaring_zone() {
         for(auto th : thermals) {delete th;}
@@ -263,8 +290,7 @@ public:
      * @param {double} x, y, z, t; coordinates
      * @param {std::vector<double> &} w; wind velocity vector [wx, wy, wz]
      */
-    flat_thermal_soaring_zone& wind(double x, double y, double z, double t, std::vector<double> &w) override
-    {
+    flat_thermal_soaring_zone& wind(double x, double y, double z, double t, std::vector<double> &w) override {
         w.assign({windx,windy,0.});
         for(auto &th : thermals) {
             if(th->is_alive(t)) {
@@ -284,6 +310,17 @@ public:
             w[2] = distribution(generator);
         }
         return *this;
+    }
+
+    /**
+     * @brief Assert that the aircraft is inside the flight zone
+     * @param {const double &} x, y, z; coordinates  in the earth frame
+     * @return true if the input position belongs to the flight zone
+     */
+    virtual bool is_within_fz(const double &x, const double &y, const double &z) override {
+        (void) z; //unused by default
+        if (x_min<x && x<x_max && y_min<y && y<y_max) {return true;}
+        return false;
     }
 
     /**
@@ -310,9 +347,8 @@ public:
      * @param {int} model; thermal model
      */
     void create_scenario(double dt, int model) {
-        int max_nb_of_th = 12;//get_max_nb_of_th();
         for(double t=t_start; t<=t_limit; t+=dt) {
-            while(nb_th_alive_at_time(t) <= max_nb_of_th) {
+            while(nb_th_alive_at_time(t) <= (double)nbth) {
                 create_thermal(model,t);
             }
         }
@@ -378,6 +414,29 @@ public:
             ofs<<th->get_ksi();
             ofs<<std::endl;
         }
+    }
+
+    /**
+     * @brief Save the flight zone dimensions
+     * @param {std::string} op; output path
+     */
+    void save_fz_cfg(std::string op) {
+        std::ofstream ofs;
+        ofs.open(op);
+        ofs<<"x_min"<<';';
+        ofs<<"x_max"<<';';
+        ofs<<"y_min"<<';';
+        ofs<<"y_max"<<';';
+        ofs<<"z_min"<<';';
+        ofs<<"z_max"<<';';
+        ofs<<"d_min"<<std::endl;
+        ofs<<x_min<<';';
+        ofs<<x_max<<';';
+        ofs<<y_min<<';';
+        ofs<<y_max<<';';
+        ofs<<z_min<<';';
+        ofs<<z_max<<';';
+        ofs<<d_min<<std::endl;
     }
 };
 

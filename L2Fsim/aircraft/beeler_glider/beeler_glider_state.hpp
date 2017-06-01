@@ -79,13 +79,12 @@ public:
     }
 
     bool is_out_of_bounds() override {
-        bool answer = false;
         if (fabs(alpha) > max_angle_magnitude ||
             fabs(beta) > max_angle_magnitude ||
             fabs(sigma) > max_angle_magnitude ||
             z <= 0.)
-        {answer = true;}
-        return answer;
+        {return true;}
+        return false;
     }
 
     void print() override {

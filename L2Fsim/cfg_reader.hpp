@@ -58,11 +58,12 @@ struct cfg_reader {
                 }else {display_error_msg();}
             }
             case 1: { // flat_thermal_soaring_zone
-                std::string path;
+                std::string sc_path, envt_cfg_path;
                 double noise_stddev=0.;
-                if (cfg.lookupValue("envt_path", path) &&
+                if (cfg.lookupValue("th_scenario_path", sc_path) &&
+                    cfg.lookupValue("envt_cfg_path", envt_cfg_path) &&
                     cfg.lookupValue("noise_stddev", noise_stddev)) {
-                    return new flat_thermal_soaring_zone(path,noise_stddev);
+                    return new flat_thermal_soaring_zone(sc_path,envt_cfg_path,noise_stddev);
                 }else {display_error_msg();}
             }
             }

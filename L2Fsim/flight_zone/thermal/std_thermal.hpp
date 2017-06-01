@@ -148,7 +148,7 @@ public:
             double w_l = ((r1 < r) && (r < (2.*r2))) ? -M_PI/6.*sin(M_PI*r_r2) : 0.;
             double s_wd = ((.5 < z_zi) && (z_zi < .9)) ? 2.5*(z_zi-.5) : 0.;
             //double w_d = s_wd*w_l;
-            //double k1 = 1.4866; // ki values valid for r1_r2 = 0.36
+            //double k1 = 1.4866; // ki values valid for r1/r2 = 0.36
             //double k2 = 4.8354;
             //double k3 = -.0320;
             //double k4 = .0001;

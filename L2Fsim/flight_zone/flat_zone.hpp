@@ -41,6 +41,15 @@ public:
         return *this;
 	}
 
+	/**
+     * @brief Assert that the aircraft is inside the flight zone
+     * @param {const double &} x, y, z; coordinates  in the earth frame
+     * @return true if the input position belongs to the flight zone
+     */
+    virtual bool is_within_fz(const double &x, const double &y, const double &z) override {
+        (void)x; (void)y; (void)z;
+        return true;
+    }
 };
 
 }

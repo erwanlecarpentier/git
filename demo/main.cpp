@@ -27,8 +27,7 @@ using namespace L2Fsim;
 /** @brief Method creating an environment and saving it at the specified location */
 void create_environment() {
     /**
-     * Parameters
-     * @note See the used flight zone for description of the parameters
+     * @brief Parameters; See the used flight zone for description of the parameters
      * @param {double} dt; thermal refreshment rate (s)
      * @param {int} model; thermal model selection
      * 1: Allen
@@ -50,17 +49,18 @@ void create_environment() {
     double zi_max = 1400.;
     double lifespan_min = 300.;
     double lifespan_max = 600.;
-    double x_min = -1000.;
-    double x_max = +1000.;
-    double y_min = -1000.;
-    double y_max = +1000.;
+    double x_min = -1500.;
+    double x_max = +1500.;
+    double y_min = -1500.;
+    double y_max = +1500.;
     double z_min = +0.;
     double z_max = +2000.;
     double ksi_min = .3;
     double ksi_max = .7;
-    double d_min = 200.;
+    double d_min = 150.;
+    unsigned int nbth = 15;
 
-    /// 1. Initialize an empty zone and define its limitations
+    /// 1. Initialize an empty zone and define its boundaries
     flat_thermal_soaring_zone fz(
         t_start, t_limit,
         windx, windy,
@@ -71,8 +71,8 @@ void create_environment() {
         y_min, y_max,
         z_min, z_max,
         ksi_min, ksi_max,
-        d_min);
-    //flat_thermal_soaring_zone fz_from_file("config/thermal_scenario.csv");
+        d_min, nbth);
+    //flat_thermal_soaring_zone fz_from_file("config/thermal_scenario.csv","config/fz_config.csv");
 
     /// 2. Create a scenario i.e. create the thermals
     fz.create_scenario(dt,model);
@@ -87,6 +87,7 @@ void create_environment() {
 
     /// 4. Save the scenario
     fz.save_scenario("config/thermal_scenario.csv");
+    fz.save_fz_cfg("config/fz_config.csv");
 }
 
 /**
@@ -123,7 +124,7 @@ void run_with_config(const char *cfg_path) {
 	stepper *my_stepper = cfgr.read_stepper_variable(cfg,Dt/nb_dt);
 
     /** Pilot */
-    double angle_rate_magnitude = .01;
+    double angle_rate_magnitude = .05;
     //passive_pilot my_pilot(angle_rate_magnitude);
     //heuristic_pilot my_pilot(angle_rate_magnitude);
 
@@ -135,7 +136,7 @@ void run_with_config(const char *cfg_path) {
     double uct_tsw=Dt, uct_stsw=uct_tsw;
     unsigned int uct_horizon=100, uct_budget=1000;
     euler_integrator uct_stepper(uct_stsw);
-    flat_thermal_soaring_zone uct_fz("config/thermal_scenario.csv",0.);
+    flat_thermal_soaring_zone uct_fz("config/thermal_scenario.csv","config/fz_config.csv",0.);
     b03_uct_pilot my_pilot(
         my_glider,
         uct_fz,
@@ -161,7 +162,6 @@ void run_with_config(const char *cfg_path) {
 	bool eos = false;
 	mysim.clear_saves();
     while((t < t_lim || is_equal_to(t,t_lim)) && !eos) {
-    //while(t <= t_lim && !eos) {
         std::cout<<t<<std::endl;
         mysim.save();
         mysim.step(t,Dt,eos);
@@ -175,7 +175,7 @@ void run_with_config(const char *cfg_path) {
 
 int main() {
     srand(time(NULL));
-    //create_environment();
-    run_with_config("config/main_config.cfg");
+    create_environment();
+    //run_with_config("config/main_config.cfg");
     return 0;
 }
