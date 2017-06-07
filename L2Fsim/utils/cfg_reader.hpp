@@ -202,24 +202,19 @@ struct cfg_reader {
                 && cfg.lookupValue("uct_horizon",hz)
                 && cfg.lookupValue("uct_budget",bd))
                 {
-                    // 1. aircraft model
                     double x0=0., y0=0., z0=0., V0=0., gamma0=0., khi0=0., alpha0=0., beta0=0., sigma0=0., mam=0.;
                     read_state(cfg,x0,y0,z0,V0,gamma0,khi0,alpha0,beta0,sigma0,mam);
                     beeler_glider_state s(x0,y0,z0,V0,gamma0,khi0,alpha0,beta0,sigma0,mam);
                     beeler_glider_command a;
                     beeler_glider ac_model(s,a);
 
-                    // 2. flight zone model
-                    flat_thermal_soaring_zone fz_model(sc_path,envt_cfg_path,noise_stddev);
-
-                    // 3. transition function
-                    //euler_integrator st(sdt);//TRM
-
-                    return std::unique_ptr<pilot> (new b03_uct_pilot(
-                        ac_model, fz_model,
-                        //st.transition_function,
-                        euler_integrator::transition_function,
-                        arm, pr, dt, sdt, df, hz, bd));
+                    return std::unique_ptr<pilot> (
+                        new b03_uct_pilot(
+                            ac_model,
+                            sc_path, envt_cfg_path, noise_stddev, // flat_thermal_soaring_zone parameters
+                            euler_integrator::transition_function,
+                            arm, pr, dt, sdt, df, hz, bd
+                        ));
                 } else {disp_err();}
             }
             case 4: { // optimistic_pilot

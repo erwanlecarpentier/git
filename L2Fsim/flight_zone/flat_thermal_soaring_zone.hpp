@@ -171,14 +171,10 @@ public:
         sc_file.close();
     }
 
-    /**
-     * @brief Return the maximum number of thermals in the zone
-     * @deprecated This method is not used anymore, we rather use nbth that defines this number directly
-     */
-    /*int get_max_nb_of_th() {
-        double zi_avg = zi_max - zi_min;
-        return floor(0.6*(x_max-x_min)*(y_max-y_min)/(d_min*zi_avg));
-    }*/
+    /** @brief Destructor */
+    ~flat_thermal_soaring_zone() {
+        for(auto th : thermals) {delete th;}
+    }
 
     /**
      * @brief Define the center of a new thermal depending on positions of other thermals
@@ -283,11 +279,6 @@ public:
      * @note used for thermal creation
      */
     double pick_ksi() {return rand_double(ksi_min,ksi_max);}
-
-    /** @brief Destructor */
-    ~flat_thermal_soaring_zone() {
-        for(auto th : thermals) {delete th;}
-    }
 
     /** @brief Print the full scenario in the standard output stream */
     void print_scenario() {for(auto &th : thermals) {th->print_std_os();}}

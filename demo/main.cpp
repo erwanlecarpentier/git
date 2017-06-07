@@ -103,32 +103,6 @@ void run_with_config(const char *cfg_path) {
 	mysim.st = cfgr.read_stepper(cfg,Dt/nb_dt);
 
     /** Pilot */
-    /*
-    //double angle_rate_magnitude = .01;
-    //passive_pilot my_pilot(angle_rate_magnitude);
-    //heuristic_pilot my_pilot(angle_rate_magnitude);
-
-    //double ep=1e-2, lr=1e-3, df=.9;
-    //q_learning_pilot my_pilot(angle_rate_magnitude,ep,lr,df);*/
-
-    /*double uct_df=.9;
-    double uct_parameter = 1./sqrt(2.);
-    double uct_tsw=Dt, uct_stsw=uct_tsw;
-    unsigned int uct_horizon=100, uct_budget=1000;
-    euler_integrator uct_stepper(uct_stsw);
-    flat_thermal_soaring_zone uct_fz("config/thermal_scenario.csv","config/fz_config.csv",0.);
-
-    b03_uct_pilot my_pilot(
-        my_glider,
-        uct_fz,
-        uct_stepper.transition_function,
-        angle_rate_magnitude,
-        uct_parameter,
-        uct_tsw,
-        uct_stsw,
-        uct_df,
-        uct_horizon,
-        uct_budget);*/
 	mysim.pl = cfgr.read_pilot(cfg);
 
 	/** Run the simulation */

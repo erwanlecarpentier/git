@@ -6,6 +6,7 @@
 #include <cassert>
 #include <L2Fsim/pilot/pilot.hpp>
 #include <L2Fsim/pilot/uct/b03_node.hpp>
+#include <L2Fsim/stepper/euler_integrator.hpp>
 
 /**
  * @file b03_uct_pilot.hpp
@@ -52,7 +53,9 @@ public:
     /** @brief Constructor */
     b03_uct_pilot(
         beeler_glider &_ac,
-        flat_thermal_soaring_zone &_fz,
+        std::string sc_path,
+        std::string envt_cfg_path,
+        double noise_stddev,
         void (*_transition_function)(aircraft &, flight_zone &, double &, const double &, const double &),
         double _angle_rate_magnitude=.01,
         double _uct_parameter=1.,
@@ -62,7 +65,7 @@ public:
         unsigned int _horizon=100,
         unsigned int _budget=1000) :
         ac(_ac),
-        fz(_fz),
+        fz(sc_path,envt_cfg_path,noise_stddev),
         transition_function(_transition_function),
         angle_rate_magnitude(_angle_rate_magnitude),
         uct_parameter(_uct_parameter),
@@ -150,8 +153,7 @@ public:
         beeler_glider_state s_p = s;
         ac.set_state(s_p);
         ac.set_command(a);
-        double current_time = s_p.time;
-        transition_function(ac,fz,current_time,time_step_width,sub_time_step_width);
+        transition_function(ac,fz,s_p.time,time_step_width,sub_time_step_width);
         s_p = dynamic_cast <beeler_glider_state &> (ac.get_state()); // retrieve the computed state
         return s_p;
     }
