@@ -152,18 +152,16 @@ public:
         z += dt * zdot;
         V += dt * Vdot;
         gamma += dt * gammadot;
-        gamma = fmod(gamma,2*M_PI);
+        gamma = acos(cos(gamma))*sgn(sin(gamma));//fmod(gamma,2*M_PI);
         khi += dt * khidot;
-        khi = fmod(khi,2*M_PI);
+        khi = acos(cos(khi))*sgn(sin(khi));//fmod(khi,2*M_PI);
     }
 
     /**
      * @brief Update time variable
      * @param {const double &} t; current time
      */
-    void update_time(const double &t) override {
-        time = t;
-    }
+    void update_time(const double &t) override {time = t;}
 
     /**
      * @brief Get a vector containing the saved variables

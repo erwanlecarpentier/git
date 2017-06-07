@@ -59,12 +59,32 @@ public:
         beeler_glider_state &s = dynamic_cast <beeler_glider_state &> (_s);
         beeler_glider_command &a = dynamic_cast <beeler_glider_command &> (_a);
         double ang_max = .4;
+        double x = s.x;
+        double y = s.y;
+        double khi = s.khi;
+        double sigma = s.sigma;
+        double cs = -(x*cos(khi) + y*sin(khi)) / sqrt(x*x + y*y); // cos between heading and origin
+        double th = .8; // threshold to steer back to flat command
+
         a.set_to_neutral();
-        if(0. <= s.sigma && s.sigma < ang_max) {
-            a.dsigma = +angle_rate_magnitude;
-        } else if (-ang_max < s.sigma && s.sigma < 0.){
-            a.dsigma = -angle_rate_magnitude;
+        if (!is_less_than(sigma,0.) && is_less_than(sigma,ang_max)) {
+            if (is_less_than(cs,th)) {
+                if (is_less_than(sigma+angle_rate_magnitude,ang_max)) {
+                    a.dsigma = +angle_rate_magnitude;
+                }
+            } else {
+                a.dsigma = -angle_rate_magnitude;
+            }
+        } else if (is_less_than(sigma,0.) && is_less_than(-ang_max,sigma)) {
+            if (is_less_than(cs,th)) {
+                if (is_less_than(-ang_max,sigma-angle_rate_magnitude)) {
+                    a.dsigma = -angle_rate_magnitude;
+                }
+            } else {
+                a.dsigma = +angle_rate_magnitude;
+            }
         }
+
 		return *this;
     }
 };

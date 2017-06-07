@@ -102,7 +102,7 @@ inline content_type rand_element(const std::vector<content_type> &v) {
     return v.at(rand_indice(v));
 }
 
-/** @brief Return the sign of the input */
+/** @brief Return the sign of the input double */
 inline double sgn(double T) {
     if (T >= 0) {return 1.;}
     else {return -1.;}
