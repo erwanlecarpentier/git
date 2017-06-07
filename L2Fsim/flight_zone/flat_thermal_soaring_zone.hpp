@@ -105,10 +105,37 @@ public:
     flat_thermal_soaring_zone(std::string th_sc_p, std::string fz_cfg_p, double _noise_stddev=0.) :
         noise_stddev(_noise_stddev)
     {
-        // 1. Read thermal scenario
+        // 1. Read flight zone configuration
+        std::ifstream cf_file(fz_cfg_p);
+        if(!cf_file.is_open()){std::cerr << "Unable to open input file ("<< fz_cfg_p <<") in flat_thermal_soaring_zone constructor" << std::endl;}
+        std::string line;
+        std::getline(cf_file,line); // do not take first line into account
+        std::getline(cf_file,line); // take 2nd line
+        if(line.size()>0) { // prevent from reading empty line
+            std::vector<std::string> result;
+            std::stringstream line_stream(line);
+            std::string cell;
+            while(std::getline(line_stream,cell,';')) {
+                result.push_back(cell);
+            }
+            if (!line_stream && cell.empty()) { // This checks for a trailing comma with no data after it
+                // If there was a trailing comma then add an empty element
+                result.push_back("");
+            }
+            x_min = stod(result.at(0));
+            x_max = stod(result.at(1));
+            y_min = stod(result.at(2));
+            y_max = stod(result.at(3));
+            z_min = stod(result.at(4));
+            z_max = stod(result.at(5));
+            d_min = stod(result.at(6));
+            windx = stod(result.at(7));
+            windy = stod(result.at(8));
+        } else {std::cout << "Unable to read 2nd line in fz configuration reader in flat_thermal_soaring_zone constructor"<<std::endl;}
+        cf_file.close();
+        // 2. Read thermal scenario
         std::ifstream sc_file(th_sc_p);
         if(!sc_file.is_open()){std::cerr << "Unable to open input file ("<< th_sc_p <<") in flat_thermal_soaring_zone constructor" << std::endl;}
-        std::string line;
         std::getline(sc_file,line); // do not take first line into account
         while(sc_file.good()) {
             std::vector<std::string> result;
@@ -138,31 +165,6 @@ public:
             }
         }
         sc_file.close();
-        // 2. Read flight zone configuration
-        std::ifstream cf_file(fz_cfg_p);
-        if(!cf_file.is_open()){std::cerr << "Unable to open input file ("<< fz_cfg_p <<") in flat_thermal_soaring_zone constructor" << std::endl;}
-        std::getline(cf_file,line); // do not take first line into account
-        std::getline(cf_file,line); // take 2nd line
-        if(line.size()>0) { // prevent from reading empty line
-            std::vector<std::string> result;
-            std::stringstream line_stream(line);
-            std::string cell;
-            while(std::getline(line_stream,cell,';')) {
-                result.push_back(cell);
-            }
-            if (!line_stream && cell.empty()) { // This checks for a trailing comma with no data after it
-                // If there was a trailing comma then add an empty element
-                result.push_back("");
-            }
-            x_min = stod(result.at(0));
-            x_max = stod(result.at(1));
-            y_min = stod(result.at(2));
-            y_max = stod(result.at(3));
-            z_min = stod(result.at(4));
-            z_max = stod(result.at(5));
-            d_min = stod(result.at(6));
-        } else {std::cout << "Unable to read 2nd line in fz configuration reader in flat_thermal_soaring_zone constructor"<<std::endl;}
-        cf_file.close();
     }
 
     /**
@@ -435,14 +437,18 @@ public:
         ofs<<"y_max"<<sep;
         ofs<<"z_min"<<sep;
         ofs<<"z_max"<<sep;
-        ofs<<"d_min"<<std::endl;
+        ofs<<"d_min"<<sep;
+        ofs<<"windx"<<sep;
+        ofs<<"windy"<<std::endl;
         ofs<<x_min<<sep;
         ofs<<x_max<<sep;
         ofs<<y_min<<sep;
         ofs<<y_max<<sep;
         ofs<<z_min<<sep;
         ofs<<z_max<<sep;
-        ofs<<d_min<<std::endl;
+        ofs<<d_min<<sep;
+        ofs<<windx<<sep;
+        ofs<<windy<<std::endl;
     }
 };
 

@@ -87,7 +87,7 @@ void create_environment() {
 
     /// 4. Save the scenario
     fz.save_scenario("config/thermal_scenario.csv");
-    fz.save_fz_cfg("config/fz_cfg.csv");
+    fz.save_fz_cfg("config/fz_config.csv");
 }
 
 /**
