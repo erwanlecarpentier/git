@@ -21,8 +21,8 @@
 #include <L2Fsim/pilot/passive_pilot.hpp>
 #include <L2Fsim/pilot/heuristic_pilot.hpp>
 #include <L2Fsim/pilot/q_learning/q_learning_pilot.hpp>
-#include <L2Fsim/pilot/mcts/b03_uct_pilot.hpp>
-
+#include <L2Fsim/pilot/uct/b03_uct_pilot.hpp>
+//#include <L2Fsim/pilot/optimistic/optimistic_pilot.hpp> // TODO uncomment
 
 /**
  * @file cfg_reader.hpp
@@ -221,6 +221,14 @@ struct cfg_reader {
                         euler_integrator::transition_function,
                         arm, pr, dt, sdt, df, hz, bd));
                 } else {disp_err();}
+            }
+            case 4: { // optimistic_pilot
+                /* TODO
+                double time_step_width=0.;
+                if(cfg.lookupValue("opt_time_step_width",time_step_width)) {
+                    return std::unique_ptr<pilot> (new optimistic_pilot(time_step_width));
+                } else {disp_err();}
+                */
             }
             }
         }

@@ -107,7 +107,9 @@ public:
     {
         // 1. Read flight zone configuration
         std::ifstream cf_file(fz_cfg_p);
-        if(!cf_file.is_open()){std::cerr << "Unable to open input file ("<< fz_cfg_p <<") in flat_thermal_soaring_zone constructor" << std::endl;}
+        if (!cf_file.is_open()) {
+            std::cerr << "Unable to open input file ("<< fz_cfg_p <<") in flat_thermal_soaring_zone constructor" << std::endl;
+        }
         std::string line;
         std::getline(cf_file,line); // do not take first line into account
         std::getline(cf_file,line); // take 2nd line
@@ -135,7 +137,9 @@ public:
         cf_file.close();
         // 2. Read thermal scenario
         std::ifstream sc_file(th_sc_p);
-        if(!sc_file.is_open()){std::cerr << "Unable to open input file ("<< th_sc_p <<") in flat_thermal_soaring_zone constructor" << std::endl;}
+        if (!sc_file.is_open()) {
+            std::cerr << "Unable to open input file ("<< th_sc_p <<") in flat_thermal_soaring_zone constructor" << std::endl;
+        }
         std::getline(sc_file,line); // do not take first line into account
         while(sc_file.good()) {
             std::vector<std::string> result;

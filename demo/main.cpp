@@ -1,21 +1,6 @@
 #include <L2Fsim/simulation.hpp>
 #include <L2Fsim/utils/cfg_reader.hpp>
 
-#include <L2Fsim/aircraft/beeler_glider/beeler_glider.hpp>
-#include <L2Fsim/aircraft/beeler_glider/beeler_glider_state.hpp>
-#include <L2Fsim/aircraft/beeler_glider/beeler_glider_command.hpp>
-
-#include <L2Fsim/flight_zone/flat_thermal_soaring_zone.hpp>
-#include <L2Fsim/flight_zone/flat_zone.hpp>
-
-#include <L2Fsim/pilot/passive_pilot.hpp>
-#include <L2Fsim/pilot/heuristic_pilot.hpp>
-#include <L2Fsim/pilot/q_learning/q_learning_pilot.hpp>
-#include <L2Fsim/pilot/mcts/b03_uct_pilot.hpp>
-
-#include <L2Fsim/stepper/euler_integrator.hpp>
-#include <L2Fsim/stepper/rk4_integrator.hpp>
-
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
@@ -118,6 +103,7 @@ void run_with_config(const char *cfg_path) {
 	mysim.st = cfgr.read_stepper(cfg,Dt/nb_dt);
 
     /** Pilot */
+    /*
     //double angle_rate_magnitude = .01;
     //passive_pilot my_pilot(angle_rate_magnitude);
     //heuristic_pilot my_pilot(angle_rate_magnitude);
@@ -159,8 +145,19 @@ void run_with_config(const char *cfg_path) {
 }
 
 int main() {
-    srand(time(NULL));
-    create_environment();
-    run_with_config("config/main_config.cfg");
+    try
+    {
+        srand(time(NULL));
+        create_environment();
+        run_with_config("config/main_config.cfg");
+    }
+    catch(const std::exception &e)
+    {
+        std::cerr<<"[error] In main(): standard exception caught: "<<e.what()<<std::endl;
+    }
+    catch(...)
+    {
+        std::cerr<<"[error] In main(): Unknown exception caught"<<std::endl;
+    }
     return 0;
 }
