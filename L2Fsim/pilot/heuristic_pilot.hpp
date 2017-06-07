@@ -84,7 +84,6 @@ public:
                 a.dsigma = +angle_rate_magnitude;
             }
         }
-
 		return *this;
     }
 };

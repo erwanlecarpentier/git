@@ -30,13 +30,13 @@ constexpr bool is_equal_to(T1 a, T2 b) {
 /** @brief Return true if a < b  up to a certain precision */
 template <class T1, class T2>
 constexpr bool is_less_than(T1 a, T2 b) {
-    return a<b-COMPARISON_THRESHOLD;
+    return a<(b-COMPARISON_THRESHOLD);
 }
 
 /** @brief Return true if a > b  up to a certain precision */
 template <class T1, class T2>
 constexpr bool is_greater_than(T1 a, T2 b) {
-    return a>b+COMPARISON_THRESHOLD;
+    return a>(b+COMPARISON_THRESHOLD);
 }
 
 /**
@@ -54,7 +54,8 @@ inline void sort_indices(
 {
     double maxval = *std::max_element(v.begin(),v.end());
     for (unsigned int j=0; j<v.size(); ++j) {
-        if(v[j] < maxval) {dw_ind.push_back(j);}
+        //if(v[j] < maxval) {dw_ind.push_back(j);} // outdated: incorrect comparison between float, double, etc.
+        if(is_less_than(v[j],maxval)) {dw_ind.push_back(j);}
         else {up_ind.push_back(j);}
     }
 }
@@ -72,7 +73,8 @@ inline void argmax(
 {
     double maxval = *std::max_element(v.begin(),v.end());
     for (unsigned int j=0; j<v.size(); ++j) {
-        if(v[j] >= maxval) {up_ind.push_back(j);}
+        //if(v[j] >= maxval) {up_ind.push_back(j);} // outdated: incorrect comparison between float, double, etc.
+        if(!is_less_than(v[j],maxval)) {up_ind.push_back(j);}
     }
 }
 
@@ -104,7 +106,7 @@ inline content_type rand_element(const std::vector<content_type> &v) {
 
 /** @brief Return the sign of the input double */
 inline double sgn(double T) {
-    if (T >= 0) {return 1.;}
+    if (T >= 0.) {return 1.;}
     else {return -1.;}
 }
 
@@ -115,7 +117,7 @@ inline double rand_double(double fmin, double fmax) {
 
 /** @return a uniformly picked int in range [fmin,fmax] */
 inline int rand_int(int fmin, int fmax) {
-    return (rand()%(fmax-fmin) +fmin);
+    return (rand() % (fmax-fmin) + fmin);
 }
 
 /**
@@ -142,7 +144,7 @@ inline void save_vector(
 
 /** @brief Sigmoid function */
 inline double sigmoid(double x, double a, double c) {
-    return 1. / (1.+exp(-(x-c)/a));
+    return 1. / (1. + exp(-(x-c)/a));
 }
 
 }

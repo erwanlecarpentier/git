@@ -1,5 +1,5 @@
 #include <L2Fsim/simulation.hpp>
-#include <L2Fsim/cfg_reader.hpp>
+#include <L2Fsim/utils/cfg_reader.hpp>
 
 #include <L2Fsim/aircraft/beeler_glider/beeler_glider.hpp>
 #include <L2Fsim/aircraft/beeler_glider/beeler_glider_state.hpp>
