@@ -102,7 +102,9 @@ public:
      * @param {std::string} th_sc_p; thermal scenario input path
      * @param {std::string} fz_cfg_p; flight zone configuration input path
      */
-    flat_thermal_soaring_zone(std::string th_sc_p, std::string fz_cfg_p, double _noise_stddev=0.) : noise_stddev(_noise_stddev) {
+    flat_thermal_soaring_zone(std::string th_sc_p, std::string fz_cfg_p, double _noise_stddev=0.) :
+        noise_stddev(_noise_stddev)
+    {
         // 1. Read thermal scenario
         std::ifstream sc_file(th_sc_p);
         if(!sc_file.is_open()){std::cerr << "Unable to open input file ("<< th_sc_p <<") in flat_thermal_soaring_zone constructor" << std::endl;}

@@ -274,13 +274,8 @@ public:
         beeler_glider_command &a = dynamic_cast <beeler_glider_command &> (_a);
         b03_node v0(s0,get_actions(s0),0.,1,0); // root node
         for(unsigned int i=0; i<budget; ++i) {
-            //b03_node v(get_actions(),0.,0,0); //TRM
-            //b03_node v;//TRM
-            //tree_policy(v0,v);//TRM
-
             double reward = 0.;
             b03_node &v = tree_policy(v0);
-            //b03_node &v = tree_policy(v0);
             default_policy(v.get_state(),reward);
             backup(v,reward);
         }
@@ -289,26 +284,7 @@ public:
         // D-controller
         alpha_d_ctrl(s0,a);
 
-        //// TO REMOVE //////////////////////////////////////////////////////////////////
-        if(false){//TRM
-        for(unsigned int l=0; l<v0.children.size(); ++l) {
-            std::cout<<"visit "<<v0.children[l].number_of_visits;
-            std::cout<<" avgreward "<<v0.children[l].get_average_reward();
-            std::cout<<" uctscore "<<uct_score(v0.children[l])<<std::endl;
-        }
-        }
-
-        if(false){//TRM
-        std::vector<double> wtest;
-        std::cout<<"stest: ";
-        fz.wind(0.,0.,500.,200.,wtest);
-        for(unsigned int i=0; i<wtest.size(); ++i) {
-            std::cout<<wtest[i]<<" ";
-        }
-        std::cout<<std::endl;
-        }
-        /////////////////////////////////////////////////////////////////////////////////
-		return *this;
+        return *this;
 	}
 
     /**

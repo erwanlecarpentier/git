@@ -1,6 +1,8 @@
 #ifndef L2FSIM_SIMULATION_HPP_
 #define L2FSIM_SIMULATION_HPP_
 
+#include <memory>
+
 #include <L2Fsim/flight_zone/flight_zone.hpp>
 #include <L2Fsim/aircraft/aircraft.hpp>
 #include <L2Fsim/stepper/stepper.hpp>
@@ -20,17 +22,18 @@ class simulation {
 public:
 	/**
 	 * @brief Attributes
-	 * @param {flight_zone *} fz; pointer to a flight zone
-	 * @param {aircraft *} ac; pointer to an aircraft
-	 * @param {stepper *} st; pointer to a stepper
-	 * @param {pilot *} pl; pointer to a pilot
+	 * @param {std::unique_ptr<flight_zone>} fz; unique pointer to a flight zone
+	 * @param {std::unique_ptr<aircraft>} ac; unique pointer to an aircraft
+	 * @param {std::unique_ptr<stepper>} st; unique pointer to a stepper
+	 * @param {std::unique_ptr<pilot>} pl; unique pointer to a pilot
+	 * @param {std::string} st_log_path, fz_log_path; log file paths
 	 */
-	flight_zone *fz;
-	aircraft *ac;
-	stepper *st;
-	pilot *pl;
-	std::string ac_save_path;
-	std::string fz_save_path;
+	std::unique_ptr<flight_zone> fz;
+	std::unique_ptr<aircraft> ac;
+	std::unique_ptr<stepper> st;
+	std::unique_ptr<pilot> pl;
+	std::string st_log_path;
+	std::string fz_log_path;
 
 	/**
 	 * @brief Stepping function
@@ -44,7 +47,7 @@ public:
 
     /** @brief Saving function, called at each time step */
 	void save() {
-        save_vector(ac->get_save(),ac_save_path,std::ofstream::app);
+        save_vector(ac->get_save(),st_log_path,std::ofstream::app);
 
         std::vector<double> w;
         fz->wind(
@@ -52,15 +55,15 @@ public:
             ac->get_state().gety(),
             ac->get_state().getz(),
             ac->get_state().gett(),w);
-        save_vector(w,fz_save_path,std::ofstream::app);
+        save_vector(w,fz_log_path,std::ofstream::app);
 	}
 
-    /** @brief Clear saving files (called before the simulation) */
+    /** @brief Clear log files (called before the simulation) */
 	void clear_saves() {
         std::ofstream of;
-        of.open(ac_save_path,std::ofstream::trunc);
+        of.open(st_log_path,std::ofstream::trunc);
         of.close();
-        of.open(fz_save_path,std::ofstream::trunc);
+        of.open(fz_log_path,std::ofstream::trunc);
         of.close();
 	}
 };

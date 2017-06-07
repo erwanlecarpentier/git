@@ -1,12 +1,12 @@
 CCC=g++
-CCFLAGS=-std=c++11 -Wall -Wextra -I. -O2 -s -g
-LDFLAGS=-lm -lconfig++
+CCFLAGS=-std=c++11 -Wall -Wextra -I. -O2 -g
+LDFLAGS=-lm -lconfig++ #-s
 EXEC=main
 MAIN_CPP=demo/main.cpp
 
 .PHONY : all compile run clean
 
-all : clean_exe compile run
+all : clean compile run
 
 run :
 	./${EXEC}
@@ -29,7 +29,7 @@ variables :
 plot_all :
 	python3 plot/2d_trajectory.py & python3 plot/3d_trajectory.py & python3 plot/variables.py
 
-clean_all :
+clean :
 	rm -f data/state.dat
 	rm -f data/wind.dat
 	rm -f data/updraft_field.dat
@@ -63,7 +63,7 @@ help :
 	@echo variables         : run ”/plot/variables.py” with python3
 	@echo
 	@echo - Clean:
-	@echo clean_all : remove executables and data files
+	@echo clean : remove executables and data files
 	@echo clean_exe : remove executables
 	@echo clean_dat : remove data files
 	@echo

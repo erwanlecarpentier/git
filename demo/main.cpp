@@ -87,46 +87,40 @@ void create_environment() {
 
     /// 4. Save the scenario
     fz.save_scenario("config/thermal_scenario.csv");
-    fz.save_fz_cfg("config/fz_config.csv");
+    fz.save_fz_cfg("config/fz_cfg.csv");
 }
 
 /**
  * @brief Method running a simulation using a configuration file
  * @param {const char *} cfg_path; path to the configuration file
- * @note WORK IN PROGRESS -> config file handling
  */
 void run_with_config(const char *cfg_path) {
     cfg_reader cfgr;
     libconfig::Config cfg;
     cfg.readFile(cfg_path);
 
+    /** Initialize the simulation */
+    simulation mysim;
+
     /** General settings */
+	mysim.st_log_path = cfgr.read_st_log_path(cfg);
+	mysim.fz_log_path = cfgr.read_fz_log_path(cfg);
     double Dt=.1, t_lim=1e3, nb_dt=1., t=0.; // default values
     cfgr.read_time_variables(cfg,t_lim,Dt,nb_dt);
-    std::string ac_save_path = "data/state.dat";
-    std::string fz_save_path = "data/wind.dat";
 
     /** Environment */
-    flight_zone *my_zone = cfgr.read_environment_variables(cfg);
-
-    /** Initial state */
-	double x0, y0, z0, V0, gamma0, khi0, alpha0, beta0, sigma0, mam;
-	cfgr.read_state_variables(cfg,x0,y0,z0,V0,gamma0,khi0,alpha0,beta0,sigma0,mam);
-    beeler_glider_state my_state(x0,y0,z0,V0,gamma0,khi0,alpha0,beta0,sigma0,mam);
-
-    /** Initial command */
-    beeler_glider_command my_command;
+    mysim.fz = cfgr.read_environment(cfg);
 
     /** Aircraft */
-	beeler_glider my_glider(my_state,my_command);
+	mysim.ac = cfgr.read_aircraft(cfg);
 
     /** Stepper */
-	stepper *my_stepper = cfgr.read_stepper_variable(cfg,Dt/nb_dt);
+	mysim.st = cfgr.read_stepper(cfg,Dt/nb_dt);
 
     /** Pilot */
-    double angle_rate_magnitude = .01;
+    //double angle_rate_magnitude = .01;
     //passive_pilot my_pilot(angle_rate_magnitude);
-    heuristic_pilot my_pilot(angle_rate_magnitude);
+    //heuristic_pilot my_pilot(angle_rate_magnitude);
 
     //double ep=1e-2, lr=1e-3, df=.9;
     //q_learning_pilot my_pilot(angle_rate_magnitude,ep,lr,df);*/
@@ -137,6 +131,7 @@ void run_with_config(const char *cfg_path) {
     unsigned int uct_horizon=100, uct_budget=1000;
     euler_integrator uct_stepper(uct_stsw);
     flat_thermal_soaring_zone uct_fz("config/thermal_scenario.csv","config/fz_config.csv",0.);
+
     b03_uct_pilot my_pilot(
         my_glider,
         uct_fz,
@@ -148,15 +143,7 @@ void run_with_config(const char *cfg_path) {
         uct_df,
         uct_horizon,
         uct_budget);*/
-
-    /** Initialize the simulation */
-    simulation mysim;
-	mysim.fz = my_zone;
-	mysim.ac = &my_glider;
-	mysim.st = my_stepper;
-	mysim.pl = &my_pilot;
-	mysim.ac_save_path = ac_save_path;
-	mysim.fz_save_path = fz_save_path;
+	mysim.pl = cfgr.read_pilot(cfg);
 
 	/** Run the simulation */
 	bool eos = false;
@@ -167,9 +154,7 @@ void run_with_config(const char *cfg_path) {
         mysim.step(t,Dt,eos);
     }
 
-	/** Delete the dynamically created variables */
-	delete my_stepper;
-	delete my_zone;
+	/** End of simulation */
 	std::cout << "Program run successfully" << std::endl;
 }
 

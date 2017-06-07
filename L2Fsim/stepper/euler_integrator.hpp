@@ -20,14 +20,11 @@ public:
     /**
      * @brief Attributes
      * @param {double} dt; width of the integration sub-step
-     * @param {std::string} state_log_filename; file name for log
      */
     double dt;
-    std::string state_log_path = "data/state.dat";
-    std::string wind_log_path = "data/wind.dat";
 
 	/** @brief Constructor */
-	euler_integrator(double _dt=.001) : dt(_dt) {}
+	euler_integrator(double _dt=.01) : dt(_dt) {}
 
     /**
      * @brief Transition function; perform a transition given: an aircraft model with a correct state and command; an atmospheric model; the current time; the time-step-width and the sub-time-step-width
