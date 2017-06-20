@@ -36,21 +36,21 @@ struct cfg_reader {
     /** @brief Constructor */
     cfg_reader() {}
 
-    void disp_err() {
-        std::cout << "Error: variable initialisation in config file" << std::endl;
+    void disp_err(std::string meth) {
+        std::cout << "Error: variable initialisation in config file; config file reader stopped at "<< meth << std::endl;
     }
 
     /** @brief Read the path to the state log file */
     std::string read_st_log_path(const libconfig::Config &cfg) {
         if(cfg.exists("st_log_path")) {return cfg.lookup("st_log_path");}
-        else {disp_err();}
+        else {disp_err("read_st_log_path");}
         return nullptr;
     }
 
     /** @brief Read the path to the envt log file */
     std::string read_fz_log_path(const libconfig::Config &cfg) {
         if(cfg.exists("fz_log_path")) {return cfg.lookup("fz_log_path");}
-        else {disp_err();}
+        else {disp_err("read_fz_log_path");}
         return nullptr;
     }
 
@@ -59,7 +59,7 @@ struct cfg_reader {
         if(cfg.lookupValue("limit_time",t_lim)
         && cfg.lookupValue("time_step_width",Dt)
         && cfg.lookupValue("nb_sub_time_step",nb_dt)) {/* nothing to do */}
-        else {disp_err();}
+        else {disp_err("read_time_variables");}
     }
 
     /** @brief Read and initialise an environment */
@@ -71,7 +71,7 @@ struct cfg_reader {
                 double wx=0., wy=0.;
                 if(cfg.lookupValue("wx", wx) && cfg.lookupValue("wy", wy)) {
                     return std::unique_ptr<flight_zone> (new flat_zone(wx,wy));
-                } else {disp_err();}
+                } else {disp_err("read_environment");}
             }
             case 1: { // flat_thermal_soaring_zone
                 std::string sc_path = "config/thermal_scenario.csv";
@@ -81,11 +81,11 @@ struct cfg_reader {
                     cfg.lookupValue("envt_cfg_path", envt_cfg_path) &&
                     cfg.lookupValue("noise_stddev", noise_stddev)) {
                     return std::unique_ptr<flight_zone> (new flat_thermal_soaring_zone(sc_path,envt_cfg_path,noise_stddev));
-                } else {disp_err();}
+                } else {disp_err("read_environment");}
             }
             }
         }
-        else {disp_err();}
+        else {disp_err("read_environment");}
         return std::unique_ptr<flight_zone> (nullptr);
     }
 
@@ -120,7 +120,7 @@ struct cfg_reader {
             _sigma0 = cfg.lookup("sigma0"); _sigma0 *= TO_RAD;
             _mam = cfg.lookup("maximum_angle_magnitude"); _mam *= TO_RAD;
         }
-        else {disp_err();}
+        else {disp_err("read_state");}
     }
 
     std::unique_ptr<aircraft> read_aircraft(const libconfig::Config &cfg) {
@@ -134,10 +134,10 @@ struct cfg_reader {
                 beeler_glider_command a;
                 return std::unique_ptr<aircraft> (new beeler_glider(s,a));
             }
-            default: {disp_err();}
+            default: {disp_err("read_aircraft");}
             }
         }
-        else {disp_err();}
+        else {disp_err("read_aircraft");}
         return std::unique_ptr<aircraft> (nullptr);
     }
 
@@ -154,7 +154,7 @@ struct cfg_reader {
             }
             }
         }
-        else {disp_err();}
+        else {disp_err("read_stepper");}
         return std::unique_ptr<stepper> (nullptr);
     }
 
@@ -169,13 +169,13 @@ struct cfg_reader {
                 double arm=.1;
                 if(cfg.lookupValue("angle_rate_magnitude",arm)) {
                     return std::unique_ptr<pilot> (new passive_pilot(arm));
-                } else {disp_err();}
+                } else {disp_err("read_pilot");}
             }
             case 1: { // heuristic_pilot
                 double arm=.1;
                 if(cfg.lookupValue("angle_rate_magnitude",arm)) {
                     return std::unique_ptr<pilot> (new heuristic_pilot(arm));
-                } else {disp_err();}
+                } else {disp_err("read_pilot");}
             }
             case 2: { // q_learning_pilot
                 double arm=.1, ep=.1, lr=.01, df=.9;
@@ -185,7 +185,7 @@ struct cfg_reader {
                     cfg.lookupValue("q_discount_factor",df))
                 {
                     return std::unique_ptr<pilot> (new q_learning_pilot(arm,ep,lr,df));
-                } else {disp_err();}
+                } else {disp_err("read_pilot");}
             }
             case 3: { // b03_uct_pilot
                 std::string sc_path, envt_cfg_path;
@@ -215,19 +215,19 @@ struct cfg_reader {
                             euler_integrator::transition_function,
                             arm, pr, dt, sdt, df, hz, bd
                         ));
-                } else {disp_err();}
+                } else {disp_err("read_pilot");}
             }
             case 4: { // optimistic_pilot
                 /* TODO
                 double time_step_width=0.;
                 if(cfg.lookupValue("opt_time_step_width",time_step_width)) {
                     return std::unique_ptr<pilot> (new optimistic_pilot(time_step_width));
-                } else {disp_err();}
+                } else {disp_err("");}
                 */
             }
             }
         }
-        else {disp_err();}
+        else {disp_err("read_pilot");}
         return std::unique_ptr<pilot> (nullptr);
     }
 };

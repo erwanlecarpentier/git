@@ -132,13 +132,14 @@ public:
         std::vector<beeler_glider_command> v;
         double sig = s.sigma;
         double mam = s.max_angle_magnitude;
-        if(sig+angle_rate_magnitude < +mam) {
+        if(is_less_than(sig+angle_rate_magnitude, +mam)) {
             v.push_back(beeler_glider_command(0.,0.,+angle_rate_magnitude));
         }
-        if(sig-angle_rate_magnitude > -mam) {
+        if(is_less_than(-mam, sig-angle_rate_magnitude)) {
             v.push_back(beeler_glider_command(0.,0.,-angle_rate_magnitude));
         }
         v.push_back(beeler_glider_command(0.,0.,0.));
+        //TODO: add alpha_d_ctrl(v->s,a); in this function !!
         return v;
     }
 

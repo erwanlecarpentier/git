@@ -9,8 +9,11 @@
 
 using namespace L2Fsim;
 
-/** @brief Method creating an environment and saving it at the specified location */
-void create_environment() {
+/**
+ * @brief Method creating an environment and saving it at the specified location
+ * @param {const bool &} save; if true, save the scenario for vizualization
+ */
+void create_environment(const bool &save) {
     /**
      * @brief Parameters; See the used flight zone for description of the parameters
      * @param {double} dt; thermal refreshment rate (s)
@@ -28,8 +31,8 @@ void create_environment() {
     double t_limit = 1000.;
     double windx = 0.;
     double windy = 0.;
-    double w_star_min = 4.;
-    double w_star_max = 6.;
+    double w_star_min = 2.;
+    double w_star_max = 4.;
     double zi_min = 1300.;
     double zi_max = 1400.;
     double lifespan_min = 300.;
@@ -64,11 +67,11 @@ void create_environment() {
     //fz.print_scenario(); // print the created thermals (optional)
 
     /// 3 : Save data for visualization (optional)
-    /*
-    double dx=50., dy=50.; // mesh precision
-    double z=500., t=500.;  // altitude and time of the saved updraft field
-    fz.save_updraft_values(dx,dy,z,t,"data/updraft_field.dat");
-    */
+    if(save) {
+        double dx=5., dy=5.; // mesh precision
+        double z=500., t=500.;  // altitude and time of the saved updraft field
+        fz.save_updraft_values(dx,dy,z,t,"data/updraft_field.dat");
+    }
 
     /// 4. Save the scenario
     fz.save_scenario("config/thermal_scenario.csv");
@@ -122,7 +125,7 @@ int main() {
     try
     {
         srand(time(NULL));
-        create_environment();
+        create_environment(true);
         run_with_config("config/main_config.cfg");
     }
     catch(const std::exception &e)
