@@ -272,13 +272,19 @@ public:
      * @brief return ksi in range [ksi_min,ksi_max]
      * @note used for thermal creation
      */
-    double pick_ksi() {return rand_double(ksi_min,ksi_max);}
+    double pick_ksi() {
+        return rand_double(ksi_min,ksi_max);
+    }
 
     /** @brief Print the full scenario in the standard output stream */
-    void print_scenario() {for(auto &th : thermals) {th->print_std_os();}}
+    void print_scenario() {
+        for(auto &th : thermals) {th->print();}
+    }
 
     /** @brief Return the total number of thermals in the whole scenario */
-    unsigned int get_total_nb_of_th() {return thermals.size();}
+    unsigned int get_total_nb_of_th() {
+        return thermals.size();
+    }
 
 	/**
      * @brief Compute the wind velocity vector w at coordinate (x,y,z,t)
@@ -352,29 +358,38 @@ public:
     /**
      * @brief Write the updraft values in a file for visualization
      * @param {const double &} dx, dy; mesh precision
-     * @param {const double &} z, t; altitude and time of the saved updraft field
+     * @param {const std::vector<double> &} z, t; altitudes and times of the saved updraft field
      * @param {const std::string &} op; output path
      */
     void save_updraft_values(
         const double &dx,
         const double &dy,
-        const double &z,
-        const double &t,
+        const std::vector<double> &z_vec,
+        const std::vector<double> &t_vec,
         const std::string &op)
     {
         std::ofstream ofs;
+        std::string sep = ";";
         ofs.open(op);
-        ofs << "t x y z updraft"<<std::endl;
+        ofs<<"t"<<sep;
+        ofs<<"x"<<sep;
+        ofs<<"y"<<sep;
+        ofs<<"z"<<sep;
+        ofs<<"updraft"<<std::endl;
         std::vector<double> w(3);
-        for(double x=x_min; x<=x_max; x+=dx) {
-            for(double y=y_min; y<=y_max; y+=dy) {
-                wind(x,y,z,t,w);
-                ofs << t << " ";
-                ofs << x << " ";
-                ofs << y << " ";
-                ofs << z << " ";
-                ofs << w.at(2);
-                ofs << std::endl;
+        for(auto &z : z_vec) {
+            for(auto &t : t_vec) {
+                for(double x=x_min; x<=x_max; x+=dx) {
+                    for(double y=y_min; y<=y_max; y+=dy) {
+                        wind(x,y,z,t,w);
+                        ofs << t << sep;
+                        ofs << x << sep;
+                        ofs << y << sep;
+                        ofs << z << sep;
+                        ofs << w.at(2);
+                        ofs << std::endl;
+                    }
+                }
             }
         }
         ofs.close();

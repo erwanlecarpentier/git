@@ -5,7 +5,8 @@
 #include <cassert>
 #include <Eigen/Dense>
 
-/** @file gaussian_process.hpp
+/**
+ * @file gaussian_process.hpp
  * @brief A Gaussian Processes class implementing regression between inputs of
  * type 'std::vector<double>' and outputs of type 'double'.
  * @version 1.0
@@ -14,7 +15,8 @@
 namespace L2Fsim {
 
 class gaussian_process {
-	/** @brief Attributes
+	/**
+	 * @brief Attributes
 	 * @param {std::vector<std::vector<double>>} xdat; input data vector
 	 * @param {std::vector<double>} ydat; output data vector
 	 * @param {Eigen::MatrixXd} cov_matrix; covariance matrix
@@ -23,12 +25,13 @@ class gaussian_process {
 	 * function
 	 */
 	double (*kernel_function) (std::vector<double>,std::vector<double>);
+	double noise_var;
 	std::vector<std::vector<double>> xdat;
 	std::vector<double> ydat;
 	Eigen::MatrixXd cov_matrix;
-	double noise_var;
 
-	/** @brief Increase the size of the covariance matrix of 1
+	/**
+	 * @brief Increase the size of the covariance matrix of 1
 	 * @warning Called after any data point adding
 	 */
 	void update_cov_matrix() {
@@ -55,7 +58,8 @@ public:
 		noise_var(_noise_var)
 	{}
 
-	/** @brief Append a data set to the data set and update the covariance matrix
+	/**
+	 * @brief Append a data set to the data set and update the covariance matrix
 	 * @param {const std::vector<std::vector<double>> &} x; vector of inputs
 	 * @param {const std::vector<double> &} y; vector of outputs
 	 */
@@ -69,8 +73,8 @@ public:
 		}
 	}
 
-	/** @brief Append a single point to the data set and update the covariance
-	 * matrix
+	/**
+	 * @brief Append a single point to the data set and update the covariance matrix
 	 * @param {const std::vector<double> &} x; input
 	 * @param {const double &} y; output
 	 */
@@ -83,7 +87,8 @@ public:
 		update_cov_matrix();
 	}
 
-	/** @brief Predict the mean at a certain input
+	/**
+	 * @brief Predict the mean at a certain input
 	 * @param {const std::vector<double> &} x; input
 	 */
 	double predict_mean(const std::vector<double> &x) {
@@ -97,7 +102,8 @@ public:
 		return k.adjoint()*cov_matrix.inverse()*ydat2;
 	}
 
-	/** @brief Predict the variance at a certain input
+	/**
+	 * @brief Predict the variance at a certain input
 	 * @param {const std::vector<double> &} x; input
 	 */
 	double predict_variance(const std::vector<double> &x) {
@@ -128,8 +134,7 @@ double gaussian_kernel(
 	for(unsigned int i=0; i<sz; ++i) {
 		a_b(i) = a[i] - b[i];
 	}
-	Eigen::MatrixXd M = Eigen::MatrixXd::Identity(sz,sz); // precision matrix
-	M = 5.*M;
+	Eigen::MatrixXd M = 1e-3 * Eigen::MatrixXd::Identity(sz,sz); // precision matrix - hyperparameter
 	return exp(-.5*a_b.adjoint()*M*a_b);
 }
 

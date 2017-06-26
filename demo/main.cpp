@@ -34,8 +34,8 @@ void create_environment(const bool &save) {
     double w_star_max = 4.;
     double zi_min = 1300.;
     double zi_max = 1400.;
-    double lifespan_min = 300.;
-    double lifespan_max = 600.;
+    double lifespan_min = 600.;
+    double lifespan_max = 1200.;
     double x_min = -1500.;
     double x_max = +1500.;
     double y_min = -1500.;
@@ -67,10 +67,23 @@ void create_environment(const bool &save) {
 
     /// 3 : Save data for visualization (optional)
     if(save) {
-        double dx=5., dy=5.; // mesh precision
-        double z=500., t=500.;  // altitude and time of the saved updraft field
-        fz.save_updraft_values(dx,dy,z,t,"data/updraft_field.dat");
+        double dx = 5., dy = 5.; // mesh precision
+        std::vector<double> z_vec = {10.};
+        std::vector<double> t_vec = {0., 50.};
+        fz.save_updraft_values(dx,dy,z_vec,t_vec,"data/updraft_field.dat");
     }
+
+    /// TESTS /////////////////////////////////////////////////////////////////////////////////////// TRM
+    /*
+    double noise = 1.;
+    gp_model gpm(&fz, gaussian_kernel, noise);
+    pop();
+    double dx = 5., dy = 5.; // mesh precision
+    std::vector<double> z_vec = {0.};
+    std::vector<double> t_vec = {0., 50.};
+    gpm.save_updraft_values(dx,dy,z_vec,t_vec,"data/gp_updraft_field.dat");
+    */
+    /// END TESTS /////////////////////////////////////////////////////////////////////////////////// TRM
 
     /// 4. Save the scenario
     fz.save_scenario("config/thermal_scenario.csv");
@@ -124,7 +137,7 @@ int main() {
     try
     {
         srand(time(NULL));
-        create_environment(true);
+        create_environment(false);
         run_with_config("config/main_config.cfg");
     }
     catch(const std::exception &e)

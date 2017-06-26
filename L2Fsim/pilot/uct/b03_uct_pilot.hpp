@@ -65,7 +65,7 @@ public:
         unsigned int _horizon=100,
         unsigned int _budget=1000) :
         ac(_ac),
-        fz(sc_path,envt_cfg_path,noise_stddev),
+        fz(sc_path, envt_cfg_path, noise_stddev),
         transition_function(_transition_function),
         angle_rate_magnitude(_angle_rate_magnitude),
         uct_parameter(_uct_parameter),

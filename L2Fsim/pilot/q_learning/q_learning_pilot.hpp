@@ -76,17 +76,17 @@ public:
         const beeler_glider_state &s,
         const beeler_glider_command &a)
     {
-        std::vector<double> buffer, phi;
-        phi.push_back(scale(s.zdot,30.));
-        phi.push_back(scale(s.gammadot,.2));
-        //phi.push_back(scale(s.alpha,s.max_angle_magnitude));
-        phi.push_back(scale(s.sigma,s.max_angle_magnitude));
-        phi.push_back(a.dsigma / angle_rate_magnitude);
-        buffer = phi;
-        phi.insert(phi.begin(),1.);
-        for(unsigned int i=0; i<buffer.size(); ++i) {
-            for(unsigned int j=i; j<buffer.size(); ++j) {
-                phi.push_back(buffer.at(i)*buffer.at(j));
+        std::vector<double> phi = {
+            1.,
+            scale(s.zdot,30.),
+            scale(s.gammadot,.2),
+            scale(s.sigma,s.max_angle_magnitude),
+            a.dsigma / angle_rate_magnitude);
+        };
+        unsigned int sz = phi.size();
+        for(unsigned int i=1; i<sz; ++i) {
+            for(unsigned int j=i; j<sz; ++j) {
+                phi.push_back(phi[i]*phi[j]);
             }
         }
         return phi;
@@ -136,7 +136,7 @@ public:
     void epsilon_greedy_policy(const beeler_glider_state &s, beeler_glider_command &a)
     {
         std::default_random_engine generator; //TODO randomize (cf randomization in wind method for thermal zone)
-        std::uniform_real_distribution<double> distribution(0.0,1.0);
+        std::uniform_real_distribution<double> distribution(0.,1.);
         std::vector<beeler_glider_command> aa = get_avail_actions(s);
         std::vector<unsigned int> max_ind, non_max_ind;
         std::vector<double> scores;

@@ -70,7 +70,7 @@ public:
     int get_model() override {return model;}
     double get_ksi() override {return ksi;}
 
-    void print_std_os() override {
+    void print() override {
         std::cout<<"model: "<<model<<" ";
         std::cout<<"t_birth: "<<t_birth<<" ";
         std::cout<<"lifespan: "<<lifespan<<" ";
@@ -83,7 +83,7 @@ public:
 
     /**
      * @brief Get center coordinate in the earth frame
-     * @return {std::vector<double>}
+     * @return {std::vector<double>} 3D vector containing the position of the center
      */
     std::vector<double> get_center() override {
         std::vector<double> w;

@@ -77,7 +77,7 @@ public:
 	virtual thermal& wind(const double &x, const double &y, const double &z, const double &t, std::vector<double> &w) = 0;
 
 	/** @brief Print the thermal's features in the standard output stream */
-	virtual void print_std_os() = 0;
+	virtual void print() = 0;
 };
 
 }
