@@ -2,9 +2,6 @@
 #define L2FSIM_EULER_INTEGRATOR_HPP_
 
 #include <L2Fsim/stepper/stepper.hpp>
-#include <L2Fsim/utils/utils.hpp>
-#include <cstdio>
-#include <cstdlib>
 
 /**
  * @file euler_integrator.hpp

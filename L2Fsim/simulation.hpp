@@ -1,12 +1,13 @@
 #ifndef L2FSIM_SIMULATION_HPP_
 #define L2FSIM_SIMULATION_HPP_
 
-#include <memory>
 #include <L2Fsim/flight_zone/flight_zone.hpp>
 #include <L2Fsim/aircraft/aircraft.hpp>
 #include <L2Fsim/stepper/stepper.hpp>
 #include <L2Fsim/pilot/pilot.hpp>
 #include <L2Fsim/utils/utils.hpp>
+#include <memory>
+
 
 /**
  * @file simulation.hpp

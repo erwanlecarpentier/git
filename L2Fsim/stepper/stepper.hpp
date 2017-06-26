@@ -1,8 +1,6 @@
 #ifndef L2FSIM_STEPPER_HPP_
 #define L2FSIM_STEPPER_HPP_
 
-#include <L2Fsim/flight_zone/flight_zone.hpp>
-#include <L2Fsim/aircraft/aircraft.hpp>
 #include <L2Fsim/pilot/pilot.hpp>
 
 /**

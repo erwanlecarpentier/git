@@ -1,12 +1,7 @@
 #ifndef L2FSIM_FLAT_THERMAL_SOARING_ZONE_HPP_
 #define L2FSIM_FLAT_THERMAL_SOARING_ZONE_HPP_
 
-#include <L2Fsim/flight_zone/flight_zone.hpp>
-#include <L2Fsim/flight_zone/flat_zone.hpp>
 #include <L2Fsim/flight_zone/thermal/std_thermal.hpp>
-#include <string>
-#include <fstream>
-#include <sstream>
 #include <chrono>
 
 /**

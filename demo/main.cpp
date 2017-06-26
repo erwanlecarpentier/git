@@ -1,11 +1,10 @@
-#include <L2Fsim/simulation.hpp>
-#include <L2Fsim/utils/cfg_reader.hpp>
-
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
 #include <string>
 #include <libconfig.h++>
+#include <L2Fsim/simulation.hpp>
+#include <L2Fsim/utils/cfg_reader.hpp>
 
 using namespace L2Fsim;
 
