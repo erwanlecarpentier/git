@@ -29,11 +29,7 @@ variables :
 plot_all :
 	python3 plot/2d_trajectory.py & python3 plot/3d_trajectory.py & python3 plot/variables.py
 
-clean :
-	rm -f data/state.dat
-	rm -f data/wind.dat
-	rm -f data/updraft_field.dat
-	rm -f ${EXEC}
+clean : clean_exe clean_dat
 
 clean_exe :
 	rm -f ${EXEC}

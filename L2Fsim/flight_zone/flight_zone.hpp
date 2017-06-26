@@ -6,7 +6,6 @@
 /**
  * @file flight_zone.hpp
  * @version 1.0
- *
  * @brief The abstract class flight_zone implementing the atmospheric environment into which the aircraft moves
  * A flight zone holds two important concepts:
  * - it has a characterization of the wind w in the flight zone at a given time;

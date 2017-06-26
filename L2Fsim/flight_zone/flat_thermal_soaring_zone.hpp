@@ -13,7 +13,6 @@
  * @file flat_thermal_soaring_zone.hpp
  * @version 1.1
  * @since 1.0
- *
  * @brief This class implements the components of the wind vector by introducing the thermals in the flat zone
  * @note The abstract class flat_thermal_soaring_zone is a subclass of flat_zone
  */

@@ -10,8 +10,9 @@
 #include <L2Fsim/aircraft/beeler_glider/beeler_glider_command.hpp>
 
 #include <L2Fsim/flight_zone/flight_zone.hpp>
-#include <L2Fsim/flight_zone/flat_thermal_soaring_zone.hpp>
 #include <L2Fsim/flight_zone/flat_zone.hpp>
+#include <L2Fsim/flight_zone/flat_thermal_soaring_zone.hpp>
+#include <L2Fsim/flight_zone/model/gp_model.hpp>
 
 #include <L2Fsim/stepper/stepper.hpp>
 #include <L2Fsim/stepper/euler_integrator.hpp>
