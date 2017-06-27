@@ -78,10 +78,10 @@ public:
     {
         std::vector<double> phi = {
             1.,
-            scale(s.zdot,30.),
+            scale(s.zdot,20.),
             scale(s.gammadot,.2),
             scale(s.sigma,s.max_angle_magnitude),
-            a.dsigma / angle_rate_magnitude);
+            a.dsigma / angle_rate_magnitude
         };
         unsigned int sz = phi.size();
         for(unsigned int i=1; i<sz; ++i) {
@@ -135,22 +135,27 @@ public:
      */
     void epsilon_greedy_policy(const beeler_glider_state &s, beeler_glider_command &a)
     {
-        std::default_random_engine generator; //TODO randomize (cf randomization in wind method for thermal zone)
+        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+        std::default_random_engine generator(seed);
         std::uniform_real_distribution<double> distribution(0.,1.);
+
         std::vector<beeler_glider_command> aa = get_avail_actions(s);
         std::vector<unsigned int> max_ind, non_max_ind;
         std::vector<double> scores;
 
-        for(unsigned int i=0; i<aa.size(); ++i) {
-            scores.push_back(q_value(s,aa.at(i)));
+        for(auto &action : aa) {
+            scores.push_back(q_value(s,action));
         }
         sort_indices(scores,max_ind,non_max_ind);
 
-        double number = distribution(generator);
-        if(number > epsilon) { // Greedy action
+        if(distribution(generator) > epsilon) { // Greedy action
             a = aa.at(rand_element(max_ind));
         } else { // Random action
-            a = aa.at(rand_element(non_max_ind));
+            if(non_max_ind.size() == 0) { // scores are all the same
+                a = aa.at(rand_element(max_ind));
+            } else {
+                a = aa.at(rand_element(non_max_ind));
+            }
         }
     }
 
@@ -187,7 +192,8 @@ public:
         double &reward)
     {
         (void) a; (void) s_p; // unused by default
-        reward = s.zdot + s.V * s.Vdot / 9.81;
+        double edot = s.zdot + s.V * s.Vdot / 9.81;
+        reward = scale(edot,2.);
     }
 
     /**
@@ -226,6 +232,7 @@ public:
         update_parameters(prev_s, prev_a, delta);
 
         epsilon_greedy_policy(s, a);
+        a.dalpha = 1e-3 * (0. - s.gammadot);
         prev_s = s;
         prev_a = a;
 

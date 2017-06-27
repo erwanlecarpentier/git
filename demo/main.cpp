@@ -137,8 +137,8 @@ int main() {
     try
     {
         srand(time(NULL));
-        create_environment(false);
-        run_with_config("config/main_config.cfg");
+        //create_environment(false);
+        run_with_config("config/main.cfg");
     }
     catch(const std::exception &e)
     {

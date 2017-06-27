@@ -304,11 +304,10 @@ public:
         if (!is_equal_to(noise_stddev,0.)) {
             unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
             std::default_random_engine generator (seed);
-
             std::normal_distribution<double> distribution(0.,noise_stddev);
-            //w[0] = distribution(generator);
-            //w[1] = distribution(generator);
-            w[2] = distribution(generator);
+            //w[0] += distribution(generator);
+            //w[1] += distribution(generator);
+            w[2] += distribution(generator);
         }
         return *this;
     }

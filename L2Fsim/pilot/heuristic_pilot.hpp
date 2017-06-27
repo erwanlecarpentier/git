@@ -18,12 +18,12 @@ class heuristic_pilot : public pilot {
 public:
     /**
      * @brief Attributes
-     * @param {double} angle_rate_magnitude; magnitude of the increment that one can apply to the angle
+     * @param {double} arm; magnitude of the increment that one can apply to the angle
      */
-    double angle_rate_magnitude;
+    double arm;
 
     heuristic_pilot(double _angle_rate_magnitude=.03) :
-        angle_rate_magnitude(_angle_rate_magnitude)
+        arm(_angle_rate_magnitude)
     {}
 
     /**
@@ -37,14 +37,40 @@ public:
 	{
         beeler_glider_state &s = dynamic_cast <beeler_glider_state &> (_s);
         beeler_glider_command &u = dynamic_cast <beeler_glider_command &> (_u);
-        double th = .5 * angle_rate_magnitude;
-        double kd = 1e-2, gammadot_ref = 0.;
 
-        // D-controller
+        // D-controller on alpha
+        double kd = 1e-2, gammadot_ref = 0.;
         u.dalpha = kd * (gammadot_ref - s.gammadot);
+
+        // No sideslip
         u.dbeta = 0.;
-        if(s.sigma > +th) { u.dsigma = -angle_rate_magnitude; }
-        if(s.sigma < -th) { u.dsigma = +angle_rate_magnitude; }
+
+        // Increase/dicrease bank angle when lifted
+        double sig = s.sigma;
+        double mam = s.max_angle_magnitude;
+        if(!is_less_than(s.zdot, 0.)) { // lifted case zdot >= 0
+            if(!is_less_than(sig, 0.)) { // sigma >= 0
+                if (!is_greater_than(sig+arm, mam)) { // sigma + dsigma <= mam
+                    u.dsigma = +arm;
+                } else { // sigma + dsigma > mam
+                    u.dsigma = 0.;
+                }
+            } else { // sigma < 0
+                if (!is_less_than(sig-arm, -mam)) { // sigma - dsigma >= -mam
+                    u.dsigma = -arm;
+                } else { // sigma - dsigma < -mam
+                    u.dsigma = 0.;
+                }
+            }
+        } else { // no lift
+            if (!is_less_than(sig, arm)) { // sigma >= arm
+                u.dsigma = -arm;
+            } else if(!is_greater_than(sig, -arm)) { //sigma <= -arm
+                u.dsigma = +arm;
+            } else { // -arm < sigma < arm
+                u.dsigma = 0.;
+            }
+        }
 
 		return *this;
 	}
@@ -58,30 +84,30 @@ public:
     pilot & out_of_boundaries(state &_s, command &_a) override {
         beeler_glider_state &s = dynamic_cast <beeler_glider_state &> (_s);
         beeler_glider_command &a = dynamic_cast <beeler_glider_command &> (_a);
-        double ang_max = .4;
+        double mam = s.max_angle_magnitude;
         double x = s.x;
         double y = s.y;
         double khi = s.khi;
-        double sigma = s.sigma;
+        double sig = s.sigma;
         double cs = -(x*cos(khi) + y*sin(khi)) / sqrt(x*x + y*y); // cos between heading and origin
         double th = .8; // threshold to steer back to flat command
 
         a.set_to_neutral();
-        if (!is_less_than(sigma,0.) && is_less_than(sigma,ang_max)) {
+        if (!is_less_than(sig,0.) && is_less_than(sig,mam)) {
             if (is_less_than(cs,th)) {
-                if (is_less_than(sigma+angle_rate_magnitude,ang_max)) {
-                    a.dsigma = +angle_rate_magnitude;
+                if (is_less_than(sig+arm,mam)) {
+                    a.dsigma = +arm;
                 }
             } else {
-                a.dsigma = -angle_rate_magnitude;
+                a.dsigma = -arm;
             }
-        } else if (is_less_than(sigma,0.) && is_less_than(-ang_max,sigma)) {
+        } else if (is_less_than(sig,0.) && is_less_than(-mam,sig)) {
             if (is_less_than(cs,th)) {
-                if (is_less_than(-ang_max,sigma-angle_rate_magnitude)) {
-                    a.dsigma = -angle_rate_magnitude;
+                if (is_less_than(-mam,sig-arm)) {
+                    a.dsigma = -arm;
                 }
             } else {
-                a.dsigma = +angle_rate_magnitude;
+                a.dsigma = +arm;
             }
         }
 		return *this;

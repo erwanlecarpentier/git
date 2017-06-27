@@ -167,14 +167,16 @@ struct cfg_reader {
             unsigned int sl = cfg.lookup("pilot_selector");
             switch(sl) {
             case 0: { // passive_pilot
-                double arm=.1;
+                double arm = .1;
                 if(cfg.lookupValue("angle_rate_magnitude",arm)) {
+                    arm *= TO_RAD;
                     return std::unique_ptr<pilot> (new passive_pilot(arm));
                 } else {disp_err("read_pilot");}
             }
             case 1: { // heuristic_pilot
-                double arm=.1;
+                double arm = .1;
                 if(cfg.lookupValue("angle_rate_magnitude",arm)) {
+                    arm *= TO_RAD;
                     return std::unique_ptr<pilot> (new heuristic_pilot(arm));
                 } else {disp_err("read_pilot");}
             }
@@ -185,6 +187,7 @@ struct cfg_reader {
                     cfg.lookupValue("q_learning_rate",lr),
                     cfg.lookupValue("q_discount_factor",df))
                 {
+                    arm *= TO_RAD;
                     return std::unique_ptr<pilot> (new q_learning_pilot(arm,ep,lr,df));
                 } else {disp_err("read_pilot");}
             }
@@ -208,6 +211,7 @@ struct cfg_reader {
                     beeler_glider_state s(x0,y0,z0,V0,gamma0,khi0,alpha0,beta0,sigma0,mam);
                     beeler_glider_command a;
                     beeler_glider ac_model(s,a);
+                    arm *= TO_RAD;
 
                     return std::unique_ptr<pilot> (
                         new b03_uct_pilot(
