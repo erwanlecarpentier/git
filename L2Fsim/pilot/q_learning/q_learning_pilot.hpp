@@ -192,8 +192,8 @@ public:
         double &reward)
     {
         (void) a; (void) s_p; // unused by default
-        double edot = s.zdot + s.V * s.Vdot / 9.81;
-        reward = scale(edot,2.);
+        double edot = s.zdot;// + s.V * s.Vdot / 9.81;
+        reward = scale(edot,10.);
     }
 
     /**
