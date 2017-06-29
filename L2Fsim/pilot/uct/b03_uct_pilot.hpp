@@ -58,8 +58,8 @@ public:
         void (*_transition_function)(aircraft &, flight_zone &, double &, const double &, const double &),
         double _angle_rate_magnitude=.01,
         double _uct_parameter=1.,
-        double _time_step_width=1e-1,
-        double _sub_time_step_width=1e-1,
+        double _time_step_width=.1,
+        double _sub_time_step_width=.1,
         double _df=.9,
         unsigned int _horizon=100,
         unsigned int _budget=1000) :
@@ -76,50 +76,14 @@ public:
     {}
 
     /**
-     * @brief Boolean test for termination criterion
-     * @param {beeler_glider_state &} s; tested state
+     * @brief Get the value of dalpha with a D-controller in order to soften the phugoid behaviour
+     * @param {beeler_glider_state &} s; current state
+     * @return value of dalpha
      */
-    bool is_terminal(beeler_glider_state &s) {
-        return s.is_out_of_bounds();
-    }
-
-    /**
-     * @brief Set the value of dalpha with a D-controller in order to soften the phugoid behaviour
-     * @param {beeler_glider_state &} s; state
-     * @param {beeler_glider_command &} a; modified action
-     */
-    void alpha_d_ctrl(beeler_glider_state &s, beeler_glider_command &a) {
+    double alpha_d_ctrl(const beeler_glider_state &s) {
         //double kd = .01, gammadot_ref=0.;
-        a.dalpha = .01 * (0. - s.gammadot);
-    }
-
-    /**
-     * @brief Compute the UCT score of a node
-     * @param {b03_node &} v; considered node
-     * @return {double} score
-     */
-    double uct_score(b03_node &v) {
-        double nvis = (double) v.number_of_visits;
-        assert(nvis != 0.);
-        double nvisparent = (double) v.parent->number_of_visits;
-        double avg_rwd = v.get_average_reward();
-        return avg_rwd + 2. * uct_parameter * sqrt(2. * log(nvisparent) / nvis);
-    }
-
-    /**
-     * @brief Get a reference on the 'best' child according to the UCT criteria
-     * @param {const b03_node &} parent; parent node
-     * @return {b03_node} best UCT child
-     */
-    b03_node & best_uct_child(b03_node &parent) {
-        std::vector<double> scores;
-        std::vector<unsigned int> max_indices;
-        for(b03_node &ch : parent.children) {
-            scores.push_back(uct_score(ch));
-        }
-        argmax(scores,max_indices);
-        unsigned int ind = rand_element(max_indices);
-        return parent.children.at(ind);
+        //a.dalpha = .01 * (0. - s.gammadot);
+        return - .01 * s.gammadot;
     }
 
     /**
@@ -131,14 +95,14 @@ public:
         std::vector<beeler_glider_command> v;
         double sig = s.sigma;
         double mam = s.max_angle_magnitude;
-        if(is_less_than(sig+angle_rate_magnitude, +mam)) {
-            v.push_back(beeler_glider_command(0.,0.,+angle_rate_magnitude));
+        double dalpha = alpha_d_ctrl(s);
+        if(is_less_than(sig+angle_rate_magnitude, mam)) {
+            v.emplace_back(dalpha,0.,angle_rate_magnitude);
         }
         if(is_less_than(-mam, sig-angle_rate_magnitude)) {
-            v.push_back(beeler_glider_command(0.,0.,-angle_rate_magnitude));
+            v.emplace_back(dalpha,0.,-angle_rate_magnitude);
         }
-        v.push_back(beeler_glider_command(0.,0.,0.));
-        //TODO: add alpha_d_ctrl(v->s,a); in this function !!
+        v.emplace_back(dalpha,0.,0.);
         return v;
     }
 
@@ -176,32 +140,73 @@ public:
     }
 
     /**
+     * @brief Pick randomly the indice of a not-expanded child
+     * @param {const std::vector<unsigned int> &} nvis; vector of the children number of visit
+     * @return A randomly picked indice corresponding to a child which has never been visited
+     */
+    unsigned int pick_new_child_indice(const std::vector<unsigned int> &nvis) {
+        std::vector<unsigned int> ind;
+        for(unsigned int i=0; i<nvis.size(); ++i) {
+            if(nvis[i] == 0) {
+                ind.push_back(i);
+            }
+        }
+        return rand_element(ind);
+    }
+
+    /**
      * @brief Create a new child corresponding to an untried action
      * @param {b03_node &} v; parent node
-     * @note link the child to the current node as a parent
-     * @note remove the selected action from 'avail_actions' attribute
-     * @return {void}
+     * @return {unsigned int} indice of the created child
      */
-    void create_child(b03_node &v) {
-        int indice = rand_indice(v.avail_actions);
-        beeler_glider_command a = v.avail_actions.at(indice);
-        v.avail_actions.erase(v.avail_actions.begin()+indice);
-        alpha_d_ctrl(v.s,a);
-        beeler_glider_state s_p = transition_model(v.s,a);
-        b03_node new_child(s_p,get_actions(s_p),0.,0,v.depth+1);
-        new_child.incoming_action = a;
-        new_child.parent = &v;
-        v.children.push_back(new_child);
+    unsigned int create_child(b03_node &v) {
+        unsigned int indice = pick_new_child_indice(v.nb_visit);
+        beeler_glider_state s_p = transition_model(v.s, v.actions.at(indice));
+        v.children.at(indice) = b03_node(s_p, &v, get_actions(s_p), indice, v.depth+1, 0);
+        return indice;
+    }
+
+    /**
+     * @brief Compute the UCT score
+     * @param {const double &} Qsa; Q value of the state-action pair
+     * @param {double &} Ns; total number of visits
+     * @param {double &} Nsa; number of visits of the state-action pair
+     * @return UCT score
+     */
+    inline double uct_score(const double &Qsa, const double &Ns, const double &Nsa) {
+        return Qsa + uct_parameter * sqrt(2. * log(Ns) / Nsa);
+    }
+
+    /**
+     * @brief Get a reference on the 'best' child according to the UCT criteria
+     * @param {const b03_node &} v; parent node
+     * @return {b03_node} best UCT child
+     */
+    b03_node & best_uct_child(b03_node &v) {
+        std::vector<double> scores;
+        unsigned int Ns = v.total_number_of_visits;
+        for(unsigned int i=0; i<v.children.size(); ++i) {
+            scores.push_back(uct_score(v.Q_values[i], Ns, v.nb_visit[i]));
+        }
+        return v.children[argmax(scores)];
+    }
+
+    /**
+     * @brief Boolean test for termination criterion
+     * @param {beeler_glider_state &} s; reference on the tested state
+     */
+    bool is_terminal(beeler_glider_state &s) {
+        return s.is_out_of_bounds();
     }
 
     /**
      * @brief Apply the tree policy from a 'current' node to a 'leaf' node; there are 3 cases:
-     * 1. The current node is terminal: return a reference on the current node;
-     * 2. The current node is fully expanded: get the 'best' child according to UCT criteria and recursively run the function on this child;
+     * 1. The current node is terminal: return a reference on the current node
+     * 2. The current node is fully expanded: get the 'best' child according to UCT criteria and recursively run the function on this child
      * 3. The current node is not fully expanded: create a new child and return a reference on this new child
      * @param {b03_node &} v; current node of the tree exploration
      * @return {b03_node &} Reference on the resulting node
-     * @note recursive function
+     * @note Recursive function
      */
     b03_node & tree_policy(b03_node &v0) {
         if (is_terminal(v0.s)) {
@@ -209,27 +214,26 @@ public:
         } else if (v0.is_fully_expanded()) {
             return tree_policy(best_uct_child(v0));
         } else {
-            create_child(v0);
-            return v0.get_last_child();
+            return v0.children.at(create_child(v0));
         }
     }
 
     /**
-     * @brief Run the default policy and compute the reward
+     * @brief Run the default policy and get the reward
      * @param {const beeler_glider_state &} s; starting state
      * @param {double &} reward; computed reward
      */
     void default_policy(const beeler_glider_state &s, double &reward) {
+        reward = 0.;
         beeler_glider_state s_tp, s_t=s;
         beeler_glider_command a_t;
         std::vector<beeler_glider_command> actions;
         for(unsigned int t=0; t<horizon; ++t) {
             actions = get_actions(s_t);
             a_t = rand_element(actions);
-            alpha_d_ctrl(s_t,a_t);
             s_tp = transition_model(s_t,a_t);
             reward += pow(df,(double)t) * reward_model(s_t,a_t,s_tp);
-            if(is_terminal(s_tp)){break;} // penalty when reaching terminal states ?
+            if(is_terminal(s_tp)){break;}
             s_t = s_tp;
         }
     }
@@ -240,29 +244,28 @@ public:
      * @param {double &} reward;
      * @note recursive function
      */
-    void backup(b03_node &v, const double &reward) {
+    void backup(b03_node &v, const double &reward) { //TODO
+        /*
         v.number_of_visits += 1;
         v.cumulative_reward += reward;
         // rather backup: reward_model((*v.parent).s,v.incoming_action,v.s) + df * reward;
         if(v.depth > 0) {
             backup(*v.parent, df * reward);
         }
+        */
     }
 
     /**
      * @brief Get the action leading to the child with the highest average reward
-     * @param {b03_node &} v0; parent node
-     * @param {beeler_glider_command &} a; computed action
+     * @param {b03_node &} v; parent node
+     * @param {beeler_glider_command &} a; resulting action
      */
-    void best_action(b03_node &v0, beeler_glider_command &a) {
+    void best_action(b03_node &v, beeler_glider_command &a) {
         std::vector<double> scores;
-        std::vector<unsigned int> max_indices;
-        for(unsigned int i=0; i<v0.children.size(); ++i) {
-            scores.push_back(v0.children[i].get_average_reward());
+        for(unsigned int i=0; i<v.children.size(); ++i) {
+            scores.push_back(v.Q_values[i]);
         }
-        argmax(scores,max_indices);
-        b03_node v = v0.children.at(rand_element(max_indices));
-        a = v.incoming_action;
+        a = v.actions[argmax(scores)];
     }
 
     /**
@@ -271,22 +274,18 @@ public:
      * @param {command &} _a; reference on the command
      * @warning dynamic cast of state and action
      */
-	pilot & operator()(state &_s, command &_a) override
-	{
+	pilot & operator()(state &_s, command &_a) override {
         beeler_glider_state &s0 = dynamic_cast <beeler_glider_state &> (_s);
         beeler_glider_command &a = dynamic_cast <beeler_glider_command &> (_a);
-        b03_node v0(s0,get_actions(s0),0.,1,0); // root node
+        b03_node v0(s0,nullptr,get_actions(s0),0,0,0); // root node
         for(unsigned int i=0; i<budget; ++i) {
             double reward = 0.;
             b03_node &v = tree_policy(v0);
-            default_policy(v.get_state(),reward);
+            default_policy(v.s,reward);
             backup(v,reward);
         }
         best_action(v0,a);
-
-        // D-controller
-        alpha_d_ctrl(s0,a);
-
+        a.dalpha = alpha_d_ctrl(s0); // D-controller
         return *this;
 	}
 

@@ -19,74 +19,63 @@ public:
     /**
      * @brief Attributes
      * @param {beeler_glider_state} s; state of the node
-     * @param {beeler_glider_command} incoming_action; action leading the node's parent to the node itself
-     * @param {double} cumulative_reward; sum of the backed-up rewards
-     * @param {unsigned int} number_of_visits;
-     * @param {unsigned int} depth;
      * @param {b03_node *} parent; pointer to the parent node
-     * @param {std::vector<beeler_glider_command>} avail_actions; actions available from the node's state
-     * @param {std::vector<b03_node>} children; vector containing the children of the node, initialy empty
-     *
+     * @param {std::vector<beeler_glider_command>} actions; available actions
+     * @param {std::vector<double>} Q_values; (state,action) values
+     * @param {std::vector<double>} nb_visit; (state,action) numbers of visits
+     * @param {std::vector<double>} rewards; (state,action) rewards
+     * @param {std::vector<b03_node>} children; (state,action) resulting children
+     * @param {unsigned int} incoming_action_indice; indice of the action taken by the parent
+     * @param {unsigned int} depth;
      * @warning the pointer to the parent 'parent' is obsolete if the node is root, make use of the boolean 'is_root_node'
      */
     beeler_glider_state s;
-    beeler_glider_command incoming_action;
-    double cumulative_reward;
-    unsigned int number_of_visits;
-    unsigned int depth;
     b03_node *parent;
-    std::vector<beeler_glider_command> avail_actions;
+    std::vector<beeler_glider_command> actions;
+    std::vector<double> Q_values;
+    std::vector<unsigned int> nb_visit;
+    std::vector<double> rewards;
     std::vector<b03_node> children;
+    unsigned int incoming_action_indice;
+    unsigned int depth;
+    unsigned int total_number_of_visits;
 
     /** @brief Empty constructor */
     b03_node() {}
 
-    /** @brief Constructor with given state */
+    /** @brief Constructor */
     b03_node(
         beeler_glider_state _s,
-        std::vector<beeler_glider_command> _avail_actions,
-        double _cumulative_reward=0.,
-        unsigned int _number_of_visits=0,
-        unsigned int _depth=0) :
+        b03_node *_parent,
+        std::vector<beeler_glider_command> _actions,
+        unsigned int _incoming_action_indice,
+        unsigned int _depth = 0,
+        unsigned int _total_number_of_visits = 0) :
         s(_s),
-        cumulative_reward(_cumulative_reward),
-        number_of_visits(_number_of_visits),
+        parent(_parent),
+        actions(_actions),
+        incoming_action_indice(_incoming_action_indice),
         depth(_depth),
-        avail_actions(_avail_actions)
-    {}
-
-    /** @brief Constructor without state */
-    b03_node(
-        std::vector<beeler_glider_command> _avail_actions,
-        double _cumulative_reward=0.,
-        unsigned int _number_of_visits=0,
-        unsigned int _depth=0) :
-        s(),
-        cumulative_reward(_cumulative_reward),
-        number_of_visits(_number_of_visits),
-        depth(_depth),
-        avail_actions(_avail_actions)
-    {}
-
-    /** @brief Return a reference on the state attribute */
-    beeler_glider_state & get_state() {return s;}
-
-    /** @brief Boolean test for a node being fully expanded or not */
-    bool is_fully_expanded() {
-        return (avail_actions.size() == 0) ? true : false;
-    }
-
-    /** @brief Get the average reward */
-    double get_average_reward() {
-        return cumulative_reward / (double)number_of_visits;
+        total_number_of_visits(_total_number_of_visits)
+    {
+        unsigned int sz = actions.size();
+        Q_values = std::vector<double>(sz,0.);
+        nb_visit = std::vector<unsigned int>(sz,0);
+        rewards = std::vector<double>(sz,0.);
+        for (unsigned int i=0; i<sz; ++i) { // create sz empty children
+            children.emplace_back();
+        }
     }
 
     /**
-     * @brief Get a reference on the last child that was created i.e. end position of 'children' attribute
-     * @return {b03_node &} reference on the last child
+     * @brief Boolean test for a node being fully expanded or not
+     * @note A node is fully expanded if all of its available actions have been tried at least once
      */
-    b03_node & get_last_child() {
-        return children.back();
+    bool is_fully_expanded() {
+        for(auto &a : nb_visit) {
+            if (a == 0) {return false;}
+        }
+        return true;
     }
 };
 

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cmath>
+#include <cassert>
 
 /**
  * @file utils.hpp
@@ -46,9 +47,9 @@ constexpr bool is_greater_than(T1 a, T2 b) {
  * @param {std::vector<unsigned int> &} dw_ind; indices of the other elements of v
  * @note template method
  */
-template <class content_type>
+template <class T>
 inline void sort_indices(
-    const std::vector<content_type> &v,
+    const std::vector<T> &v,
     std::vector<unsigned int> &up_ind,
     std::vector<unsigned int> &dw_ind)
 {
@@ -61,46 +62,27 @@ inline void sort_indices(
 }
 
 /**
- * @brief Get the vector of indices of 'v' for which 'v' content is maximum
- * @param {const std::vector<double> &} v; input vector
- * @param {std::vector<unsigned int> &} up_ind; indices of the elements of v reaching the maximum values
- * @note template method
- */
-template <class content_type>
-inline void argmax(
-    const std::vector<content_type> &v,
-    std::vector<unsigned int> &up_ind)
-{
-    double maxval = *std::max_element(v.begin(),v.end());
-    for (unsigned int j=0; j<v.size(); ++j) {
-        //if(v[j] >= maxval) {up_ind.push_back(j);} // outdated: incorrect comparison between float, double, etc.
-        if(!is_less_than(v[j],maxval)) {up_ind.push_back(j);}
-    }
-}
-
-/**
  * @brief Pick a random indice of the input vector, not depending on its content type
- * @param {const std::vector<content_type> &} v; input vector
+ * @param {const std::vector<T> &} v; input vector
  * @return {int} a random indice
  * @note initialize a random seed when executing your program
  * @note template method
  */
-template <class content_type>
-inline int rand_indice(const std::vector<content_type> &v) {
-    if(v.size()==0)
-    {std::cout<<"Error in function 'int L2Fsim::rand_indice': argument has size 0"<<std::endl;}
+template <class T>
+inline int rand_indice(const std::vector<T> &v) {
+    assert(v.size() != 0);
     return rand() % v.size();
 }
 
 /**
  * @brief Pick a random element of the input vector, not depending on its content type
- * @param {const std::vector<content_type> &} v; input vector
+ * @param {const std::vector<T> &} v; input vector
  * @return {int} a random indice
  * @note initialize a random seed when executing your program
  * @note template method
  */
-template <class content_type>
-inline content_type rand_element(const std::vector<content_type> &v) {
+template <class T>
+inline T rand_element(const std::vector<T> &v) {
     return v.at(rand_indice(v));
 }
 
@@ -118,6 +100,33 @@ inline double rand_double(double fmin, double fmax) {
 /** @return a uniformly picked int in range [fmin,fmax] */
 inline int rand_int(int fmin, int fmax) {
     return (rand() % (fmax-fmin) + fmin);
+}
+
+/**
+ * @brief Get the indice of the maximum element in the input vector, ties are broken randomly
+ * @param {const std::vector<T> &} v; input vector
+ * @return Indice of the maximum element in the input vector
+ * @note template method
+ */
+template <class T>
+inline unsigned int argmax(const std::vector<T> &v) {
+    double maxval = *std::max_element(v.begin(),v.end());
+    std::vector<unsigned int> up_ind;
+    for (unsigned int j=0; j<v.size(); ++j) {
+        if(!is_less_than(v[j],maxval)) {up_ind.push_back(j);}
+    }
+    return rand_element(up_ind);
+}
+
+/** @brief See 'argmax' method */
+template <class T>
+inline unsigned int argmin(const std::vector<T> &v) {
+    double minval = *std::min_element(v.begin(),v.end());
+    std::vector<unsigned int> lo_ind;
+    for (unsigned int j=0; j<v.size(); ++j) {
+        if(!is_greater_than(v[j],minval)) {lo_ind.push_back(j);}
+    }
+    return rand_element(lo_ind);
 }
 
 /**
