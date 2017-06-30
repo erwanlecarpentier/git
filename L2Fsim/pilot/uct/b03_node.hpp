@@ -67,6 +67,11 @@ public:
         }
     }
 
+    /** @brief Boolean test for termination criterion */
+    bool is_terminal() {
+        return s.is_out_of_bounds();
+    }
+
     /**
      * @brief Boolean test for a node being fully expanded or not
      * @note A node is fully expanded if all of its available actions have been tried at least once

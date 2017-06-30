@@ -64,12 +64,12 @@ inline void sort_indices(
 /**
  * @brief Pick a random indice of the input vector, not depending on its content type
  * @param {const std::vector<T> &} v; input vector
- * @return {int} a random indice
- * @note initialize a random seed when executing your program
- * @note template method
+ * @return {unsigned int} a random indice
+ * @note Initialize a random seed when executing your program
+ * @note Template method
  */
 template <class T>
-inline int rand_indice(const std::vector<T> &v) {
+inline unsigned int rand_indice(const std::vector<T> &v) {
     assert(v.size() != 0);
     return rand() % v.size();
 }

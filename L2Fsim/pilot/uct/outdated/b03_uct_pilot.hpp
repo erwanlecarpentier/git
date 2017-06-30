@@ -183,7 +183,7 @@ public:
      * @return {void}
      */
     void create_child(b03_node &v) {
-        int indice = rand_indice(v.avail_actions);
+        unsigned int indice = rand_indice(v.avail_actions);
         beeler_glider_command a = v.avail_actions.at(indice);
         v.avail_actions.erase(v.avail_actions.begin()+indice);
         alpha_d_ctrl(v.s,a);
