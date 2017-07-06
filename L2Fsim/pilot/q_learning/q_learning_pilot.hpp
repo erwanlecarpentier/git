@@ -78,9 +78,9 @@ public:
     {
         std::vector<double> phi = {
             1.,
-            scale(s.zdot,20.),
-            scale(s.gammadot,.2),
-            scale(s.sigma,s.max_angle_magnitude),
+            s.zdot/20.,//scale(s.zdot,10.),
+            s.gammadot/.1,//scale(s.gammadot,.2),
+            s.sigma/s.max_angle_magnitude,//scale(s.sigma,s.max_angle_magnitude),
             a.dsigma / angle_rate_magnitude
         };
         unsigned int sz = phi.size();
@@ -192,8 +192,8 @@ public:
         double &reward)
     {
         (void) a; (void) s_p; // unused by default
-        double edot = s.zdot;// + s.V * s.Vdot / 9.81;
-        reward = scale(edot,10.);
+        double edot = s.zdot + s.V * s.Vdot / 9.81;
+        reward = edot/10.;//scale(edot,10.);
     }
 
     /**

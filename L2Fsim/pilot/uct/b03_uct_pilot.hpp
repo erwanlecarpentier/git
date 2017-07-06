@@ -229,7 +229,7 @@ public:
         for(unsigned int t=0; t<horizon; ++t) {
             s_tp = transition_model(s_t,a_t);
             delta += pow(df,(double)t) * reward_model(s_t,a_t,s_tp);
-            if(is_terminal(s_tp)){break;}
+            if(s_tp.is_out_of_bounds()){break;}
             s_t = s_tp;
             actions = get_actions(s_t);
             a_t = rand_element(actions);

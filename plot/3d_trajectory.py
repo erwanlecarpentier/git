@@ -21,7 +21,7 @@ t_plot = traj_data[:,10][-1] # time step until which we plot
 traj_data = traj_data[traj_data[:,10] <= t_plot]
 
 ## Thermal file reading
-th_data_path = "config/thermal_scenario.csv"
+th_data_path = "config/fz_scenario.csv"
 th_data = pd.read_csv(th_data_path,sep = ';')
 th_data = th_data[th_data["t_birth"]<=t_plot]
 th_data = th_data[th_data["t_birth"]+th_data["lifespan"]>=t_plot]

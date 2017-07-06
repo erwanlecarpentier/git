@@ -59,7 +59,7 @@ void create_environment(const bool &save) {
         z_min, z_max,
         ksi_min, ksi_max,
         d_min, nbth);
-    //flat_thermal_soaring_zone fz_from_file("config/thermal_scenario.csv","config/fz_config.csv");
+    //flat_thermal_soaring_zone fz_from_file("config/fz_scenario.csv","config/fz_config.csv");
 
     /// 2. Create a scenario i.e. create the thermals
     fz.create_scenario(dt,model);
@@ -86,7 +86,7 @@ void create_environment(const bool &save) {
     /// END TESTS /////////////////////////////////////////////////////////////////////////////////// TRM
 
     /// 4. Save the scenario
-    fz.save_scenario("config/thermal_scenario.csv");
+    fz.save_scenario("config/fz_scenario.csv");
     fz.save_fz_cfg("config/fz_config.csv");
 }
 
@@ -124,7 +124,7 @@ void run_with_config(const char *cfg_path) {
 	bool eos = false;
 	mysim.clear_saves();
     while(!(is_greater_than(t,t_lim)) && !eos) {
-        std::cout<<t<<std::endl;
+        std::cout << t << std::endl;
         mysim.save();
         mysim.step(t,Dt,eos);
     }
@@ -134,18 +134,15 @@ void run_with_config(const char *cfg_path) {
 }
 
 int main() {
-    try
-    {
+    try {
         srand(time(NULL));
         //create_environment(false);
         run_with_config("config/main.cfg");
     }
-    catch(const std::exception &e)
-    {
+    catch(const std::exception &e) {
         std::cerr<<"[error] In main(): standard exception caught: "<<e.what()<<std::endl;
     }
-    catch(...)
-    {
+    catch(...) {
         std::cerr<<"[error] In main(): Unknown exception caught"<<std::endl;
     }
     return 0;

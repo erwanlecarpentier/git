@@ -75,7 +75,7 @@ struct cfg_reader {
                 } else {disp_err("read_environment");}
             }
             case 1: { // flat_thermal_soaring_zone
-                std::string sc_path = "config/thermal_scenario.csv";
+                std::string sc_path = "config/fz_scenario.csv";
                 std::string envt_cfg_path = "config/fz_cfg.csv";
                 double noise_stddev=0.;
                 if (cfg.lookupValue("th_scenario_path", sc_path) &&
