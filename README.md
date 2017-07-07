@@ -1,12 +1,13 @@
 # l2f-sim
-Stand-alone simulator for the "Learning to fly" project
+Stand-alone simulator for the "Learning To Fly" project
 
-This project was developed with a team of ISAE-SUPAERO students, tutored by 
-Pr. E. Rachelson. The goal is to provide a simple, efficient, stand-alone 
-library, for the simulation of the flight dynamics of an autonomous glider in 
-convective soaring conditions and the development of Reinforcement Learning 
-control algorithms. The code hosted here contains the library and a few 
-demonstration tools allowing to simulate different controls strategies.
+This project was developed at ISAE-Supaero by a team of the DISC department
+(Complex System Engineering Department). The goal is to provide a simple,
+efficient, stand-alone library, for the simulation of the flight dynamics of an 
+autonomous glider within convective soaring conditions and the development of
+Reinforcement Learning control algorithms. The code hosted here contains the 
+library and a few demonstration tools allowing to simulate different controls 
+strategies.
 
 The project website can be found at [Learning to Fly]
 (http://websites.isae.fr/learning-to-fly/).
@@ -14,18 +15,18 @@ The project website can be found at [Learning to Fly]
 # Makefile commands:
 
 Clean:
--make clean_all (remove executables and data files)
+-make clean (remove executables and data files)
 -make clean_exe (remove executables)
 -make clean_dat (remove data files)
 
 Compile and run:
 - make compile (compile “demo/main.cpp)
-- make all (clean_exe, compile and run)
+- make all (clean, compile and run)
 
 Exploit the results after the simulation:
-- make energy (it shows the variation of energy during the simulation)
-- make traj (it shows the trajectory of the plane with the thermic centers)
-- make angle (its shows the evolution of the aircraft angle during the fligth)
+- make 2d_trajectory (plot the 2D trajectory)
+- make 3d_trajectory (plot the 3D trajectory)
+- make variables (plot the online collected variables)
 
 Help:
 - make help (shows the help section)
@@ -48,14 +49,13 @@ example :
 - L2F::passive_pilot for L2F::pilot
 
 * Using the library
-Example provided in the '/demo/main.cpp' file
+Example provided in the 'demo/main.cpp' file
 
 * Extending the library
 The library can be extended by defining new aircrafts, new steppers, new pilots
 or new flight zones. To do so, create your own classes that inherits from the 
 L2F::aircraft, L2F::stepper, L2F::pilot or L2F::flight_zone basic classes (or
-any of the already defined classes in the respective directories). Then you can 
-just place the corresponding files in the respective directories and start using 
-them.
-
+any of the already defined classes in the respective directories). Afterwards
+one can start ones implementation with the constraint that the pure virtual
+inherited methods necessarily have to be implemented.
 
