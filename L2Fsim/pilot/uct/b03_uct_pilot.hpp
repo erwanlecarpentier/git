@@ -268,6 +268,14 @@ public:
         a = v.actions[argmax(scores)];
     }
 
+    void print_tree(b03_node &v) {
+        v.print();
+        for(auto &elt : v.children) {
+            elt.print();
+            print_tree(elt);
+        }
+    }
+
     /**
      * @brief Tree computation and action selection
      * @param {state &} _s; reference on the state
@@ -285,6 +293,7 @@ public:
             //std::cout << "nb actions of v: " << v.actions.size() << std::endl;//TRM
             default_policy(v,indice,delta);
             backup(v,indice,delta);
+            print_tree(v0);//TRM
         }
         greedy_action(v0,a);
         a.dalpha = alpha_d_ctrl(s0); // D-controller

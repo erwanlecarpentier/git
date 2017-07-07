@@ -67,6 +67,16 @@ public:
         }
     }
 
+    void print() {
+        std::cout << "d = " << depth << " ";
+        std::cout << "N = " << total_number_of_visits << " ";
+        std::cout << "ind = " << incoming_action_indice << " ";
+        std::cout << "nbchild = " << children.size() << " ";
+        std::cout << "pos = " << s.x << " ";
+        std::cout << s.y << " ";
+        std::cout << s.z << "\n";
+    }
+
     /** @brief Boolean test for termination criterion */
     bool is_terminal() {
         return s.is_out_of_bounds();
