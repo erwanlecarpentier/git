@@ -50,7 +50,7 @@ help :
 	@echo - General:
 	@echo compile : compile ”${MAIN_CPP}”, executable is ”${EXEC}”
 	@echo run     : execute ”${EXEC}”
-	@echo all     : clean_exe, compile and execute ”${EXEC}”
+	@echo all     : clean, compile and execute ”${EXEC}”
 	@echo
 	@echo - Plot:
 	@echo thermal_magnitude : run ”/plot/thermal_magnitude.py” with python3
