@@ -87,12 +87,6 @@ public:
      */
     bool is_fully_expanded() {
         return (children.size() == actions.size()) ? true : false;
-        /* TRM (outdated)
-        for(auto &n : nb_visits) {
-            if (n == 0) {return false;}
-        }
-        return true;
-        */
     }
 };
 

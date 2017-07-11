@@ -141,31 +141,13 @@ public:
     }
 
     /**
-     * @brief Browse a vector of visit counts and get the indice of the first one to be equal to zero
-     * @param {const std::vector<unsigned int> &} nvis; visit count vector
-     * @return Indice of the first zero count
-     */
-    /* //TRM outdated
-    unsigned int new_child_indice(const std::vector<unsigned int> &nvis) {
-        for(unsigned int i=0; i<nvis.size(); ++i) {
-            if(nvis[i] == 0) {
-                return i;
-            }
-        }
-        return 0;
-    }
-    */
-
-    /**
      * @brief Create a new child corresponding to an untried action
      * @param {b03_node &} v; parent node
      * @return {unsigned int} indice of the created child
      */
     unsigned int create_child(b03_node &v) {
-        //unsigned int indice = new_child_indice(v.nb_visits); //TRM outdated
         unsigned int indice = v.children.size();
         beeler_glider_state s_p = transition_model(v.s, v.actions.at(indice));
-        //v.children.at(indice) = b03_node(s_p, &v, get_actions(s_p), indice, v.depth+1); //TRM outdated
         v.children.emplace_back(s_p, &v, get_actions(s_p), indice, v.depth+1);
         v.rewards.at(indice) = reward_model(v.s,v.actions.at(indice),s_p); // save the transition reward
         return indice;
@@ -207,55 +189,11 @@ public:
      */
     b03_node & tree_policy(b03_node &v) {
         if (v.is_terminal()) {
-            v.s.print();//TRM
-            //std::cout << "case 0\n";//TRM
             return v;
         } else if (v.is_fully_expanded()) {
-            //std::cout << "case 1\n";//TRM
             return tree_policy(best_uct_child(v));
         } else {
-            //std::cout << "case 2\n";//TRM
             return v.children.at(create_child(v));
-        }
-    }
-
-    /**
-     * @brief Heuristic controller increasing the bank angle while lifted
-     * @param {beeler_glider_state &} s; state
-     * @param {beeler_glider_command &} a; computed action
-     */
-    void heuristic_controller(beeler_glider_state &s, beeler_glider_command &a) {
-        // D-controller on alpha
-        a.dalpha = alpha_d_ctrl(s);
-
-        // No sideslip
-        a.dbeta = 0.;
-
-        // Increase/dicrease bank angle while lifted
-        double sig = s.sigma;
-        double mam = s.max_angle_magnitude;
-        if(!is_less_than(s.zdot, 0.)) { // lifted case, zdot >= 0
-            if(!is_less_than(sig, 0.)) { // sigma >= 0
-                if (!is_greater_than(sig+angle_rate_magnitude, mam)) { // sigma + dsigma <= mam
-                    a.dsigma = +angle_rate_magnitude;
-                } else { // sigma + dsigma > mam
-                    a.dsigma = 0.;
-                }
-            } else { // sigma < 0
-                if (!is_less_than(sig-angle_rate_magnitude, -mam)) { // sigma - dsigma >= -mam
-                    a.dsigma = -angle_rate_magnitude;
-                } else { // sigma - dsigma < -mam
-                    a.dsigma = 0.;
-                }
-            }
-        } else { // no lift
-            if (!is_less_than(sig, angle_rate_magnitude)) { // sigma >= angle_rate_magnitude
-                a.dsigma = -angle_rate_magnitude;
-            } else if(!is_greater_than(sig, -angle_rate_magnitude)) { //sigma <= -angle_rate_magnitude
-                a.dsigma = +angle_rate_magnitude;
-            } else { // -angle_rate_magnitude < sigma < angle_rate_magnitude
-                a.dsigma = 0.;
-            }
         }
     }
 
@@ -334,7 +272,7 @@ public:
                 }
             }
         }
-        assert(1. == 2.);
+        assert(1. == 2.); //TODO remove
         return 0;
     }
 
@@ -348,7 +286,6 @@ public:
         const std::vector<beeler_glider_command> &actions,
         beeler_glider_command &a)
     {
-        //unsigned int indice = rand_indice(actions);//TRM
         a = actions[0]; //actions already randomized
         return 0;
     }
@@ -362,8 +299,6 @@ public:
     void default_policy(const b03_node &v, unsigned int &indice, double &delta) {
         delta = 0.;
         beeler_glider_state s_tp, s_t = v.s;
-        //indice = rand_indice(v.actions);//TRM
-        //beeler_glider_command a_t = v.actions[indice];//TRM
         beeler_glider_command a_t;
         switch(default_policy_selector) {
         case 0: { // random policy
@@ -446,11 +381,8 @@ public:
             double delta = 0.;
             unsigned int indice = 0;
             default_policy(v,indice,delta);
-            //default_heuristic_policy(v,indice,delta);//TRM
             backup(v,indice,delta);
         }
-        //v0.print();//TRM
-        //print_tree(v0);//TRM
         greedy_action(v0,a);
         a.dalpha = alpha_d_ctrl(s0); // D-controller
         return *this;
@@ -471,7 +403,6 @@ public:
         double sigma = s.sigma;
         double cs = -(x*cos(khi) + y*sin(khi)) / sqrt(x*x + y*y); // cos between heading and origin
         double th = .8; // threshold to steer back to flat command
-
         a.set_to_neutral();
         if (!is_less_than(sigma,0.) && is_less_than(sigma,ang_max)) {
             if (is_less_than(cs,th)) {
