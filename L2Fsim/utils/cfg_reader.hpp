@@ -194,7 +194,7 @@ struct cfg_reader {
             case 3: { // b03_uct_pilot
                 std::string sc_path, envt_cfg_path;
                 double noise_stddev=0., arm=.1, pr=.7, dt=.1, sdt=.1, df=.9;
-                unsigned int hz=100, bd=1000;
+                unsigned int hz=100, bd=1000, dfplselect=0;
                 if(cfg.lookupValue("th_scenario_path", sc_path)
                 && cfg.lookupValue("envt_cfg_path", envt_cfg_path)
                 && cfg.lookupValue("noise_stddev", noise_stddev)
@@ -204,7 +204,8 @@ struct cfg_reader {
                 && cfg.lookupValue("uct_sub_time_step_width",sdt)
                 && cfg.lookupValue("uct_discount_factor",df)
                 && cfg.lookupValue("uct_horizon",hz)
-                && cfg.lookupValue("uct_budget",bd))
+                && cfg.lookupValue("uct_budget",bd)
+                && cfg.lookupValue("uct_default_policy_selector",dfplselect))
                 {
                     double x0=0., y0=0., z0=0., V0=0., gamma0=0., khi0=0., alpha0=0., beta0=0., sigma0=0., mam=0.;
                     read_state(cfg,x0,y0,z0,V0,gamma0,khi0,alpha0,beta0,sigma0,mam);
@@ -218,17 +219,12 @@ struct cfg_reader {
                             ac_model,
                             sc_path, envt_cfg_path, noise_stddev, // flat_thermal_soaring_zone parameters
                             euler_integrator::transition_function,
-                            arm, pr, dt, sdt, df, hz, bd
+                            arm, pr, dt, sdt, df, hz, bd, dfplselect
                         ));
                 } else {disp_err("read_pilot");}
             }
             case 4: { // optimistic_pilot
-                /* TODO
-                double time_step_width=0.;
-                if(cfg.lookupValue("opt_time_step_width",time_step_width)) {
-                    return std::unique_ptr<pilot> (new optimistic_pilot(time_step_width));
-                } else {disp_err("");}
-                */
+                //TODO
             }
             }
         }

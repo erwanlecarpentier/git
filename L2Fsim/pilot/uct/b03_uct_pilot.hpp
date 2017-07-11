@@ -47,7 +47,7 @@ public:
     double df;
     unsigned int horizon;
     unsigned int budget;
-    unsigned int default_policy_selector = 1;
+    unsigned int default_policy_selector;
 
     /** @brief Constructor */
     b03_uct_pilot(
@@ -62,7 +62,8 @@ public:
         double _sub_time_step_width=.1,
         double _df=.9,
         unsigned int _horizon=100,
-        unsigned int _budget=1000) :
+        unsigned int _budget=1000,
+        unsigned int _default_policy_selector=0) :
         ac(_ac),
         fz(sc_path, envt_cfg_path, noise_stddev),
         transition_function(_transition_function),
@@ -72,7 +73,8 @@ public:
         sub_time_step_width(_sub_time_step_width),
         df(_df),
         horizon(_horizon),
-        budget(_budget)
+        budget(_budget),
+        default_policy_selector(_default_policy_selector)
     {}
 
     /**
