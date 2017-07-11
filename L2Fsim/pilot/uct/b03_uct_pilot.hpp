@@ -47,6 +47,7 @@ public:
     double df;
     unsigned int horizon;
     unsigned int budget;
+    unsigned int default_policy_selector = 1;
 
     /** @brief Constructor */
     b03_uct_pilot(
@@ -219,6 +220,140 @@ public:
     }
 
     /**
+     * @brief Heuristic controller increasing the bank angle while lifted
+     * @param {beeler_glider_state &} s; state
+     * @param {beeler_glider_command &} a; computed action
+     */
+    void heuristic_controller(beeler_glider_state &s, beeler_glider_command &a) {
+        // D-controller on alpha
+        a.dalpha = alpha_d_ctrl(s);
+
+        // No sideslip
+        a.dbeta = 0.;
+
+        // Increase/dicrease bank angle while lifted
+        double sig = s.sigma;
+        double mam = s.max_angle_magnitude;
+        if(!is_less_than(s.zdot, 0.)) { // lifted case, zdot >= 0
+            if(!is_less_than(sig, 0.)) { // sigma >= 0
+                if (!is_greater_than(sig+angle_rate_magnitude, mam)) { // sigma + dsigma <= mam
+                    a.dsigma = +angle_rate_magnitude;
+                } else { // sigma + dsigma > mam
+                    a.dsigma = 0.;
+                }
+            } else { // sigma < 0
+                if (!is_less_than(sig-angle_rate_magnitude, -mam)) { // sigma - dsigma >= -mam
+                    a.dsigma = -angle_rate_magnitude;
+                } else { // sigma - dsigma < -mam
+                    a.dsigma = 0.;
+                }
+            }
+        } else { // no lift
+            if (!is_less_than(sig, angle_rate_magnitude)) { // sigma >= angle_rate_magnitude
+                a.dsigma = -angle_rate_magnitude;
+            } else if(!is_greater_than(sig, -angle_rate_magnitude)) { //sigma <= -angle_rate_magnitude
+                a.dsigma = +angle_rate_magnitude;
+            } else { // -angle_rate_magnitude < sigma < angle_rate_magnitude
+                a.dsigma = 0.;
+            }
+        }
+    }
+
+    /**
+     * @brief Select an action among the available ones, there are two cases:
+     * - lifted case (zdot >= 0); increase the magnitude of sigma
+     * - no lift case (zdot < 0); dicrease the magnitude of sigma
+     * @param {const std::vector<beeler_glider_command> &} actions; available actions
+     * @param {beeler_glider_state &} s; state
+     * @param {beeler_glider_command &} a; chosen action
+     * @return Indice of the chosen action
+     */
+    unsigned int heuristic_policy(
+        const std::vector<beeler_glider_command> &actions,
+        beeler_glider_state &s,
+        beeler_glider_command &a)
+    {
+        double sig = s.sigma;
+        if(!is_less_than(s.zdot, 0.)) { // lifted case, zdot >= 0
+            if(!is_less_than(sig, 0.)) { // sigma >= 0; select +dsigma or 0
+                for(unsigned int i=0; i<actions.size(); ++i) { // select +dsigma
+                    if(is_greater_than(actions[i].dsigma, 0.)) {
+                        a = actions[i];
+                        return i;
+                    }
+                }
+                for(unsigned int i=0; i<actions.size(); ++i) { // select 0 if first case was not encountered
+                    if(is_equal_to(actions[i].dsigma, 0.)) {
+                        a = actions[i];
+                        return i;
+                    }
+                }
+            } else { // sigma < 0; select -dsigma or 0
+                for(unsigned int i=0; i<actions.size(); ++i) { // select -dsigma
+                    if(is_less_than(actions[i].dsigma, 0.)) {
+                        a = actions[i];
+                        return i;
+                    }
+                }
+                for(unsigned int i=0; i<actions.size(); ++i) { // select 0 if first case was not encountered
+                    if(is_equal_to(actions[i].dsigma, 0.)) {
+                        a = actions[i];
+                        return i;
+                    }
+                }
+            }
+        } else { // no lift
+            if (!is_less_than(sig, angle_rate_magnitude)) { // sigma >= angle_rate_magnitude
+                a.dsigma = -angle_rate_magnitude;
+            } else if(!is_greater_than(sig, -angle_rate_magnitude)) { //sigma <= -angle_rate_magnitude
+                a.dsigma = +angle_rate_magnitude;
+            } else { // -angle_rate_magnitude < sigma < angle_rate_magnitude
+                a.dsigma = 0.;
+            }
+
+            if(is_less_than(-angle_rate_magnitude, sig) && is_less_than(sig, angle_rate_magnitude)) { // -angle_rate_magnitude < sigma < angle_rate_magnitude; select dsig=0
+                for(unsigned int i=0; i<actions.size(); ++i) {
+                    if(is_equal_to(actions[i].dsigma, 0.)) {
+                        a = actions[i];
+                        return i;
+                    }
+                }
+            } else if(!is_less_than(sig, angle_rate_magnitude)) { // sigma >= angle_rate_magnitude; select -dsigma
+                for(unsigned int i=0; i<actions.size(); ++i) { // select -dsigma
+                    if(is_less_than(actions[i].dsigma, 0.)) {
+                        a = actions[i];
+                        return i;
+                    }
+                }
+            } else { // sigma <= -angle_rate_magnitude; select +dsigma
+                for(unsigned int i=0; i<actions.size(); ++i) { // select +dsigma
+                    if(is_greater_than(actions[i].dsigma, 0.)) {
+                        a = actions[i];
+                        return i;
+                    }
+                }
+            }
+        }
+        assert(1. == 2.);
+        return 0;
+    }
+
+    /**
+     * @brief Select an action randomly
+     * @param {const std::vector<beeler_glider_command> &} actions; available actions
+     * @param {beeler_glider_command &} a; computed action
+     * @return Indice of the chosen action
+     */
+    unsigned int random_policy(
+        const std::vector<beeler_glider_command> &actions,
+        beeler_glider_command &a)
+    {
+        //unsigned int indice = rand_indice(actions);//TRM
+        a = actions[0]; //actions already randomized
+        return 0;
+    }
+
+    /**
      * @brief Run the default policy and get the value of a rollout until the horizon
      * @param {const b03_node &} v; starting node
      * @param {unsigned int &} indice; first action's indice
@@ -227,15 +362,34 @@ public:
     void default_policy(const b03_node &v, unsigned int &indice, double &delta) {
         delta = 0.;
         beeler_glider_state s_tp, s_t = v.s;
-        indice = rand_indice(v.actions);
-        beeler_glider_command a_t = v.actions[indice];
-        std::vector<beeler_glider_command> actions;
+        //indice = rand_indice(v.actions);//TRM
+        //beeler_glider_command a_t = v.actions[indice];//TRM
+        beeler_glider_command a_t;
+        switch(default_policy_selector) {
+        case 0: { // random policy
+            indice = random_policy(v.actions,a_t);
+            break;
+        }
+        case 1: { // heuristic policy
+            indice = heuristic_policy(v.actions,s_t,a_t);
+            break;
+        }
+        }
         for(unsigned int t=0; t<horizon; ++t) {
             s_tp = transition_model(s_t,a_t);
             delta += pow(df,(double)t) * reward_model(s_t,a_t,s_tp);
             if(s_tp.is_out_of_bounds()){break;}
             s_t = s_tp;
-            a_t = get_actions(s_t)[0]; // actions already randomized
+            switch(default_policy_selector) {
+            case 0: { // random policy
+                random_policy(get_actions(s_t),a_t);
+                break;
+            }
+            case 1: { // heuristic policy
+                heuristic_policy(get_actions(s_t),s_t,a_t);
+                break;
+            }
+            }
         }
     }
 
@@ -269,7 +423,7 @@ public:
         a = v.actions[argmax(scores)];
     }
 
-    /** @brief Roughly print the tree starting from input node as a standard output */
+    /** @brief Roughly print the tree recursively as a standard output starting from an input node */
     void print_tree(b03_node &v) {
         v.print();
         for(auto &elt : v.children) {
@@ -292,8 +446,10 @@ public:
             double delta = 0.;
             unsigned int indice = 0;
             default_policy(v,indice,delta);
+            //default_heuristic_policy(v,indice,delta);//TRM
             backup(v,indice,delta);
         }
+        //v0.print();//TRM
         //print_tree(v0);//TRM
         greedy_action(v0,a);
         a.dalpha = alpha_d_ctrl(s0); // D-controller

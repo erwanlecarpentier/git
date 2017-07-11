@@ -40,6 +40,17 @@ public:
     void set_to_neutral() override {
         dalpha = dbeta = dsigma = 0.;
     }
+
+    /** @brief Return true if this action is equal to the argument */
+    bool equals(const beeler_glider_command &a) {
+        if(is_equal_to(dalpha,a.dalpha)
+        && is_equal_to(dbeta,a.dbeta)
+        && is_equal_to(dsigma,a.dsigma)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 };
 
 }

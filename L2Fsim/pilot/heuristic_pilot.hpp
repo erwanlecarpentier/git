@@ -22,7 +22,7 @@ public:
      */
     double arm;
 
-    heuristic_pilot(double _angle_rate_magnitude=.03) :
+    heuristic_pilot(double _angle_rate_magnitude=.1) :
         arm(_angle_rate_magnitude)
     {}
 
@@ -33,8 +33,7 @@ public:
      * @warning dynamic cast
      * @note D-controller's coefficient is highly dependant on the configuration
      */
-	pilot & operator()(state &_s, command &_u) override
-	{
+	pilot & operator()(state &_s, command &_u) override {
         beeler_glider_state &s = dynamic_cast <beeler_glider_state &> (_s);
         beeler_glider_command &u = dynamic_cast <beeler_glider_command &> (_u);
 
