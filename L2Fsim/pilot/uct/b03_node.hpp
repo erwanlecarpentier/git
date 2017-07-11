@@ -22,7 +22,7 @@ public:
      * @param {b03_node *} parent; pointer to the parent node
      * @param {std::vector<beeler_glider_command>} actions; available actions
      * @param {std::vector<double>} Q_values; (state,action) values
-     * @param {std::vector<double>} nb_visit; (state,action) numbers of visits
+     * @param {std::vector<double>} nb_visits; (state,action) numbers of visits
      * @param {std::vector<double>} rewards; (state,action) rewards
      * @param {std::vector<b03_node>} children; (state,action) resulting children
      * @param {unsigned int} incoming_action_indice; indice of the action taken by the parent
@@ -33,12 +33,12 @@ public:
     b03_node *parent;
     std::vector<beeler_glider_command> actions;
     std::vector<double> Q_values;
-    std::vector<unsigned int> nb_visit;
     std::vector<double> rewards;
+    std::vector<unsigned int> nb_visits;
     std::vector<b03_node> children;
     unsigned int incoming_action_indice;
     unsigned int depth;
-    unsigned int total_number_of_visits;
+    unsigned int total_nb_visits;
 
     /** @brief Empty constructor */
     b03_node() {}
@@ -49,32 +49,31 @@ public:
         b03_node *_parent,
         std::vector<beeler_glider_command> _actions,
         unsigned int _incoming_action_indice,
-        unsigned int _depth = 0,
-        unsigned int _total_number_of_visits = 0) :
+        unsigned int _depth = 0) :
         s(_s),
         parent(_parent),
         actions(_actions),
         incoming_action_indice(_incoming_action_indice),
-        depth(_depth),
-        total_number_of_visits(_total_number_of_visits)
+        depth(_depth)
     {
         unsigned int sz = actions.size();
         Q_values = std::vector<double>(sz,0.);
-        nb_visit = std::vector<unsigned int>(sz,0);
         rewards = std::vector<double>(sz,0.);
-        for (unsigned int i=0; i<sz; ++i) { // create sz empty children
-            children.emplace_back();
-        }
+        nb_visits = std::vector<unsigned int>(sz,0);
+        total_nb_visits = 0;
     }
 
     void print() {
+        std::string sep = "   ";
         std::cout << "d = " << depth << " ";
-        std::cout << "N = " << total_number_of_visits << " ";
-        std::cout << "ind = " << incoming_action_indice << " ";
+        std::cout << "N = " << total_nb_visits << " ";
+        std::cout << "Nc = " << nb_visits[0] << " " << nb_visits[1] << " " << nb_visits[2] << " ";
+        std::cout << "Qc = " << Q_values[0] << " " << Q_values[1] << " " << Q_values[2] << sep;
+        std::cout << "indincaction = " << incoming_action_indice << " ";
         std::cout << "nbchild = " << children.size() << " ";
-        std::cout << "pos = " << s.x << " ";
-        std::cout << s.y << " ";
-        std::cout << s.z << "\n";
+        std::cout << "pos = " << s.x << " " << s.y << " " << s.z << sep;
+        std::cout << "this = " << this << " ";
+        std::cout << "parent = " << parent << "\n";
     }
 
     /** @brief Boolean test for termination criterion */
@@ -84,13 +83,16 @@ public:
 
     /**
      * @brief Boolean test for a node being fully expanded or not
-     * @note A node is fully expanded if all of its available actions have been tried at least once
+     * @note A node is fully expanded if all of its available actions have been tried at least once and consequently the number of children is equal to the number of actions
      */
     bool is_fully_expanded() {
-        for(auto &a : nb_visit) {
-            if (a == 0) {return false;}
+        return (children.size() == actions.size()) ? true : false;
+        /* TRM (outdated)
+        for(auto &n : nb_visits) {
+            if (n == 0) {return false;}
         }
         return true;
+        */
     }
 };
 

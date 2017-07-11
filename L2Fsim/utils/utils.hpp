@@ -86,10 +86,14 @@ inline T rand_element(const std::vector<T> &v) {
     return v.at(rand_indice(v));
 }
 
+template <class T>
+inline void shuffle(std::vector<T> &v) {
+    std::random_shuffle(v.begin(), v.end());
+}
+
 /** @brief Return the sign of the input double */
-inline double sgn(double T) {
-    if (T >= 0.) {return 1.;}
-    else {return -1.;}
+inline double sgn(double x) {
+    return is_less_than(x,0.) ? -1. : 1.;
 }
 
 /** @return a uniformly picked double in range [fmin,fmax] */

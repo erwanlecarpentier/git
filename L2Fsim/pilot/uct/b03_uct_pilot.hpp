@@ -102,6 +102,7 @@ public:
             v.emplace_back(dalpha,0.,-angle_rate_magnitude);
         }
         v.emplace_back(dalpha,0.,0.);
+        std::random_shuffle(v.begin(), v.end());
         return v;
     }
 
@@ -139,19 +140,20 @@ public:
     }
 
     /**
-     * @brief Pick randomly the indice of a not-expanded child
-     * @param {const std::vector<unsigned int> &} nvis; vector of the children number of visit
-     * @return A randomly picked indice corresponding to a child which has never been visited
+     * @brief Browse a vector of visit counts and get the indice of the first one to be equal to zero
+     * @param {const std::vector<unsigned int> &} nvis; visit count vector
+     * @return Indice of the first zero count
      */
-    unsigned int pick_new_child_indice(const std::vector<unsigned int> &nvis) {
-        std::vector<unsigned int> ind;
+    /* //TRM outdated
+    unsigned int new_child_indice(const std::vector<unsigned int> &nvis) {
         for(unsigned int i=0; i<nvis.size(); ++i) {
             if(nvis[i] == 0) {
-                ind.push_back(i);
+                return i;
             }
         }
-        return rand_element(ind);
+        return 0;
     }
+    */
 
     /**
      * @brief Create a new child corresponding to an untried action
@@ -159,9 +161,11 @@ public:
      * @return {unsigned int} indice of the created child
      */
     unsigned int create_child(b03_node &v) {
-        unsigned int indice = pick_new_child_indice(v.nb_visit);
+        //unsigned int indice = new_child_indice(v.nb_visits); //TRM outdated
+        unsigned int indice = v.children.size();
         beeler_glider_state s_p = transition_model(v.s, v.actions.at(indice));
-        v.children.at(indice) = b03_node(s_p, &v, get_actions(s_p), indice, v.depth+1, 0);
+        //v.children.at(indice) = b03_node(s_p, &v, get_actions(s_p), indice, v.depth+1); //TRM outdated
+        v.children.emplace_back(s_p, &v, get_actions(s_p), indice, v.depth+1);
         v.rewards.at(indice) = reward_model(v.s,v.actions.at(indice),s_p); // save the transition reward
         return indice;
     }
@@ -184,9 +188,9 @@ public:
      */
     b03_node & best_uct_child(b03_node &v) {
         std::vector<double> scores;
-        unsigned int Ns = v.total_number_of_visits;
+        unsigned int Ns = v.total_nb_visits;
         for(unsigned int i=0; i<v.children.size(); ++i) {
-            scores.push_back(uct_score(v.Q_values[i], Ns, v.nb_visit[i]));
+            scores.push_back(uct_score(v.Q_values[i], Ns, v.nb_visits[i]));
         }
         return v.children[argmax(scores)];
     }
@@ -202,14 +206,14 @@ public:
      */
     b03_node & tree_policy(b03_node &v) {
         if (v.is_terminal()) {
-            v.s.print();
-            std::cout << "case 0\n";//TRM
+            v.s.print();//TRM
+            //std::cout << "case 0\n";//TRM
             return v;
         } else if (v.is_fully_expanded()) {
-            std::cout << "case 1\n";//TRM
+            //std::cout << "case 1\n";//TRM
             return tree_policy(best_uct_child(v));
         } else {
-            std::cout << "case 2\n";//TRM
+            //std::cout << "case 2\n";//TRM
             return v.children.at(create_child(v));
         }
     }
@@ -231,8 +235,7 @@ public:
             delta += pow(df,(double)t) * reward_model(s_t,a_t,s_tp);
             if(s_tp.is_out_of_bounds()){break;}
             s_t = s_tp;
-            actions = get_actions(s_t);
-            a_t = rand_element(actions);
+            a_t = get_actions(s_t)[0]; // actions already randomized
         }
     }
 
@@ -244,13 +247,11 @@ public:
      * @note Recursive method
      */
     void backup(b03_node &v, unsigned int &indice, double &delta) {
-        v.total_number_of_visits += 1;
-        v.nb_visit[indice] += 1;
-        v.Q_values[indice] += 1./((double)v.nb_visit[indice]) * (delta - v.Q_values[indice]);
+        v.total_nb_visits += 1;
+        v.nb_visits[indice] += 1;
+        v.Q_values[indice] += 1./((double)v.nb_visits[indice]) * (delta - v.Q_values[indice]);
         if(v.depth > 0) {
-            //delta = reward_model(v.parent->s, v.parent->actions[v.incoming_action_indice], v.s) + df * delta;
             delta = v.parent->rewards[v.incoming_action_indice] + df * delta;
-            //TODO: check that both delta updates are the same
             backup(*v.parent, v.incoming_action_indice, delta);
         }
     }
@@ -268,10 +269,10 @@ public:
         a = v.actions[argmax(scores)];
     }
 
+    /** @brief Roughly print the tree starting from input node as a standard output */
     void print_tree(b03_node &v) {
         v.print();
         for(auto &elt : v.children) {
-            elt.print();
             print_tree(elt);
         }
     }
@@ -285,16 +286,15 @@ public:
 	pilot & operator()(state &_s, command &_a) override {
         beeler_glider_state &s0 = dynamic_cast <beeler_glider_state &> (_s);
         beeler_glider_command &a = dynamic_cast <beeler_glider_command &> (_a);
-        b03_node v0(s0,nullptr,get_actions(s0),0,0,0); // root node
+        b03_node v0(s0,nullptr,get_actions(s0),0,0); // root node
         for(unsigned int i=0; i<budget; ++i) {
             b03_node &v = tree_policy(v0);
             double delta = 0.;
             unsigned int indice = 0;
-            //std::cout << "nb actions of v: " << v.actions.size() << std::endl;//TRM
             default_policy(v,indice,delta);
             backup(v,indice,delta);
-            print_tree(v0);//TRM
         }
+        //print_tree(v0);//TRM
         greedy_action(v0,a);
         a.dalpha = alpha_d_ctrl(s0); // D-controller
         return *this;
