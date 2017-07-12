@@ -7,7 +7,7 @@
 /**
  * @file b03_node.hpp
  * @brief Node for MCTS for 'beeler_glider.hpp' model
- * @version 1.0
+ * @version 1.1
  * @since 1.0
  * @note compatibility: 'beeler_glider.hpp'; 'beeler_glider_state.hpp'; 'beeler_glider_command.hpp'
  */

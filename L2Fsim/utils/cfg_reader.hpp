@@ -23,7 +23,7 @@
 #include <L2Fsim/pilot/heuristic_pilot.hpp>
 #include <L2Fsim/pilot/q_learning/q_learning_pilot.hpp>
 #include <L2Fsim/pilot/uct/b03_uct_pilot.hpp>
-//#include <L2Fsim/pilot/optimistic/optimistic_pilot.hpp> // TODO uncomment
+#include <L2Fsim/pilot/optimistic/optimistic_pilot.hpp>
 
 /**
  * @file cfg_reader.hpp
@@ -124,6 +124,7 @@ struct cfg_reader {
         else {disp_err("read_state");}
     }
 
+    /** @brief Read and initialise an aircraft */
     std::unique_ptr<aircraft> read_aircraft(const libconfig::Config &cfg) {
         if(cfg.exists("aircraft_selector")) {
             unsigned int sl = cfg.lookup("aircraft_selector");
@@ -159,7 +160,8 @@ struct cfg_reader {
         return std::unique_ptr<stepper> (nullptr);
     }
 
-    /** @brief Read and initialise a pilot
+    /**
+     * @brief Read and initialise a pilot
      * @todo write a method for each case
      */
     std::unique_ptr<pilot> read_pilot(const libconfig::Config &cfg) {
@@ -193,7 +195,7 @@ struct cfg_reader {
             }
             case 3: { // b03_uct_pilot
                 std::string sc_path, envt_cfg_path;
-                double noise_stddev=0., arm=.1, pr=.7, dt=.1, sdt=.1, df=.9;
+                double noise_stddev=0., arm=1., pr=.7, dt=.1, sdt=.1, df=.9;
                 unsigned int hz=100, bd=1000, dfplselect=0;
                 if(cfg.lookupValue("th_scenario_path", sc_path)
                 && cfg.lookupValue("envt_cfg_path", envt_cfg_path)
@@ -224,7 +226,33 @@ struct cfg_reader {
                 } else {disp_err("read_pilot");}
             }
             case 4: { // optimistic_pilot
-                //TODO
+                std::string sc_path, envt_cfg_path;
+                double noise_stddev=0., arm=1., dt=.1, sdt=.1, df=.9;
+                unsigned int bd=1000;
+
+                if(cfg.lookupValue("th_scenario_path", sc_path)
+                && cfg.lookupValue("envt_cfg_path", envt_cfg_path)
+                && cfg.lookupValue("noise_stddev", noise_stddev)
+                && cfg.lookupValue("angle_rate_magnitude",arm)
+                && cfg.lookupValue("opt_time_step_width",dt)
+                && cfg.lookupValue("opt_sub_time_step_width",sdt)
+                && cfg.lookupValue("opt_discount_factor",df)
+                && cfg.lookupValue("opt_budget",bd))
+				{
+                    double x0=0., y0=0., z0=0., V0=0., gamma0=0., khi0=0., alpha0=0., beta0=0., sigma0=0., mam=0.;
+                    read_state(cfg,x0,y0,z0,V0,gamma0,khi0,alpha0,beta0,sigma0,mam);
+                    beeler_glider_state s(x0,y0,z0,V0,gamma0,khi0,alpha0,beta0,sigma0,mam);
+                    beeler_glider_command a;
+                    beeler_glider ac_model(s,a);
+                    arm *= TO_RAD;
+
+                    return std::unique_ptr<pilot> (
+						new optimistic_pilot(
+							ac_model,
+							sc_path, envt_cfg_path, noise_stddev, // flat_thermal_soaring_zone parameters
+                        	arm, dt, sdt, df, bd
+						));
+                } else {disp_err("read_pilot");}
             }
             }
         }
