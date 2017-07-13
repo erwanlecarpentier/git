@@ -30,6 +30,7 @@ public:
      * @param {flat_thermal_soaring_zone} fz; atmosphere model
      * @param {void (*transition_function)(aircraft &, flight_zone &, double &, const double &, const double &)}
      * @param {double} angle_rate_magnitude; magnitude of the increment that one can apply to the angles
+     * @param {double} kdalpha; coefficient for the D controller in alpha
      * @param {double} uct_parameter; parameter for the UCT formula
      * @param {double} time_step_width;
      * @param {double} sub_time_step_width;
@@ -41,6 +42,7 @@ public:
     flat_thermal_soaring_zone fz;
     void (*transition_function)(aircraft &, flight_zone &, double &, const double &, const double &);
     double angle_rate_magnitude;
+    double kdalpha;
     double uct_parameter;
     double time_step_width;
     double sub_time_step_width;
@@ -57,6 +59,7 @@ public:
         double noise_stddev,
         void (*_transition_function)(aircraft &, flight_zone &, double &, const double &, const double &),
         double _angle_rate_magnitude=.01,
+        double _kdalpha=.01,
         double _uct_parameter=1.,
         double _time_step_width=.1,
         double _sub_time_step_width=.1,
@@ -68,6 +71,7 @@ public:
         fz(sc_path, envt_cfg_path, noise_stddev),
         transition_function(_transition_function),
         angle_rate_magnitude(_angle_rate_magnitude),
+        kdalpha(_kdalpha),
         uct_parameter(_uct_parameter),
         time_step_width(_time_step_width),
         sub_time_step_width(_sub_time_step_width),
@@ -83,9 +87,8 @@ public:
      * @return value of dalpha
      */
     double alpha_d_ctrl(const beeler_glider_state &s) {
-        //double kd = .01, gammadot_ref=0.;
-        //a.dalpha = .01 * (0. - s.gammadot);
-        return -.01 * s.gammadot;
+        //a.dalpha = kdalpha * (0. - s.gammadot);
+        return - kdalpha * s.gammadot;
     }
 
     /**

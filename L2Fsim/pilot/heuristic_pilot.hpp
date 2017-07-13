@@ -19,11 +19,16 @@ public:
     /**
      * @brief Attributes
      * @param {double} arm; magnitude of the increment that one can apply to the angle
+     * @param {double} kdalpha; coefficient for the D controller in alpha
      */
     double arm;
+    double kdalpha;
 
-    heuristic_pilot(double _angle_rate_magnitude = .1) :
-        arm(_angle_rate_magnitude)
+    heuristic_pilot(
+        double _angle_rate_magnitude = .1,
+        double _kdalpha=.01) :
+        arm(_angle_rate_magnitude),
+        kdalpha(_kdalpha)
     {}
 
     /**
@@ -38,8 +43,7 @@ public:
         beeler_glider_command &u = dynamic_cast <beeler_glider_command &> (_u);
 
         // D-controller on alpha
-        double kd = .01, gammadot_ref = 0.;
-        u.dalpha = kd * (gammadot_ref - s.gammadot);
+        u.dalpha = kdalpha * (0. - s.gammadot);
 
         // No sideslip
         u.dbeta = 0.;

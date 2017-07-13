@@ -25,6 +25,7 @@ public:
      * @param {beeler_glider_state} prev_s; previous state
      * @param {beeler_glider_command} prev_a; previous command
      * @param {double} angle_rate_magnitude; magnitude of the increment that one can apply to the angles
+     * @param {double} kdalpha; coefficient for the D controller in alpha
      * @param {double} epsilon; for epsilon-greedy policy
      * @param {double} lr; learning rate (aka alpha in the literature)
      * @param {double} df; discount factor (aka gamma in the literature)
@@ -33,6 +34,7 @@ public:
     beeler_glider_state prev_s;
     beeler_glider_command prev_a;
     double angle_rate_magnitude;
+    double kdalpha;
     double epsilon;
     double lr;
     double df;
@@ -40,12 +42,14 @@ public:
 
     q_learning_pilot(
         double _angle_rate_magnitude=.0,
+        double _kdalpha=.01,
         double _epsilon=.01,
         double _lr=.01,
         double _df=.9) :
         prev_s(),
         prev_a(),
         angle_rate_magnitude(_angle_rate_magnitude),
+        kdalpha(_kdalpha),
         epsilon(_epsilon),
         lr(_lr),
         df(_df)
@@ -232,7 +236,7 @@ public:
         update_parameters(prev_s, prev_a, delta);
 
         epsilon_greedy_policy(s, a);
-        a.dalpha = 1e-3 * (0. - s.gammadot);
+        a.dalpha = kdalpha * (0. - s.gammadot);
         prev_s = s;
         prev_a = a;
 

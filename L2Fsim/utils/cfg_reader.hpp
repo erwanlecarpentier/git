@@ -176,31 +176,34 @@ struct cfg_reader {
                 } else {disp_err("read_pilot");}
             }
             case 1: { // heuristic_pilot
-                double arm = .1;
-                if(cfg.lookupValue("angle_rate_magnitude",arm)) {
+                double arm = .1, kd = .01;
+                if(cfg.lookupValue("angle_rate_magnitude",arm)
+                && cfg.lookupValue("kdalpha",kd)) {
                     arm *= TO_RAD;
-                    return std::unique_ptr<pilot> (new heuristic_pilot(arm));
+                    return std::unique_ptr<pilot> (new heuristic_pilot(arm,kd));
                 } else {disp_err("read_pilot");}
             }
             case 2: { // q_learning_pilot
-                double arm=.1, ep=.1, lr=.01, df=.9;
-                if (cfg.lookupValue("angle_rate_magnitude",arm),
-                    cfg.lookupValue("q_epsilon",ep),
-                    cfg.lookupValue("q_learning_rate",lr),
-                    cfg.lookupValue("q_discount_factor",df))
+                double arm=.1, kd=.01, ep=.1, lr=.01, df=.9;
+                if(cfg.lookupValue("angle_rate_magnitude",arm)
+                && cfg.lookupValue("kdalpha",kd)
+                && cfg.lookupValue("q_epsilon",ep)
+                && cfg.lookupValue("q_learning_rate",lr)
+                && cfg.lookupValue("q_discount_factor",df))
                 {
                     arm *= TO_RAD;
-                    return std::unique_ptr<pilot> (new q_learning_pilot(arm,ep,lr,df));
+                    return std::unique_ptr<pilot> (new q_learning_pilot(arm,kd,ep,lr,df));
                 } else {disp_err("read_pilot");}
             }
             case 3: { // b03_uct_pilot
                 std::string sc_path, envt_cfg_path;
-                double noise_stddev=0., arm=1., pr=.7, dt=.1, sdt=.1, df=.9;
+                double noise_stddev=0., arm=1., kd=.01, pr=.7, dt=.1, sdt=.1, df=.9;
                 unsigned int hz=100, bd=1000, dfplselect=0;
                 if(cfg.lookupValue("th_scenario_path", sc_path)
                 && cfg.lookupValue("envt_cfg_path", envt_cfg_path)
                 && cfg.lookupValue("noise_stddev", noise_stddev)
                 && cfg.lookupValue("angle_rate_magnitude",arm)
+                && cfg.lookupValue("kdalpha",kd)
                 && cfg.lookupValue("uct_parameter",pr)
                 && cfg.lookupValue("uct_time_step_width",dt)
                 && cfg.lookupValue("uct_sub_time_step_width",sdt)
@@ -221,19 +224,19 @@ struct cfg_reader {
                             ac_model,
                             sc_path, envt_cfg_path, noise_stddev, // flat_thermal_soaring_zone parameters
                             euler_integrator::transition_function,
-                            arm, pr, dt, sdt, df, hz, bd, dfplselect
+                            arm, kd, pr, dt, sdt, df, hz, bd, dfplselect
                         ));
                 } else {disp_err("read_pilot");}
             }
             case 4: { // optimistic_pilot
                 std::string sc_path, envt_cfg_path;
-                double noise_stddev=0., arm=1., dt=.1, sdt=.1, df=.9;
+                double noise_stddev=0., arm=1., kd=.01, dt=.1, sdt=.1, df=.9;
                 unsigned int bd=1000;
-
                 if(cfg.lookupValue("th_scenario_path", sc_path)
                 && cfg.lookupValue("envt_cfg_path", envt_cfg_path)
                 && cfg.lookupValue("noise_stddev", noise_stddev)
                 && cfg.lookupValue("angle_rate_magnitude",arm)
+                && cfg.lookupValue("kdalpha",kd)
                 && cfg.lookupValue("opt_time_step_width",dt)
                 && cfg.lookupValue("opt_sub_time_step_width",sdt)
                 && cfg.lookupValue("opt_discount_factor",df)
@@ -250,7 +253,7 @@ struct cfg_reader {
 						new optimistic_pilot(
 							ac_model,
 							sc_path, envt_cfg_path, noise_stddev, // flat_thermal_soaring_zone parameters
-                        	arm, dt, sdt, df, bd
+                        	arm, kd, dt, sdt, df, bd
 						));
                 } else {disp_err("read_pilot");}
             }

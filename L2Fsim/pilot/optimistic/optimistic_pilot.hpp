@@ -31,6 +31,7 @@ public:
      * @param {beeler_glider} ac; aircraft model
      * @param {flat_thermal_soaring_zone} fz; atmosphere model
      * @param {double} angle_rate_magnitude; magnitude of the increment that one can apply to the angles
+     * @param {double} kdalpha; coefficient for the D controller in alpha
      * @param {double} time_step_width;
      * @param {double} sub_time_step_width;
      * @param {double} df; discount factor
@@ -41,6 +42,7 @@ public:
     beeler_glider ac;
     flat_thermal_soaring_zone fz;
     double angle_rate_magnitude;
+    double kdalpha;
     double time_step_width;
     double sub_time_step_width;
     double df;
@@ -55,13 +57,15 @@ public:
         std::string envt_cfg_path,
         double noise_stddev,
         double _angle_rate_magnitude=.01,
+        double _kdalpha=.01,
         double _time_step_width=1e-1,
         double _sub_time_step_width=1e-1,
         double _df=.9,
-        unsigned int _budget=1000 ) :
+        unsigned int _budget=10000) :
         ac(_ac),
         fz(sc_path,envt_cfg_path,noise_stddev),
         angle_rate_magnitude(_angle_rate_magnitude),
+        kdalpha(_kdalpha),
         time_step_width(_time_step_width),
         sub_time_step_width(_sub_time_step_width),
         df(_df),
@@ -96,7 +100,7 @@ public:
      * @param {beeler_glider_command &} a; modified action
      */
     void alpha_d_ctrl(const beeler_glider_state &s, beeler_glider_command &a) {
-        a.dalpha = .01 * (0. - s.gammadot);
+        a.dalpha = kdalpha * (0. - s.gammadot);
     }
 
     /**

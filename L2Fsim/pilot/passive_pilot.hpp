@@ -25,7 +25,7 @@ public:
     double angle_rate_magnitude;
 
     /** @brief Constructor */
-    passive_pilot(double _angle_rate_magnitude=.03) :
+    passive_pilot(double _angle_rate_magnitude = .1) :
         angle_rate_magnitude(_angle_rate_magnitude)
     {}
 
@@ -39,8 +39,7 @@ public:
      * @warning dynamic cast
      * @note D-controller's coefficient is highly dependant on the configuration
      */
-	pilot & operator()(state &_s, command &_u) override
-	{
+	pilot & operator()(state &_s, command &_u) override {
         (void) _s; // this is default
         beeler_glider_command &u = dynamic_cast <beeler_glider_command &> (_u);
         u.dalpha = 0.;

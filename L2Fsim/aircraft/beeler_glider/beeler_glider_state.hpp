@@ -22,14 +22,14 @@ public:
      * @param {double} alpha; angle of attack
      * @param {double} beta; sideslip angle
      * @param {double} sigma; bank angle
-     * @param {double} xdot, ydot, zdot, Vdot, gammadot, khidot; rates
      * @param {double} max_angle_magnitude; maximum angle magnitude
-     * @param {double} time; current time (may be used by a planning module)
+     * @param {double} xdot, ydot, zdot, Vdot, gammadot, khidot; rates
+     * @param {double} time; current time
      */
     double x, y, z, V, gamma, khi;
     double alpha, beta, sigma;
-    double xdot, ydot, zdot, Vdot, gammadot, khidot;
     double max_angle_magnitude;
+    double xdot, ydot, zdot, Vdot, gammadot, khidot;
     double time;
 
     /** @brief Constructor */
@@ -43,10 +43,10 @@ public:
         double _alpha=0.,
         double _beta=0.,
         double _sigma=0.,
+        double _max_angle_magnitude=.5,
         double _Vdot=0.,
         double _gammadot=0.,
         double _khidot=0.,
-        double _max_angle_magnitude=.5,
         double _time=0.) :
         x(_x),
         y(_y),
@@ -57,10 +57,10 @@ public:
         alpha(_alpha),
         beta(_beta),
         sigma(_sigma),
+        max_angle_magnitude(_max_angle_magnitude),
         Vdot(_Vdot),
         gammadot(_gammadot),
         khidot(_khidot),
-        max_angle_magnitude(_max_angle_magnitude),
         time(_time)
     {
         xdot = V * cos(khi) + cos(gamma);
