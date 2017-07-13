@@ -1,7 +1,6 @@
 #ifndef L2FSIM_BEELER_GLIDER_STATE_HPP_
 #define L2FSIM_BEELER_GLIDER_STATE_HPP_
 
-//#include <L2Fsim/aircraft/state.hpp>
 #include <ctgmath>
 
 /**
@@ -23,17 +22,17 @@ public:
      * @param {double} alpha; angle of attack
      * @param {double} beta; sideslip angle
      * @param {double} sigma; bank angle
-     * @param {double} max_angle_magnitude; maximum angle magnitude
      * @param {double} xdot, ydot, zdot, Vdot, gammadot, khidot; rates
+     * @param {double} max_angle_magnitude; maximum angle magnitude
      * @param {double} time; current time (may be used by a planning module)
      */
     double x, y, z, V, gamma, khi;
     double alpha, beta, sigma;
-    double max_angle_magnitude;
     double xdot, ydot, zdot, Vdot, gammadot, khidot;
+    double max_angle_magnitude;
     double time;
 
-    /** Constructor */
+    /** @brief Constructor */
     beeler_glider_state(
         double _x=0.,
         double _y=0.,
@@ -44,10 +43,10 @@ public:
         double _alpha=0.,
         double _beta=0.,
         double _sigma=0.,
-        double _max_angle_magnitude=.5,
         double _Vdot=0.,
         double _gammadot=0.,
         double _khidot=0.,
+        double _max_angle_magnitude=.5,
         double _time=0.) :
         x(_x),
         y(_y),
@@ -58,16 +57,31 @@ public:
         alpha(_alpha),
         beta(_beta),
         sigma(_sigma),
-        max_angle_magnitude(_max_angle_magnitude),
         Vdot(_Vdot),
         gammadot(_gammadot),
         khidot(_khidot),
+        max_angle_magnitude(_max_angle_magnitude),
         time(_time)
     {
         xdot = V * cos(khi) + cos(gamma);
         ydot = V * sin(khi) + cos(gamma);
         zdot = V * sin(gamma);
     }
+
+    /** @brief Set time variable */
+    void set_time(const double &t) override {time = t;}
+
+    /** @brief Get x coordinate in the earth frame */
+    double getx() {return x;}
+
+    /** @brief Get y coordinate in the earth frame */
+    double gety() {return y;}
+
+    /** @brief Get z coordinate in the earth frame */
+    double getz() {return z;}
+
+    /** @brief Get time coordinate */
+    double gett() {return time;}
 
     /**
      * @brief Dynamically creates a copy of the state
@@ -152,49 +166,30 @@ public:
         z += dt * zdot;
         V += dt * Vdot;
         gamma += dt * gammadot;
-        gamma = acos(cos(gamma))*sgn(sin(gamma));//fmod(gamma,2*M_PI);
+        gamma = acos(cos(gamma))*sgn(sin(gamma));
         khi += dt * khidot;
-        khi = acos(cos(khi))*sgn(sin(khi));//fmod(khi,2*M_PI);
+        khi = acos(cos(khi))*sgn(sin(khi));
     }
-
-    /**
-     * @brief Update time variable
-     * @param {const double &} t; current time
-     */
-    void update_time(const double &t) override {time = t;}
 
     /**
      * @brief Get a vector containing the saved variables
      * @return {std::vector<double>}
      */
     std::vector<double> get_save() override {
-        std::vector<double> v;
-        double Edot = zdot + V*Vdot/9.81;
-        v.push_back(x);
-        v.push_back(y);
-        v.push_back(z);
-        v.push_back(V);
-        v.push_back(gamma);
-        v.push_back(khi);
-        v.push_back(alpha);
-        v.push_back(beta);
-        v.push_back(sigma);
-        v.push_back(Edot);
-        v.push_back(time);
-        return v;
+        return std::vector<double> {
+            x,
+            y,
+            z,
+            V,
+            gamma,
+            khi,
+            alpha,
+            beta,
+            sigma,
+            zdot + V*Vdot/9.81, // Edot
+            time
+        };
     }
-
-    /** @brief Get x coordinate in the earth frame */
-    double getx() {return x;}
-
-    /** @brief Get y coordinate in the earth frame */
-    double gety() {return y;}
-
-    /** @brief Get z coordinate in the earth frame */
-    double getz() {return z;}
-
-    /** @brief Get time coordinate */
-    double gett() {return time;}
 };
 
 }

@@ -22,7 +22,7 @@ public:
      */
     double arm;
 
-    heuristic_pilot(double _angle_rate_magnitude=.1) :
+    heuristic_pilot(double _angle_rate_magnitude = .1) :
         arm(_angle_rate_magnitude)
     {}
 
@@ -38,7 +38,7 @@ public:
         beeler_glider_command &u = dynamic_cast <beeler_glider_command &> (_u);
 
         // D-controller on alpha
-        double kd = 1e-2, gammadot_ref = 0.;
+        double kd = .01, gammadot_ref = 0.;
         u.dalpha = kd * (gammadot_ref - s.gammadot);
 
         // No sideslip
@@ -47,7 +47,7 @@ public:
         // Increase/dicrease bank angle when lifted
         double sig = s.sigma;
         double mam = s.max_angle_magnitude;
-        if(!is_less_than(s.zdot, 0.)) { // lifted case zdot >= 0
+        if(!is_less_than(s.zdot, .5)) { // lifted case zdot >= .5
             if(!is_less_than(sig, 0.)) { // sigma >= 0
                 if (!is_greater_than(sig+arm, mam)) { // sigma + dsigma <= mam
                     u.dsigma = +arm;

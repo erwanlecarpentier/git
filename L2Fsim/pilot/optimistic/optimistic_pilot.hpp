@@ -68,9 +68,6 @@ public:
         budget(_budget)
 	{}
 
-//----------------------------------------------------------------------------
-//---------------------------- REWARD ----------------------------------------
-//----------------------------------------------------------------------------
     /**
      * @brief Reward function model
      * @param {const beeler_glider_state &} s_t; current state
@@ -83,9 +80,6 @@ public:
         return sig;
     }
 
-//----------------------------------------------------------------------------
-//---------------------------- U & B-VALUES ----------------------------------
-//----------------------------------------------------------------------------
     /**
      * @brief Compute the u_value & b_value of a node
      * @param {optimistic_node &} v; considered node
@@ -96,9 +90,6 @@ public:
         v.b_value = v.u_value + df_d*df/ (1.-df);
     }
 
-//----------------------------------------------------------------------------
-//---------------------------- D-CONTROLLER ----------------------------------
-//----------------------------------------------------------------------------
     /**
      * @brief Set the value of dalpha with a D-controller in order to soften the phugoid behaviour
      * @param {beeler_glider_state &} s; state
@@ -108,9 +99,6 @@ public:
         a.dalpha = .01 * (0. - s.gammadot);
     }
 
-//----------------------------------------------------------------------------
-//------------------------ GET AVAILABLE ACTIONS -----------------------------
-//----------------------------------------------------------------------------
     /**
      * @brief Get the available actions for a node, given its state
      * @param {const beeler_glider_state &} s; state of the node
@@ -134,33 +122,22 @@ public:
         return vect_a;
     }
 
-//----------------------------------------------------------------------------
-//------------------------- PRINTING FUNCTION --------------------------------
-//----------------------------------------------------------------------------
-    /** @brief Print relevant informations about the leaves */
+    /** @brief Print informations about the set of leaves */
 	void print_leaves(){
-		//std::cout << "PRINT leaves : a, depth, uval" << std::endl;
-		//std::cout << "PRINT leaves : a, depth " << std::endl;
 		for(auto &e : leaves){
 			std::cout << std::get<1>(e)->avail_actions.size() << "-";
-			//std::cout << "Action 1 = " << std::get<1>(e)->avail_actions.at(0).dsigma << "-";
-			//std::cout << "Action 2 = " << std::get<1>(e)->avail_actions.at(1).dsigma << "-";
-			//std::cout << "Action 3 = " << std::get<1>(e)->avail_actions.at(2).dsigma << "-";
 			std::cout << std::get<1>(e)->depth << "-";
 			std::cout << std::get<1>(e)->u_value << "  -  ";
 		}
 		std::cout << std::endl;
     }
 
-//----------------------------------------------------------------------------
-//------------------------- CREATING CHILDREN --------------------------------
-//----------------------------------------------------------------------------
     /**
      * @brief Create all children from a node
      * @param {optimistic_node *} ptr; pointer to the parent node
      * @param {beeler_glider_command &} a; applied command
-     * @note link the child to the current node as a parent
-     * @note emplace the created child in the map of leaves
+     * @note Link the child to the current node as a parent
+     * @note Emplace the created child in the map of leaves
      * @return {void}
      */
     void create_child(optimistic_node *ptr, beeler_glider_command &a) {
@@ -173,19 +150,8 @@ public:
         if(!is_less_than(ptr->children.back().u_value, u_max_node->u_value)){
             u_max_node = &ptr->children.back();
         }
-        /*
-        std::cout << "child created, it has " << tree.back()->avail_actions.size();
-        std::cout << " actions; its u-b val are "<< tree.back()->u_value << " " << tree.back()->b_value;
-        std::cout << " its reward is "<< tree.back()->reward;
-        std::cout << " depth v " << tree.back()->depth;
-        std::cout << " depth v->parent" << tree.back()->parent->depth;
-        std::cout << std::endl;
-        */
 	}
 
-//----------------------------------------------------------------------------
-//---------------- EXPANDING THE NODE WITH HIGHEST B_VALUE -------------------
-//----------------------------------------------------------------------------
     /**
      * @brief Expand the node v with highest b_value
      * @param {optimistic_node *} ptr; pointer to the node to expand
@@ -198,9 +164,6 @@ public:
         }
     }
 
-//----------------------------------------------------------------------------
-//--------------------------- GET BEST ACTION --------------------------------
-//----------------------------------------------------------------------------
     /**
      * @brief Get the best action starting from the root, corresponding to the leaf with the highest u_value
      * @return {beeler_glider_command} the best action
@@ -208,34 +171,13 @@ public:
     beeler_glider_command get_best_action() {
         beeler_glider_command best_a;
         optimistic_node *v = u_max_node;
-        //std::cout << "U value : " << v->u_value << std::endl;
-        //std::cout << "Umax value : " << u_max_node->u_value << std::endl;
-        /*
-        std::cout << "PRINT leave u_value: " << std::endl;
-        for(auto &e : leaves){
-            std::cout << std::get<1>(e)->u_value << "-";
-            //std::cout << std::get<1>(e)->depth << " -- ";
-            std::cout << std::get<1>(e)->b_value << " --- ";
-        }
-        std::cout << std::endl;
-        */
-        //std::cout << "\n Depth v  " << v->depth << std::endl;
-        //std::cout << "Depth v->parent " << (v->parent)->depth << std::endl;
-     	while(v->depth != 0){
-            //std::cout << "\n Depth : " << v->depth << std::endl;
-            //std::cout << "Node : " << v << std::endl;
-            //std::cout << "Depth v->parent " << (v->parent)->depth << std::endl;
+     	while(v->depth != 0) {
             best_a = v->incoming_action;
-            //std::cout<<"ACTION dsigma = " << best_a.dsigma << std::endl;//TRM
             v = v->parent;
         }
-        //std::cout << "Node parent : " << v << std::endl;
         return best_a;
     }
 
-//----------------------------------------------------------------------------
-//------------------------ TRANSITION FUNCTION -------------------------------
-//----------------------------------------------------------------------------
     /**
      * @brief Transition function; perform a transition given: an aircraft model with a correct state and command; an atmospheric model; the current time; the time-step-width and the sub-time-step-width
      * @note static method for use within an external simulator
@@ -252,19 +194,15 @@ public:
         const double &time_step_width,
         const double &sdt)
     {
-        unsigned int niter = (int)(time_step_width/sdt);
-        for(unsigned int n=0; n<niter; ++n) {
+        for(unsigned int n=0; n<(unsigned int)(time_step_width/sdt); ++n) {
             ac.apply_command();
             ac.update_state_dynamic(fz,current_time,ac.get_state());
             ac.get_state().apply_dynamic(sdt);
             current_time += sdt;
-            ac.get_state().update_time(current_time);
+            ac.get_state().set_time(current_time);
         }
     }
 
-//----------------------------------------------------------------------------
-//------------------------ TRANSITION MODEL -------------------------------
-//----------------------------------------------------------------------------
     /**
      * @brief Transition function model
      * @param {const beeler_glider_state &} s; current state
@@ -282,9 +220,6 @@ public:
         return s_p;
     }
 
-//****************************************************************************
-//**************************** PILOT OPERATOR ********************************
-//****************************************************************************
     /**
      * @brief Tree computation and action selection
      * @param {state &} _s; reference on the state
@@ -292,30 +227,19 @@ public:
      * @warning dynamic cast of state and action
      */
 	pilot & operator()(state &_s, command &_a) override {
-        //root node & initialisation
         beeler_glider_state &s0 = dynamic_cast <beeler_glider_state &> (_s);
         beeler_glider_command &a = dynamic_cast <beeler_glider_command &> (_a);
         double rew_0 = reward_model(s0);
         optimistic_node v0(s0,get_actions(s0),rew_0,0.,0.,0); // root node
-        //std::cout<<"----------------- INIT -----------------"<<std::endl;
-        //print_leaves();
         leaves.insert(std::pair<double,optimistic_node*> (v0.b_value,&v0));
         u_max_node = &v0;
-        //std::cout<<"=>  Start expand "<<std::endl;//TRM
         for(unsigned int i=0; i<budget; ++i) {
-            //std::cout << std::endl;
-            //std::cout << std::endl;
-            //print_leaves();
-           	//std::cout<<"=>  EXPAND n° " << i <<" ------------------------------------------------"<<std::endl;//TRM
            	expand((--leaves.end())->second);
         }
-        //std::cout << "\n Root : " << &v0 << std::endl;
         a = get_best_action();
-        //std::cout<<"=================================================> ACTION choosen :  dsigma = " << a.dsigma << std::endl;//TRM
-        // D-controller
-        alpha_d_ctrl(s0,a);
-        std::cout<<"ACTION choosen :  dsigma = " << a.dsigma << std::endl;//TRM
-        std::cout<<"                Altitude = " << s0.z     << std::endl;
+        alpha_d_ctrl(s0,a); // D-controller
+        //std::cout<<"ACTION choosen :  dsigma = " << a.dsigma << std::endl;
+        //std::cout<<"                Altitude = " << s0.z     << std::endl;
         leaves.clear();
         return *this;
 	}
@@ -355,8 +279,6 @@ public:
         }
 		return *this;
     }
-
-
 };
 
 }

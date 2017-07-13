@@ -74,7 +74,7 @@ public:
             delete s1;
             //// END RK4 UPDATE
             current_time += sdt;
-            ac.get_state().update_time(current_time);
+            ac.get_state().set_time(current_time);
         }
     }
 

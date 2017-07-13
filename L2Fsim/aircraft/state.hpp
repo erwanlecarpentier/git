@@ -7,7 +7,6 @@
  * @file state.hpp
  * @version 1.0
  * @since 1.0
- *
  * @brief The abstract class state providing general access to the state variables of an aircraft
  */
 
@@ -15,8 +14,22 @@ namespace L2Fsim {
 
 class state {
 public:
-    /** Destructor */
+    /** @brief Destructor */
     virtual ~state() = default;
+
+    /** @brief Set time variable */
+    virtual void set_time(const double &t) = 0;
+
+    /**
+     * @fn virtual double getx() = 0; @brief Get x coordinate in earth frame
+     * @fn virtual double gety() = 0; @brief Get y coordinate in earth frame
+     * @fn virtual double getz() = 0; @brief Get z coordinate in earth frame
+     * @fn virtual double gett() = 0; @brief Get time coordinate
+    */
+    virtual double getx() = 0;
+    virtual double gety() = 0;
+    virtual double getz() = 0;
+    virtual double gett() = 0;
 
     /**
      * @brief Dynamically creates a copy of the state
@@ -50,12 +63,6 @@ public:
     virtual void apply_dynamic(const double dt) = 0;
 
     /**
-     * @brief Update time variable
-     * @param {const double &} t; current time
-     */
-    virtual void update_time(const double &t) = 0;
-
-    /**
      * @brief Get a vector containing the saved variables
      * @return {std::vector<double>}
      */
@@ -63,17 +70,6 @@ public:
 
     /** @brief Return true if the state exceeds the admissible boundaries */
     virtual bool is_out_of_bounds() = 0;
-
-    /**
-     * @fn virtual double getx() = 0; @brief Get x coordinate in earth frame
-     * @fn virtual double gety() = 0; @brief Get y coordinate in earth frame
-     * @fn virtual double getz() = 0; @brief Get z coordinate in earth frame
-     * @fn virtual double gett() = 0; @brief Get time coordinate
-    */
-    virtual double getx() = 0;
-    virtual double gety() = 0;
-    virtual double getz() = 0;
-    virtual double gett() = 0;
 
     virtual void print() = 0;
 };
