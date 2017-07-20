@@ -79,9 +79,7 @@ public:
      */
     double reward_model(const beeler_glider_state &s_t) {
         double edot = s_t.zdot + s_t.V * s_t.Vdot / 9.81;
-        double a = - 5. / log(1./0.999 - 1.);
-        double sig = 1. / (1. + exp(-edot / a)); //sigmoid
-        return sig;
+        return sigmoid(edot,10.,0.);
     }
 
     /**

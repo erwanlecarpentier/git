@@ -155,9 +155,14 @@ inline void save_vector(
     outfile.close();
 }
 
-/** @brief Sigmoid function */
-inline double sigmoid(double x, double a, double c) {
-    return 1. / (1. + exp(-(x-c)/a));
+/**
+ * @brief Sigmoid function
+ * @param {const double &} x; point to evaluate the sigmoid
+ * @param {const double &} x_max; point the sigmoid is 0.99
+ * @param {const double &} x_middle; point the sigmoid is 0.5
+ */
+inline double sigmoid(const double &x, const double &x_max, const double &x_middle) {
+    return 1./(1. + exp(-(x-x_middle)/(x_max*.217622180186)));
 }
 
 }

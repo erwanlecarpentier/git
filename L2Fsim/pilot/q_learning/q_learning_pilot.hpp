@@ -65,9 +65,7 @@ public:
      * @return {double} normalized quantity scaled in ]-1,1[ interval
      */
     double scale(const double &x, const double &x_max) {
-        double a = -x_max / log(1./.99 - 1.);
-        double sig = 1. / (1. + exp(-x/a));
-        return 2. * sig - 1.;
+        return 2. * sigmoid(x,x_max,0.) - 1.;
     }
 
     /**

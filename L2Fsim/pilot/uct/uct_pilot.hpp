@@ -142,7 +142,7 @@ public:
     {
         (void)a; (void)sp; // unused by default
         double edot = s.zdot + s.V * s.Vdot / 9.81;
-        return edot;
+        return sigmoid(edot,10.,0.);
     }
 
     /**
@@ -277,7 +277,6 @@ public:
                 }
             }
         }
-        assert(1. == 2.); //TODO remove
         return 0;
     }
 
