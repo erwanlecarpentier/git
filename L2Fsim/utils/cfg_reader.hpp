@@ -22,7 +22,7 @@
 #include <L2Fsim/pilot/passive_pilot.hpp>
 #include <L2Fsim/pilot/heuristic_pilot.hpp>
 #include <L2Fsim/pilot/q_learning/q_learning_pilot.hpp>
-#include <L2Fsim/pilot/uct/b03_uct_pilot.hpp>
+#include <L2Fsim/pilot/uct/uct_pilot.hpp>
 #include <L2Fsim/pilot/optimistic/optimistic_pilot.hpp>
 
 /**
@@ -195,7 +195,7 @@ struct cfg_reader {
                     return std::unique_ptr<pilot> (new q_learning_pilot(arm,kd,ep,lr,df));
                 } else {disp_err("read_pilot");}
             }
-            case 3: { // b03_uct_pilot
+            case 3: { // uct_pilot
                 std::string sc_path, envt_cfg_path;
                 double noise_stddev=0., arm=1., kd=.01, pr=.7, dt=.1, sdt=.1, df=.9;
                 unsigned int hz=100, bd=1000, dfplselect=0;
@@ -220,7 +220,7 @@ struct cfg_reader {
                     arm *= TO_RAD;
 
                     return std::unique_ptr<pilot> (
-                        new b03_uct_pilot(
+                        new uct_pilot(
                             ac_model,
                             sc_path, envt_cfg_path, noise_stddev, // flat_thermal_soaring_zone parameters
                             euler_integrator::transition_function,

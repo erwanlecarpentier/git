@@ -1,11 +1,11 @@
-#ifndef L2FSIM_B03_NODE_HPP_
-#define L2FSIM_B03_NODE_HPP_
+#ifndef L2FSIM_UCT_NODE_HPP_
+#define L2FSIM_UCT_NODE_HPP_
 
 #include <cstdio>
 #include <cstdlib>
 
 /**
- * @file b03_node.hpp
+ * @file uct_node.hpp
  * @brief Node for MCTS for 'beeler_glider.hpp' model
  * @version 1.0
  * @since 1.0
@@ -14,7 +14,7 @@
 
 namespace L2Fsim{
 
-class b03_node {
+class uct_node {
 public:
     /**
      * @brief Attributes
@@ -23,9 +23,9 @@ public:
      * @param {double} cumulative_reward; sum of the backed-up rewards
      * @param {unsigned int} number_of_visits;
      * @param {unsigned int} depth;
-     * @param {b03_node *} parent; pointer to the parent node
+     * @param {uct_node *} parent; pointer to the parent node
      * @param {std::vector<beeler_glider_command>} avail_actions; actions available from the node's state
-     * @param {std::vector<b03_node>} children; vector containing the children of the node, initialy empty
+     * @param {std::vector<uct_node>} children; vector containing the children of the node, initialy empty
      *
      * @warning the pointer to the parent 'parent' is obsolete if the node is root, make use of the boolean 'is_root_node'
      */
@@ -34,15 +34,15 @@ public:
     double cumulative_reward;
     unsigned int number_of_visits;
     unsigned int depth;
-    b03_node *parent;
+    uct_node *parent;
     std::vector<beeler_glider_command> avail_actions;
-    std::vector<b03_node> children;
+    std::vector<uct_node> children;
 
     /** @brief Empty constructor */
-    b03_node() {}
+    uct_node() {}
 
     /** @brief Constructor with given state */
-    b03_node(
+    uct_node(
         beeler_glider_state _s,
         std::vector<beeler_glider_command> _avail_actions,
         double _cumulative_reward=0.,
@@ -56,7 +56,7 @@ public:
     {}
 
     /** @brief Constructor without state */
-    b03_node(
+    uct_node(
         std::vector<beeler_glider_command> _avail_actions,
         double _cumulative_reward=0.,
         unsigned int _number_of_visits=0,
@@ -83,9 +83,9 @@ public:
 
     /**
      * @brief Get a reference on the last child that was created i.e. end position of 'children' attribute
-     * @return {b03_node &} reference on the last child
+     * @return {uct_node &} reference on the last child
      */
-    b03_node & get_last_child() {
+    uct_node & get_last_child() {
         return children.back();
     }
 };

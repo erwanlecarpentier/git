@@ -1,20 +1,20 @@
-#ifndef L2FSIM_B03_UCT_PILOT_HPP_
-#define L2FSIM_B03_UCT_PILOT_HPP_
+#ifndef L2FSIM_UCT_PILOT_HPP_
+#define L2FSIM_UCT_PILOT_HPP_
 
 #include <cstdio>
 #include <cstdlib>
 #include <cassert>
 #include <L2Fsim/pilot/pilot.hpp>
-#include <L2Fsim/pilot/uct/b03_node.hpp>
+#include <L2Fsim/pilot/uct/uct_node.hpp>
 #include <L2Fsim/stepper/euler_integrator.hpp>
 
 /**
- * @file b03_uct_pilot.hpp
+ * @file uct_pilot.hpp
  * @brief An online-anytime implementation of an omniscient UCT algorithm
  * @version 1.0
  * @since 1.0
  * @note compatibility: 'flat_thermal_soaring_zone.hpp'; 'beeler_glider.hpp'; 'beeler_glider_state.hpp'; 'beeler_glider_command.hpp'
- * @note make use of: 'b03_node.hpp'
+ * @note make use of: 'uct_node.hpp'
  * @note the different actions available from a node's state are set via the method 'get_actions'
  * @note transition model is defined in function 'transition_model'
  * @note reward model is defined in function 'reward_model'
@@ -23,7 +23,7 @@
 
 namespace L2Fsim{
 
-class b03_uct_pilot : public pilot {
+class uct_pilot : public pilot {
 public:
     /**
      * @brief Attributes
@@ -50,7 +50,7 @@ public:
     unsigned int budget;
 
     /** @brief Constructor */
-    b03_uct_pilot(
+    uct_pilot(
         beeler_glider &_ac,
         std::string sc_path,
         std::string envt_cfg_path,
@@ -95,10 +95,10 @@ public:
 
     /**
      * @brief Compute the UCT score of a node
-     * @param {b03_node &} v; considered node
+     * @param {uct_node &} v; considered node
      * @return {double} score
      */
-    double uct_score(b03_node &v) {
+    double uct_score(uct_node &v) {
         double nvis = (double) v.number_of_visits;
         assert(nvis != 0.);
         double nvisparent = (double) v.parent->number_of_visits;
@@ -108,13 +108,13 @@ public:
 
     /**
      * @brief Get a reference on the 'best' child according to the UCT criteria
-     * @param {const b03_node &} parent; parent node
-     * @return {b03_node} best UCT child
+     * @param {const uct_node &} parent; parent node
+     * @return {uct_node} best UCT child
      */
-    b03_node & best_uct_child(b03_node &parent) {
+    uct_node & best_uct_child(uct_node &parent) {
         std::vector<double> scores;
         std::vector<unsigned int> max_indices;
-        for(b03_node &ch : parent.children) {
+        for(uct_node &ch : parent.children) {
             scores.push_back(uct_score(ch));
         }
         argmax(scores,max_indices);
@@ -177,18 +177,18 @@ public:
 
     /**
      * @brief Create a new child corresponding to an untried action
-     * @param {b03_node &} v; parent node
+     * @param {uct_node &} v; parent node
      * @note link the child to the current node as a parent
      * @note remove the selected action from 'avail_actions' attribute
      * @return {void}
      */
-    void create_child(b03_node &v) {
+    void create_child(uct_node &v) {
         unsigned int indice = rand_indice(v.avail_actions);
         beeler_glider_command a = v.avail_actions.at(indice);
         v.avail_actions.erase(v.avail_actions.begin()+indice);
         alpha_d_ctrl(v.s,a);
         beeler_glider_state s_p = transition_model(v.s,a);
-        b03_node new_child(s_p,get_actions(s_p),0.,0,v.depth+1);
+        uct_node new_child(s_p,get_actions(s_p),0.,0,v.depth+1);
         new_child.incoming_action = a;
         new_child.parent = &v;
         v.children.push_back(new_child);
@@ -199,11 +199,11 @@ public:
      * 1. The current node is terminal: return a reference on the current node;
      * 2. The current node is fully expanded: get the 'best' child according to UCT criteria and recursively run the function on this child;
      * 3. The current node is not fully expanded: create a new child and return a reference on this new child
-     * @param {b03_node &} v; current node of the tree exploration
-     * @return {b03_node &} Reference on the resulting node
+     * @param {uct_node &} v; current node of the tree exploration
+     * @return {uct_node &} Reference on the resulting node
      * @note recursive function
      */
-    b03_node & tree_policy(b03_node &v0) {
+    uct_node & tree_policy(uct_node &v0) {
         if (is_terminal(v0.s)) {
             return v0;
         } else if (v0.is_fully_expanded()) {
@@ -236,11 +236,11 @@ public:
 
     /**
      * @brief Backup the reward computed via the default policy to the parents & update the number of visit counter
-     * @param {b03_node &} v; node
+     * @param {uct_node &} v; node
      * @param {double &} reward;
      * @note recursive function
      */
-    void backup(b03_node &v, const double &reward) {
+    void backup(uct_node &v, const double &reward) {
         v.number_of_visits += 1;
         v.cumulative_reward += reward;
         // rather backup: reward_model((*v.parent).s,v.incoming_action,v.s) + df * reward;
@@ -251,17 +251,17 @@ public:
 
     /**
      * @brief Get the action leading to the child with the highest average reward
-     * @param {b03_node &} v0; parent node
+     * @param {uct_node &} v0; parent node
      * @param {beeler_glider_command &} a; computed action
      */
-    void best_action(b03_node &v0, beeler_glider_command &a) {
+    void best_action(uct_node &v0, beeler_glider_command &a) {
         std::vector<double> scores;
         std::vector<unsigned int> max_indices;
         for(unsigned int i=0; i<v0.children.size(); ++i) {
             scores.push_back(v0.children[i].get_average_reward());
         }
         argmax(scores,max_indices);
-        b03_node v = v0.children.at(rand_element(max_indices));
+        uct_node v = v0.children.at(rand_element(max_indices));
         a = v.incoming_action;
     }
 
@@ -275,10 +275,10 @@ public:
 	{
         beeler_glider_state &s0 = dynamic_cast <beeler_glider_state &> (_s);
         beeler_glider_command &a = dynamic_cast <beeler_glider_command &> (_a);
-        b03_node v0(s0,get_actions(s0),0.,1,0); // root node
+        uct_node v0(s0,get_actions(s0),0.,1,0); // root node
         for(unsigned int i=0; i<budget; ++i) {
             double reward = 0.;
-            b03_node &v = tree_policy(v0);
+            uct_node &v = tree_policy(v0);
             default_policy(v.get_state(),reward);
             backup(v,reward);
         }

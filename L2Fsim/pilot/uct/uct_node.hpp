@@ -1,11 +1,11 @@
-#ifndef L2FSIM_B03_NODE_HPP_
-#define L2FSIM_B03_NODE_HPP_
+#ifndef L2FSIM_UCT_NODE_HPP_
+#define L2FSIM_UCT_NODE_HPP_
 
 #include <cstdio>
 #include <cstdlib>
 
 /**
- * @file b03_node.hpp
+ * @file uct_node.hpp
  * @brief Node for MCTS for 'beeler_glider.hpp' model
  * @version 1.1
  * @since 1.0
@@ -14,39 +14,39 @@
 
 namespace L2Fsim{
 
-class b03_node {
+class uct_node {
 public:
     /**
      * @brief Attributes
      * @param {beeler_glider_state} s; state of the node
-     * @param {b03_node *} parent; pointer to the parent node
+     * @param {uct_node *} parent; pointer to the parent node
      * @param {std::vector<beeler_glider_command>} actions; available actions
      * @param {std::vector<double>} Q_values; (state,action) values
      * @param {std::vector<double>} nb_visits; (state,action) numbers of visits
      * @param {std::vector<double>} rewards; (state,action) rewards
-     * @param {std::vector<b03_node>} children; (state,action) resulting children
+     * @param {std::vector<uct_node>} children; (state,action) resulting children
      * @param {unsigned int} incoming_action_indice; indice of the action taken by the parent
      * @param {unsigned int} depth;
      * @warning the pointer to the parent 'parent' is obsolete if the node is root, make use of the boolean 'is_root_node'
      */
     beeler_glider_state s;
-    b03_node *parent;
+    uct_node *parent;
     std::vector<beeler_glider_command> actions;
     std::vector<double> Q_values;
     std::vector<double> rewards;
     std::vector<unsigned int> nb_visits;
-    std::vector<b03_node> children;
+    std::vector<uct_node> children;
     unsigned int incoming_action_indice;
     unsigned int depth;
     unsigned int total_nb_visits;
 
     /** @brief Empty constructor */
-    b03_node() {}
+    uct_node() {}
 
     /** @brief Constructor */
-    b03_node(
+    uct_node(
         beeler_glider_state _s,
-        b03_node *_parent,
+        uct_node *_parent,
         std::vector<beeler_glider_command> _actions,
         unsigned int _incoming_action_indice,
         unsigned int _depth = 0) :

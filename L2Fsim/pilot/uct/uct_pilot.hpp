@@ -1,20 +1,20 @@
-#ifndef L2FSIM_B03_UCT_PILOT_HPP_
-#define L2FSIM_B03_UCT_PILOT_HPP_
+#ifndef L2FSIM_UCT_PILOT_HPP_
+#define L2FSIM_UCT_PILOT_HPP_
 
 #include <cstdio>
 #include <cstdlib>
 #include <cassert>
 #include <L2Fsim/pilot/pilot.hpp>
-#include <L2Fsim/pilot/uct/b03_node.hpp>
+#include <L2Fsim/pilot/uct/uct_node.hpp>
 #include <L2Fsim/stepper/euler_integrator.hpp>
 
 /**
- * @file b03_uct_pilot.hpp
+ * @file uct_pilot.hpp
  * @brief An online-anytime implementation of a deterministic UCT algorithm
  * @version 1.1
  * @since 1.0
  * @note Compatibility: 'flat_thermal_soaring_zone.hpp'; 'beeler_glider.hpp'; 'beeler_glider_state.hpp'; 'beeler_glider_command.hpp'
- * @note Make use of: 'b03_node.hpp'
+ * @note Make use of: 'uct_node.hpp'
  * @note The different actions available from a node's state are set via the method 'get_actions'
  * @note Transition model is defined in method 'transition_model'
  * @note Reward model is defined in method 'reward_model'
@@ -22,7 +22,7 @@
 
 namespace L2Fsim{
 
-class b03_uct_pilot : public pilot {
+class uct_pilot : public pilot {
 public:
     /**
      * @brief Attributes
@@ -52,7 +52,7 @@ public:
     unsigned int default_policy_selector;
 
     /** @brief Constructor */
-    b03_uct_pilot(
+    uct_pilot(
         beeler_glider &_ac,
         std::string sc_path,
         std::string envt_cfg_path,
@@ -147,10 +147,10 @@ public:
 
     /**
      * @brief Create a new child corresponding to an untried action
-     * @param {b03_node &} v; parent node
+     * @param {uct_node &} v; parent node
      * @return {unsigned int} indice of the created child
      */
-    unsigned int create_child(b03_node &v) {
+    unsigned int create_child(uct_node &v) {
         unsigned int indice = v.children.size();
         beeler_glider_state s_p = transition_model(v.s, v.actions.at(indice));
         v.children.emplace_back(s_p, &v, get_actions(s_p), indice, v.depth+1);
@@ -171,10 +171,10 @@ public:
 
     /**
      * @brief Get a reference on the 'best' child according to the UCT criteria
-     * @param {const b03_node &} v; parent node
-     * @return {b03_node} best UCT child
+     * @param {const uct_node &} v; parent node
+     * @return {uct_node} best UCT child
      */
-    b03_node & best_uct_child(b03_node &v) {
+    uct_node & best_uct_child(uct_node &v) {
         std::vector<double> scores;
         unsigned int Ns = v.total_nb_visits;
         for(unsigned int i=0; i<v.children.size(); ++i) {
@@ -188,11 +188,11 @@ public:
      * 1. The current node is terminal: return a reference on the current node
      * 2. The current node is fully expanded: get the 'best' child according to UCT criteria and recursively run the method on this child
      * 3. The current node is not fully expanded: create a new child and return a reference on this new child
-     * @param {b03_node &} v; current node of the tree exploration
-     * @return {b03_node &} Reference on the resulting node
+     * @param {uct_node &} v; current node of the tree exploration
+     * @return {uct_node &} Reference on the resulting node
      * @note Recursive method
      */
-    b03_node & tree_policy(b03_node &v) {
+    uct_node & tree_policy(uct_node &v) {
         if (v.is_terminal()) {
             return v;
         } else if (v.is_fully_expanded()) {
@@ -297,11 +297,11 @@ public:
 
     /**
      * @brief Run the default policy and get the value of a rollout until the horizon
-     * @param {const b03_node &} v; starting node
+     * @param {const uct_node &} v; starting node
      * @param {unsigned int &} indice; first action's indice
      * @param {double &} delta; computed value
      */
-    void default_policy(const b03_node &v, unsigned int &indice, double &delta) {
+    void default_policy(const uct_node &v, unsigned int &indice, double &delta) {
         delta = 0.;
         beeler_glider_state s_tp, s_t = v.s;
         beeler_glider_command a_t;
@@ -335,12 +335,12 @@ public:
 
     /**
      * @brief Backup the value computed via the default policy to the parents & update the number of visit counter
-     * @param {b03_node &} v; node
+     * @param {uct_node &} v; node
      * @param {unsigned int &} indice; indice of the Q value to update
      * @param {double &} delta; backed-up value
      * @note Recursive method
      */
-    void backup(b03_node &v, unsigned int &indice, double &delta) {
+    void backup(uct_node &v, unsigned int &indice, double &delta) {
         v.total_nb_visits += 1;
         v.nb_visits[indice] += 1;
         v.Q_values[indice] += 1./((double)v.nb_visits[indice]) * (delta - v.Q_values[indice]);
@@ -352,10 +352,10 @@ public:
 
     /**
      * @brief Get the greedy action wrt Q
-     * @param {b03_node &} v; parent node
+     * @param {uct_node &} v; parent node
      * @param {beeler_glider_command &} a; resulting action
      */
-    void greedy_action(b03_node &v, beeler_glider_command &a) {
+    void greedy_action(uct_node &v, beeler_glider_command &a) {
         std::vector<double> scores;
         for(unsigned int i=0; i<v.children.size(); ++i) {
             scores.push_back(v.Q_values[i]);
@@ -364,7 +364,7 @@ public:
     }
 
     /** @brief Roughly print the tree recursively as a standard output starting from an input node */
-    void print_tree(b03_node &v) {
+    void print_tree(uct_node &v) {
         v.print();
         for(auto &elt : v.children) {
             print_tree(elt);
@@ -380,9 +380,9 @@ public:
 	pilot & operator()(state &_s, command &_a) override {
         beeler_glider_state &s0 = dynamic_cast <beeler_glider_state &> (_s);
         beeler_glider_command &a = dynamic_cast <beeler_glider_command &> (_a);
-        b03_node v0(s0,nullptr,get_actions(s0),0,0); // root node
+        uct_node v0(s0,nullptr,get_actions(s0),0,0); // root node
         for(unsigned int i=0; i<budget; ++i) {
-            b03_node &v = tree_policy(v0);
+            uct_node &v = tree_policy(v0);
             double delta = 0.;
             unsigned int indice = 0;
             default_policy(v,indice,delta);

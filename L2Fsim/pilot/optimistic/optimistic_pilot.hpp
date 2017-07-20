@@ -12,7 +12,7 @@
 /**
  * @file optimistic_pilot.hpp
  * @brief An online-anytime implementation of an optimistic planning algorithm (OPD)
- * @version 1.0 (based on b03_uct_pilot code)
+ * @version 1.0 (based on uct_pilot code)
  * @since 1.0
  * @note compatibility: 'flat_thermal_soaring_zone.hpp'; 'beeler_glider.hpp'; 'beeler_glider_state.hpp'; 'beeler_glider_command.hpp'
  * @note make use of: 'optimistic_node.hpp'

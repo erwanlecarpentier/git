@@ -7,7 +7,7 @@
 /**
  * @file optimistic_node.hpp
  * @brief Node for optimistic planning for 'beeler_glider.hpp' model
- * @version 1.0 (based on b03_node code)
+ * @version 1.0 (based on uct_node code)
  * @since 1.0
  * @note compatibility: 'beeler_glider.hpp'; 'beeler_glider_state.hpp'; 'beeler_glider_command.hpp'
  */
