@@ -9,12 +9,14 @@
 using namespace L2Fsim;
 
 /**
- * @brief Method creating an environment and saving it at the specified location
+ * @brief Create environment
+ *
+ * Create an environment and save it at the specified location.
  * @param {const bool &} save; if true, save the scenario for vizualization
  */
 void create_environment(const bool &save) {
-    /**
-     * @brief Parameters; See the used flight zone for description of the parameters
+    /*
+     * Parameters, see the used flight zone for description of the parameters
      * @param {double} dt; thermal refreshment rate (s)
      * @param {int} model; thermal model selection
      * 1: Allen
@@ -47,7 +49,7 @@ void create_environment(const bool &save) {
     double d_min = 150.;
     unsigned int nbth = 15;
 
-    /// 1. Initialize an empty zone and define its boundaries
+    // 1. Initialize an empty zone and define its boundaries
     flat_thermal_soaring_zone fz(
         t_start, t_limit,
         windx, windy,
@@ -61,11 +63,11 @@ void create_environment(const bool &save) {
         d_min, nbth);
     //flat_thermal_soaring_zone fz_from_file("config/fz_scenario.csv","config/fz_config.csv");
 
-    /// 2. Create a scenario i.e. create the thermals
+    // 2. Create a scenario i.e. create the thermals
     fz.create_scenario(dt,model);
     //fz.print_scenario(); // print the created thermals (optional)
 
-    /// 3 : Save data for visualization (optional)
+    // 3.Save data for visualization (optional)
     if(save) {
         double dx = 5., dy = 5.; // mesh precision
         std::vector<double> z_vec = {10.};
@@ -73,25 +75,15 @@ void create_environment(const bool &save) {
         fz.save_updraft_values(dx,dy,z_vec,t_vec,"data/updraft_field.dat");
     }
 
-    /// TESTS /////////////////////////////////////////////////////////////////////////////////////// TRM
-    /*
-    double noise = 1.;
-    gp_model gpm(&fz, gaussian_kernel, noise);
-    pop();
-    double dx = 5., dy = 5.; // mesh precision
-    std::vector<double> z_vec = {0.};
-    std::vector<double> t_vec = {0., 50.};
-    gpm.save_updraft_values(dx,dy,z_vec,t_vec,"data/gp_updraft_field.dat");
-    */
-    /// END TESTS /////////////////////////////////////////////////////////////////////////////////// TRM
-
-    /// 4. Save the scenario
+    // 4. Save the scenario
     fz.save_scenario("config/fz_scenario.csv");
     fz.save_fz_cfg("config/fz_config.csv");
 }
 
 /**
- * @brief Method running a simulation using a configuration file
+ * @brief Single run
+ *
+ * Run a single simulation using a configuration file.
  * @param {const char *} cfg_path; path to the configuration file
  */
 void run_with_config(const char *cfg_path) {
@@ -99,28 +91,28 @@ void run_with_config(const char *cfg_path) {
     libconfig::Config cfg;
     cfg.readFile(cfg_path);
 
-    /** Initialize the simulation */
+    // 1. Initialize the simulation
     simulation mysim;
 
-    /** General settings */
+    // 2. General settings
 	mysim.st_log_path = cfgr.read_st_log_path(cfg);
 	mysim.fz_log_path = cfgr.read_fz_log_path(cfg);
     double Dt=.1, t_lim=1e3, nb_dt=1., t=0.; // default values
     cfgr.read_time_variables(cfg,t_lim,Dt,nb_dt);
 
-    /** Environment */
+    // 3. Environment
     mysim.fz = cfgr.read_environment(cfg);
 
-    /** Aircraft */
+    // 4. Aircraft
 	mysim.ac = cfgr.read_aircraft(cfg);
 
-    /** Stepper */
+    // 5. Stepper
 	mysim.st = cfgr.read_stepper(cfg,Dt/nb_dt);
 
-    /** Pilot */
+    // 6. Pilot
 	mysim.pl = cfgr.read_pilot(cfg);
 
-	/** Run the simulation */
+	// 7. Run the simulation
 	bool eos = false;
 	mysim.clear_saves();
     while(!(is_greater_than(t,t_lim)) && !eos) {
@@ -129,8 +121,8 @@ void run_with_config(const char *cfg_path) {
         mysim.step(t,Dt,eos);
     }
 
-	/** End of simulation */
-	std::cout << "Program run successfully" << std::endl;
+	// 8. End of simulation
+	std::cout << "End of simulation\n";
 }
 
 int main() {
