@@ -16,29 +16,16 @@ namespace L2Fsim{
 
 class uct_node {
 public:
-    /**
-     * @brief Attributes
-     * @param {beeler_glider_state} s; state of the node
-     * @param {uct_node *} parent; pointer to the parent node
-     * @param {std::vector<beeler_glider_command>} actions; available actions
-     * @param {std::vector<double>} Q_values; (state,action) values
-     * @param {std::vector<double>} nb_visits; (state,action) numbers of visits
-     * @param {std::vector<double>} rewards; (state,action) rewards
-     * @param {std::vector<uct_node>} children; (state,action) resulting children
-     * @param {unsigned int} incoming_action_indice; indice of the action taken by the parent
-     * @param {unsigned int} depth;
-     * @warning the pointer to the parent 'parent' is obsolete if the node is root, make use of the boolean 'is_root_node'
-     */
-    beeler_glider_state s;
-    uct_node *parent;
-    std::vector<beeler_glider_command> actions;
-    std::vector<double> Q_values;
-    std::vector<double> rewards;
-    std::vector<unsigned int> nb_visits;
-    std::vector<uct_node> children;
-    unsigned int incoming_action_indice;
-    unsigned int depth;
-    unsigned int total_nb_visits;
+    beeler_glider_state s; ///< State of the node
+    uct_node *parent; ///< Pointer to the parent node
+    std::vector<beeler_glider_command> actions; ///< Available actions
+    std::vector<double> Q_values; ///< state-action values
+    std::vector<double> rewards; ///< state-action rewards
+    std::vector<unsigned> nb_visits; ///< state-action number of visits
+    std::vector<uct_node> children; ///< state-action resulting children
+    unsigned incoming_action_indice; ///< indice of the action taken from the parent node
+    unsigned depth; ///< Depth of the node
+    unsigned total_nb_visits; ///< Total number of visits
 
     /** @brief Empty constructor */
     uct_node() {}
@@ -48,21 +35,26 @@ public:
         beeler_glider_state _s,
         uct_node *_parent,
         std::vector<beeler_glider_command> _actions,
-        unsigned int _incoming_action_indice,
-        unsigned int _depth = 0) :
+        unsigned _incoming_action_indice,
+        unsigned _depth = 0) :
         s(_s),
         parent(_parent),
         actions(_actions),
         incoming_action_indice(_incoming_action_indice),
         depth(_depth)
     {
-        unsigned int sz = actions.size();
+        unsigned sz = actions.size();
         Q_values = std::vector<double>(sz,0.);
         rewards = std::vector<double>(sz,0.);
-        nb_visits = std::vector<unsigned int>(sz,0);
+        nb_visits = std::vector<unsigned>(sz,0);
         total_nb_visits = 0;
     }
 
+    /**
+     * @brief Print
+     *
+     * Print some attributes of the node.
+     */
     void print() {
         std::string sep = "   ";
         std::cout << "d = " << depth << " ";
@@ -76,7 +68,12 @@ public:
         std::cout << "parent = " << parent << "\n";
     }
 
-    /** @brief Boolean test for termination criterion */
+    /**
+     * @brief Is terminal
+     *
+     * Boolean test for termination criterion.
+     * @return Return true if the node is terminal.
+     */
     bool is_terminal() {
         return s.is_out_of_bounds();
     }
