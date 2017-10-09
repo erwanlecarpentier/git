@@ -3,23 +3,18 @@
 
 #include <L2Fsim/aircraft/command.hpp>
 
+namespace L2Fsim {
+
 /**
- * Beeler's glider command
+ * @brief Beeler's glider command
  * @version 1.0
  * @since 1.0
  */
-
-namespace L2Fsim {
-
 class beeler_glider_command : public command {
 public:
-    /**
-     * @brief Attributes
-     * @param {double} dalpha; variation of angle of attack
-     * @param {double} dbeta; variation of sideslip angle
-     * @param {double} dsigma; variation of bank angle
-     */
-    double dalpha, dbeta, dsigma;
+    double dalpha; ///< Variation of angle of attack
+    double dbeta; ///< Variation of sideslip angle
+    double dsigma; ///< Variation of bank angle
 
     /** @brief Constructor */
     beeler_glider_command(double _dalpha=0., double _dbeta=0., double _dsigma=0.) :
@@ -28,7 +23,12 @@ public:
         dsigma(_dsigma)
     {}
 
-    /** @brief Set the command */
+    /**
+     * @brief Set command
+     *
+     * Copy the values of the input command.
+     * @param {command &} _u; copied command
+     */
     void set_command(command &_u) override {
         beeler_glider_command &u = dynamic_cast <beeler_glider_command &> (_u);
         dalpha = u.dalpha;
@@ -36,12 +36,22 @@ public:
         dsigma = u.dsigma;
     }
 
-    /** @brief Set the command to neutral */
+    /**
+     * @brief Set to neutral
+     *
+     * Set the command values to neutral values ie zero.
+     */
     void set_to_neutral() override {
         dalpha = dbeta = dsigma = 0.;
     }
 
-    /** @brief Return true if this action is equal to the argument */
+    /**
+     * @brief Equality comparison
+     *
+     * Compare this command with the given command.
+     * @param {const beeler_glider_command &} a; the compared command
+     * @return Return true if this action is equal to the argument
+     */
     bool equals(const beeler_glider_command &a) {
         if(is_equal_to(dalpha,a.dalpha)
         && is_equal_to(dbeta,a.dbeta)
