@@ -79,8 +79,12 @@ public:
     }
 
     /**
-     * @brief Boolean test for a node being fully expanded or not
-     * @note A node is fully expanded if all of its available actions have been tried at least once and consequently the number of children is equal to the number of actions
+     * @brief Is fully expanded
+     *
+     * Boolean test for a node to be fully expanded or not. A node is fully expanded if all
+     * of its available actions have been tried at least once and consequently the number of
+     * children is equal to the number of actions.
+     * @return Return true if the node is fully expanded.
      */
     bool is_fully_expanded() {
         return (children.size() == actions.size()) ? true : false;
