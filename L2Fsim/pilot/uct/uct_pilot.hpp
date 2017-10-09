@@ -13,43 +13,31 @@
  * @brief An online-anytime implementation of a deterministic UCT algorithm
  * @version 1.1
  * @since 1.0
- * @note Compatibility: 'flat_thermal_soaring_zone.hpp'; 'beeler_glider.hpp'; 'beeler_glider_state.hpp'; 'beeler_glider_command.hpp'
- * @note Make use of: 'uct_node.hpp'
- * @note The different actions available from a node's state are set via the method 'get_actions'
- * @note Transition model is defined in method 'transition_model'
- * @note Reward model is defined in method 'reward_model'
+ *
+ * Compatibility: 'flat_thermal_soaring_zone.hpp'; 'beeler_glider.hpp';
+ * 'beeler_glider_state.hpp'; 'beeler_glider_command.hpp'.
+ * Make use of: 'uct_node.hpp'.
+ * The different actions available from a node's state are set via the method 'get_actions'
+ * The transition model is defined in method 'transition_model'.
+ * The reward model is defined in method 'reward_model'.
  */
 
 namespace L2Fsim{
 
 class uct_pilot : public pilot {
 public:
-    /**
-     * @brief Attributes
-     * @param {beeler_glider} ac; aircraft model
-     * @param {flat_thermal_soaring_zone} fz; atmosphere model
-     * @param {void (*transition_function)(aircraft &, flight_zone &, double &, const double &, const double &)}
-     * @param {double} angle_rate_magnitude; magnitude of the increment that one can apply to the angles
-     * @param {double} kdalpha; coefficient for the D controller in alpha
-     * @param {double} uct_parameter; parameter for the UCT formula
-     * @param {double} time_step_width;
-     * @param {double} sub_time_step_width;
-     * @param {double} df; discount factor
-     * @param {unsigned int} horizon; time limit for online simulations
-     * @param {unsigned int} budget; number of expanded nodes in the tree
-     */
-    beeler_glider ac;
-    flat_thermal_soaring_zone fz;
-    void (*transition_function)(aircraft &, flight_zone &, double &, const double &, const double &);
-    double angle_rate_magnitude;
-    double kdalpha;
-    double uct_parameter;
-    double time_step_width;
-    double sub_time_step_width;
-    double df;
-    unsigned int horizon;
-    unsigned int budget;
-    unsigned int default_policy_selector;
+    beeler_glider ac; ///< Aircraft model
+    flat_thermal_soaring_zone fz; ///< Atmosphere model
+    void (*transition_function)(aircraft &, flight_zone &, double &, const double &, const double &); ///< Transition function
+    double angle_rate_magnitude; ///< Magnitude of the angles increments (action magnitude)
+    double kdalpha; ///< Coefficient for the alpha-D-controller
+    double uct_parameter; ///< UCT parameter
+    double time_step_width; ///< Time step width
+    double sub_time_step_width; ///< Sub time step width
+    double df; ///< Discount factor
+    unsigned horizon; ///< Horizon for the default policy simulation
+    unsigned budget; ///< Budget ie number of expanded nodes in the tree
+    unsigned default_policy_selector; ///< Default policy selector
 
     /** @brief Constructor */
     uct_pilot(
@@ -64,9 +52,9 @@ public:
         double _time_step_width=.1,
         double _sub_time_step_width=.1,
         double _df=.9,
-        unsigned int _horizon=100,
-        unsigned int _budget=1000,
-        unsigned int _default_policy_selector=0) :
+        unsigned _horizon=100,
+        unsigned _budget=1000,
+        unsigned _default_policy_selector=0) :
         ac(_ac),
         fz(sc_path, envt_cfg_path, noise_stddev),
         transition_function(_transition_function),
@@ -82,9 +70,11 @@ public:
     {}
 
     /**
-     * @brief Get the value of dalpha with a D-controller in order to soften the phugoid behaviour
+     * @brief D-controller
+     *
+     * Get the value of dalpha with a D-controller in order to soften the phugoid behaviour.
      * @param {beeler_glider_state &} s; current state
-     * @return value of dalpha
+     * @return Return the commanded value of dalpha.
      */
     double alpha_d_ctrl(const beeler_glider_state &s) {
         //a.dalpha = kdalpha * (0. - s.gammadot);
@@ -92,9 +82,11 @@ public:
     }
 
     /**
-     * @brief Get the available actions for a node, given its state
+     * @brief Get available actions
+     *
+     * Get the available actions for a node, given its state.
      * @param {const beeler_glider_state &} s; state of the node
-     * @return {std::vector<beeler_glider_command>} vector of the available actions
+     * @return Return the vector vector of the available actions.
      */
     std::vector<beeler_glider_command> get_actions(const beeler_glider_state &s) {
         std::vector<beeler_glider_command> v;
@@ -114,13 +106,15 @@ public:
 
     /**
      * @brief Transition function model
+     *
+     * Compute the new state given a state and an action.
      * @param {const beeler_glider_state &} s; current state
      * @param {const beeler_glider_command &} a; applied command
-     * @return {beeler_glider_state} resulting state
-     * @warning dynamic cast to beeler_glider_state
+     * @return Return the resulting state.
+     * @warning Dynamic cast to beeler_glider_state
      */
     beeler_glider_state transition_model(const beeler_glider_state &s, const beeler_glider_command &a) {
-        beeler_glider_state s_p = s;
+        beeler_glider_state s_p = s;trans
         ac.set_state(s_p);
         ac.set_command(a);
         transition_function(ac,fz,s_p.time,time_step_width,sub_time_step_width);
@@ -130,10 +124,12 @@ public:
 
     /**
      * @brief Reward function model
+     *
+     * Compute the reward given a full transition (s,a,s')
      * @param {const beeler_glider_state &} s; current state
      * @param {const beeler_glider_command &} a; applied command
      * @param {const beeler_glider_state &} sp; resulting state
-     * @return {double} computed reward
+     * @return Return the computed reward.
      */
     double reward_model(
         const beeler_glider_state &s,
@@ -146,12 +142,14 @@ public:
     }
 
     /**
-     * @brief Create a new child corresponding to an untried action
+     * @brief Create child
+     *
+     * Create a new child corresponding to an untried action.
      * @param {uct_node &} v; parent node
-     * @return {unsigned int} indice of the created child
+     * @return Return the indice of the created child.
      */
-    unsigned int create_child(uct_node &v) {
-        unsigned int indice = v.children.size();
+    unsigned create_child(uct_node &v) {
+        unsigned indice = v.children.size();
         beeler_glider_state s_p = transition_model(v.s, v.actions.at(indice));
         v.children.emplace_back(s_p, &v, get_actions(s_p), indice, v.depth+1);
         v.rewards.at(indice) = reward_model(v.s,v.actions.at(indice),s_p); // save the transition reward
@@ -159,32 +157,38 @@ public:
     }
 
     /**
-     * @brief Compute the UCT score
+     * @brief UCT score
+     *
+     * Compute the UCT score wrt the UCT tree policy formula.
      * @param {const double &} Qsa; Q value of the state-action pair
      * @param {double &} Ns; total number of visits
      * @param {double &} Nsa; number of visits of the state-action pair
-     * @return UCT score
+     * @return Return the UCT score.
      */
     inline double uct_score(const double &Qsa, const double &Ns, const double &Nsa) {
         return Qsa + uct_parameter * sqrt(2. * log(Ns) / Nsa);
     }
 
     /**
-     * @brief Get a reference on the 'best' child according to the UCT criteria
+     * @brief UCT tree policy criterion
+     *
+     * Get a reference on the 'best' child according to the UCT criteria.
      * @param {const uct_node &} v; parent node
-     * @return {uct_node} best UCT child
+     * @return Return a reference on the best child wrt the tree policy.
      */
     uct_node & best_uct_child(uct_node &v) {
         std::vector<double> scores;
-        unsigned int Ns = v.total_nb_visits;
-        for(unsigned int i=0; i<v.children.size(); ++i) {
+        unsigned Ns = v.total_nb_visits;
+        for(unsigned i=0; i<v.children.size(); ++i) {
             scores.push_back(uct_score(v.Q_values[i], Ns, v.nb_visits[i]));
         }
         return v.children[argmax(scores)];
     }
 
     /**
-     * @brief Apply the tree policy from a 'current' node to a 'leaf' node; there are 3 cases:
+     * @brief Tree policy
+     *
+     * Apply the tree policy from a 'current' node to a 'leaf' node; there are 3 cases:
      * 1. The current node is terminal: return a reference on the current node
      * 2. The current node is fully expanded: get the 'best' child according to UCT criteria and recursively run the method on this child
      * 3. The current node is not fully expanded: create a new child and return a reference on this new child
@@ -203,15 +207,17 @@ public:
     }
 
     /**
-     * @brief Select an action among the available ones, there are two cases:
+     * @brief Heuristic policy
+     *
+     * Select an action among the available ones, there are two cases:
      * - lifted case (zdot >= 0); increase the magnitude of sigma
      * - no lift case (zdot < 0); dicrease the magnitude of sigma
      * @param {const std::vector<beeler_glider_command> &} actions; available actions
      * @param {beeler_glider_state &} s; state
      * @param {beeler_glider_command &} a; chosen action
-     * @return Indice of the chosen action
+     * @return Return the indice of the chosen action
      */
-    unsigned int heuristic_policy(
+    unsigned heuristic_policy(
         const std::vector<beeler_glider_command> &actions,
         beeler_glider_state &s,
         beeler_glider_command &a)
@@ -219,26 +225,26 @@ public:
         double sig = s.sigma;
         if(!is_less_than(s.zdot, 0.)) { // lifted case, zdot >= 0
             if(!is_less_than(sig, 0.)) { // sigma >= 0; select +dsigma or 0
-                for(unsigned int i=0; i<actions.size(); ++i) { // select +dsigma
+                for(unsigned i=0; i<actions.size(); ++i) { // select +dsigma
                     if(is_greater_than(actions[i].dsigma, 0.)) {
                         a = actions[i];
                         return i;
                     }
                 }
-                for(unsigned int i=0; i<actions.size(); ++i) { // select 0 if first case was not encountered
+                for(unsigned i=0; i<actions.size(); ++i) { // select 0 if first case was not encountered
                     if(is_equal_to(actions[i].dsigma, 0.)) {
                         a = actions[i];
                         return i;
                     }
                 }
             } else { // sigma < 0; select -dsigma or 0
-                for(unsigned int i=0; i<actions.size(); ++i) { // select -dsigma
+                for(unsigned i=0; i<actions.size(); ++i) { // select -dsigma
                     if(is_less_than(actions[i].dsigma, 0.)) {
                         a = actions[i];
                         return i;
                     }
                 }
-                for(unsigned int i=0; i<actions.size(); ++i) { // select 0 if first case was not encountered
+                for(unsigned i=0; i<actions.size(); ++i) { // select 0 if first case was not encountered
                     if(is_equal_to(actions[i].dsigma, 0.)) {
                         a = actions[i];
                         return i;
@@ -255,21 +261,21 @@ public:
             }
 
             if(is_less_than(-angle_rate_magnitude, sig) && is_less_than(sig, angle_rate_magnitude)) { // -angle_rate_magnitude < sigma < angle_rate_magnitude; select dsig=0
-                for(unsigned int i=0; i<actions.size(); ++i) {
+                for(unsigned i=0; i<actions.size(); ++i) {
                     if(is_equal_to(actions[i].dsigma, 0.)) {
                         a = actions[i];
                         return i;
                     }
                 }
             } else if(!is_less_than(sig, angle_rate_magnitude)) { // sigma >= angle_rate_magnitude; select -dsigma
-                for(unsigned int i=0; i<actions.size(); ++i) { // select -dsigma
+                for(unsigned i=0; i<actions.size(); ++i) { // select -dsigma
                     if(is_less_than(actions[i].dsigma, 0.)) {
                         a = actions[i];
                         return i;
                     }
                 }
             } else { // sigma <= -angle_rate_magnitude; select +dsigma
-                for(unsigned int i=0; i<actions.size(); ++i) { // select +dsigma
+                for(unsigned i=0; i<actions.size(); ++i) { // select +dsigma
                     if(is_greater_than(actions[i].dsigma, 0.)) {
                         a = actions[i];
                         return i;
@@ -281,12 +287,14 @@ public:
     }
 
     /**
-     * @brief Select an action randomly
+     * @brief Random policy
+     *
+     * Select an action randomly.
      * @param {const std::vector<beeler_glider_command> &} actions; available actions
      * @param {beeler_glider_command &} a; computed action
-     * @return Indice of the chosen action
+     * @return Return the indice of the chosen action
      */
-    unsigned int random_policy(
+    unsigned random_policy(
         const std::vector<beeler_glider_command> &actions,
         beeler_glider_command &a)
     {
@@ -295,12 +303,14 @@ public:
     }
 
     /**
-     * @brief Run the default policy and get the value of a rollout until the horizon
+     * @brief Default policy
+     *
+     * Run the default policy and get the value of a rollout until the horizon
      * @param {const uct_node &} v; starting node
-     * @param {unsigned int &} indice; first action's indice
+     * @param {unsigned &} indice; first action's indice
      * @param {double &} delta; computed value
      */
-    void default_policy(const uct_node &v, unsigned int &indice, double &delta) {
+    void default_policy(const uct_node &v, unsigned &indice, double &delta) {
         delta = 0.;
         beeler_glider_state s_tp, s_t = v.s;
         beeler_glider_command a_t;
@@ -314,7 +324,7 @@ public:
             break;
         }
         }
-        for(unsigned int t=0; t<horizon; ++t) {
+        for(unsigned t=0; t<horizon; ++t) {
             s_tp = transition_model(s_t,a_t);
             delta += pow(df,(double)t) * reward_model(s_t,a_t,s_tp);
             if(s_tp.is_out_of_bounds()){break;}
@@ -333,13 +343,15 @@ public:
     }
 
     /**
-     * @brief Backup the value computed via the default policy to the parents & update the number of visit counter
+     * @brief Backup function
+     *
+     * Backup the value computed via the default policy to the parents & update the number
+     * of visit counter. This is a recursive method.
      * @param {uct_node &} v; node
-     * @param {unsigned int &} indice; indice of the Q value to update
+     * @param {unsigned &} indice; indice of the Q value to update
      * @param {double &} delta; backed-up value
-     * @note Recursive method
      */
-    void backup(uct_node &v, unsigned int &indice, double &delta) {
+    void backup(uct_node &v, unsigned &indice, double &delta) {
         v.total_nb_visits += 1;
         v.nb_visits[indice] += 1;
         v.Q_values[indice] += 1./((double)v.nb_visits[indice]) * (delta - v.Q_values[indice]);
@@ -350,19 +362,25 @@ public:
     }
 
     /**
-     * @brief Get the greedy action wrt Q
+     * @brief Greedy action
+     *
+     * Get the greedy action wrt Q.
      * @param {uct_node &} v; parent node
      * @param {beeler_glider_command &} a; resulting action
      */
     void greedy_action(uct_node &v, beeler_glider_command &a) {
         std::vector<double> scores;
-        for(unsigned int i=0; i<v.children.size(); ++i) {
+        for(unsigned i=0; i<v.children.size(); ++i) {
             scores.push_back(v.Q_values[i]);
         }
         a = v.actions[argmax(scores)];
     }
 
-    /** @brief Roughly print the tree recursively as a standard output starting from an input node */
+    /**
+     * @brief Print tree
+     *
+     * Roughly print the tree recursively as a standard output starting from an input node.
+     */
     void print_tree(uct_node &v) {
         v.print();
         for(auto &elt : v.children) {
@@ -380,10 +398,10 @@ public:
         beeler_glider_state &s0 = dynamic_cast <beeler_glider_state &> (_s);
         beeler_glider_command &a = dynamic_cast <beeler_glider_command &> (_a);
         uct_node v0(s0,nullptr,get_actions(s0),0,0); // root node
-        for(unsigned int i=0; i<budget; ++i) {
+        for(unsigned i=0; i<budget; ++i) {
             uct_node &v = tree_policy(v0);
             double delta = 0.;
-            unsigned int indice = 0;
+            unsigned indice = 0;
             default_policy(v,indice,delta);
             backup(v,indice,delta);
         }
@@ -394,7 +412,9 @@ public:
 	}
 
     /**
-     * @brief Policy for 'out of boundaries' case
+     * @brief Out of boundaries policy
+     *
+     * Policy for 'out of boundaries' cases. Steer the glider back to the zone.
      * @param {state &} s; reference on the state
      * @param {command &} a; reference on the command
      */
