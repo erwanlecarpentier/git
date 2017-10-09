@@ -198,13 +198,13 @@ public:
      * @return {uct_node &} Reference on the resulting node
      * @note Recursive method
      */
-    uct_node & tree_policy(uct_node &v) {
+    uct_node * tree_policy(uct_node &v) { //TODO
         if (v.is_terminal()) {
-            return v;
+            return &v;
         } else if (v.is_fully_expanded()) {
             return tree_policy(best_uct_child(v));
         } else {
-            return v.children.at(create_child(v));
+            return &v.children.at(create_child(v));
         }
     }
 
@@ -308,21 +308,21 @@ public:
      * @brief Default policy
      *
      * Run the default policy and get the value of a rollout until the horizon
-     * @param {const uct_node &} v; starting node
+     * @param {uct_node *} v; pointer to the starting node
      * @param {unsigned &} indice; first action's indice
      * @param {double &} delta; computed value
      */
-    void default_policy(const uct_node &v, unsigned &indice, double &delta) {
+    void default_policy(uct_node *v, unsigned &indice, double &delta) {
         delta = 0.;
-        beeler_glider_state s_tp, s_t = v.s;
+        beeler_glider_state s_tp, s_t = v->s;
         beeler_glider_command a_t;
         switch(default_policy_selector) {
         case 0: { // random policy
-            indice = random_policy(v.actions,a_t);
+            indice = random_policy(v->actions,a_t);
             break;
         }
         case 1: { // heuristic policy
-            indice = heuristic_policy(v.actions,s_t,a_t);
+            indice = heuristic_policy(v->actions,s_t,a_t);
             break;
         }
         }
@@ -349,33 +349,45 @@ public:
      *
      * Backup the value computed via the default policy to the parents & update the number
      * of visit counter. This is a recursive method.
-     * @param {uct_node &} v; node
+     * @param {uct_node *} v; pointer to the node
      * @param {unsigned &} indice; indice of the Q value to update
      * @param {double &} delta; backed-up value
      */
-    void backup(uct_node &v, unsigned &indice, double &delta) {
-        v.total_nb_visits += 1;
-        v.nb_visits[indice] += 1;
-        v.Q_values[indice] += 1./((double)v.nb_visits[indice]) * (delta - v.Q_values[indice]);
-        if(v.depth > 0) {
-            delta = v.parent->rewards[v.incoming_action_indice] + df * delta;
-            backup(*v.parent, v.incoming_action_indice, delta);
+    void backup(uct_node *v, unsigned &indice, double &delta) {
+        v->total_nb_visits += 1;
+        v->nb_visits[indice] += 1;
+        v->Q_values[indice] += 1./((double)v->nb_visits[indice]) * (delta - v->Q_values[indice]);
+        if(v->depth > 0) {
+            delta = v->parent->rewards[v->incoming_action_indice] + df * delta;
+            backup(v->parent, v->incoming_action_indice, delta);
         }
     }
 
     /**
-     * @brief Greedy action
+     * @brief Argmax wrt the values
      *
-     * Get the greedy action wrt Q.
-     * @param {uct_node &} v; parent node
-     * @param {beeler_glider_command &} a; resulting action
+     * Get the indice of the child achieving the highest value.
+     * @param {const uct_node &} v; node of the tree
+     * @return Return the indice of the child achieving the best score.
      */
-    void greedy_action(uct_node &v, beeler_glider_command &a) {
-        std::vector<double> scores;
+    unsigned argmax_value(const uct_node &v) {
+        std::vector<double> values;
         for(unsigned i=0; i<v.children.size(); ++i) {
-            scores.push_back(v.Q_values[i]);
+            values.push_back(v.Q_values[i]);
         }
-        a = v.actions[argmax(scores)];
+        return argmax(values);
+    }
+
+    /**
+     * @brief Max wrt the values
+     *
+     * Get the recommended action ie the one achieving the highest value.
+     * @param {const uct_node &} v; node of the tree
+     * @return Return the action with the highest score (leading to the child with the higher
+     * value).
+     */
+    beeler_glider_command recommended_action(const uct_node &v) {
+        return v.actions[argmax_value(v)];
     }
 
     /**
@@ -401,6 +413,22 @@ public:
     }
 
     /**
+     * @brief Build a UCT tree
+     *
+     * Build a UCT tree starting from the given root node.
+     * @param {uct_node &} v; root node of the tree
+     */
+    void build_uct_tree(uct_node &v) {
+        for(unsigned i=0; i<budget; ++i) {
+            uct_node * ptr = tree_policy(v);
+            double total_return = 0.;
+            unsigned indice = 0;
+            default_policy(ptr,indice,total_return);
+            backup(ptr,indice,total_return);
+        }
+    }
+
+    /**
      * @brief UCT policy operator
      *
      * Tree developpement followed by action selection. This is the main method called by the
@@ -412,16 +440,10 @@ public:
 	pilot & operator()(state &_s, command &_a) override {
         beeler_glider_state &s0 = dynamic_cast <beeler_glider_state &> (_s);
         beeler_glider_command &a = dynamic_cast <beeler_glider_command &> (_a);
-        uct_node v0(s0,nullptr,get_actions(s0),0,0); // root node
-        for(unsigned i=0; i<budget; ++i) {
-            uct_node &v = tree_policy(v0);
-            double delta = 0.;
-            unsigned indice = 0;
-            default_policy(v,indice,delta);
-            backup(v,indice,delta);
-        }
-        greedy_action(v0,a);
-        a.dalpha = alpha_d_ctrl(s0); // D-controller
+        uct_node v0(s0,nullptr,get_actions(s0),0,0); // Root node of the tree
+        build_uct_tree(v0);
+        a = recommended_action(v0);
+        a.dalpha = alpha_d_ctrl(s0); // Add D-controller
         print_layers(v0);//TRM
         return *this;
 	}
