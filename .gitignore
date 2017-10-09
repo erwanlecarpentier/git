@@ -1,6 +1,7 @@
-# Untracked files:
+# Untracked:
 data/*
+local_save/
 main
-FZmain
-# ignore objects and archives, anywhere in the tree.
+
+# ignore objects and archives anywhere in the tree
 *.[oa]

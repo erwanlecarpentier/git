@@ -389,6 +389,7 @@ public:
         }
         greedy_action(v0,a);
         a.dalpha = alpha_d_ctrl(s0); // D-controller
+        print_tree(v0);//TRM
         return *this;
 	}
 

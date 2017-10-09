@@ -41,11 +41,12 @@ constexpr bool is_greater_than(T1 a, T2 b) {
 }
 
 /**
- * @brief Sort the indices of the input vector, not depending on its content type
+ * @brief Sort the indices of the input vector
  * @param {const std::vector<double> &} v; input vector
- * @param {std::vector<unsigned int> &} up_ind; indices of the elements of v reaching the maximum values
+ * @param {std::vector<unsigned int> &} up_ind; indices of the elements of v
+ * reaching the maximum values
  * @param {std::vector<unsigned int> &} dw_ind; indices of the other elements of v
- * @note template method
+ * @note Template method, independent of the content type
  */
 template <class T>
 inline void sort_indices(
@@ -62,11 +63,11 @@ inline void sort_indices(
 }
 
 /**
- * @brief Pick a random indice of the input vector, not depending on its content type
+ * @brief Pick a random indice of the input vector
  * @param {const std::vector<T> &} v; input vector
  * @return {unsigned int} a random indice
  * @note Initialize a random seed when executing your program
- * @note Template method
+ * @note Template method, independent of the content type
  */
 template <class T>
 inline unsigned int rand_indice(const std::vector<T> &v) {
@@ -75,11 +76,11 @@ inline unsigned int rand_indice(const std::vector<T> &v) {
 }
 
 /**
- * @brief Pick a random element of the input vector, not depending on its content type
+ * @brief Pick a random element of the input vector
  * @param {const std::vector<T> &} v; input vector
  * @return {int} a random indice
- * @note initialize a random seed when executing your program
- * @note template method
+ * @note Initialize a random seed when executing your program
+ * @note Template method, independent of the content type
  */
 template <class T>
 inline T rand_element(const std::vector<T> &v) {
@@ -107,13 +108,14 @@ inline int rand_int(int fmin, int fmax) {
 }
 
 /**
- * @brief Get the indice of the maximum element in the input vector, ties are broken randomly
+ * @brief Get the indice of the maximum element in the input vector, ties are
+ * broken arbitrarily
  * @param {const std::vector<T> &} v; input vector
  * @return Indice of the maximum element in the input vector
  * @note template method
  */
 template <class T>
-inline unsigned int argmax(const std::vector<T> &v) {
+inline unsigned argmax(const std::vector<T> &v) {
     double maxval = *std::max_element(v.begin(),v.end());
     std::vector<unsigned int> up_ind;
     for (unsigned int j=0; j<v.size(); ++j) {
@@ -124,7 +126,7 @@ inline unsigned int argmax(const std::vector<T> &v) {
 
 /** @brief See 'argmax' method */
 template <class T>
-inline unsigned int argmin(const std::vector<T> &v) {
+inline unsigned argmin(const std::vector<T> &v) {
     double minval = *std::min_element(v.begin(),v.end());
     std::vector<unsigned int> lo_ind;
     for (unsigned int j=0; j<v.size(); ++j) {
