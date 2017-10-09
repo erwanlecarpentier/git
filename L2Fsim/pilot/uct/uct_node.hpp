@@ -50,22 +50,39 @@ public:
         total_nb_visits = 0;
     }
 
+    int manip_a(const double &a) {
+        if(is_less_than(a,0.)) {
+            return -1;
+        } else if(is_equal_to(a,0.)) {
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+
     /**
      * @brief Print
      *
      * Print some attributes of the node.
      */
     void print() {
-        std::string sep = "   ";
-        std::cout << "d = " << depth << " ";
-        std::cout << "N = " << total_nb_visits << " ";
-        std::cout << "Nc = " << nb_visits[0] << " " << nb_visits[1] << " " << nb_visits[2] << " ";
-        std::cout << "Qc = " << Q_values[0] << " " << Q_values[1] << " " << Q_values[2] << sep;
-        std::cout << "indincaction = " << incoming_action_indice << " ";
-        std::cout << "nbchild = " << children.size() << " ";
-        std::cout << "pos = " << s.x << " " << s.y << " " << s.z << sep;
-        std::cout << "this = " << this << " ";
-        std::cout << "parent = " << parent << "\n";
+        std::string sep = " ";
+        std::cout << "d:" << depth << sep;
+        std::cout << "n:" << total_nb_visits << sep;
+        std::cout << "nc:" << nb_visits[0] << "|" << nb_visits[1] << "|" << nb_visits[2] << sep;
+        std::cout << "Qc:" << Q_values[0] << "|" << Q_values[1] << "|" << Q_values[2] << sep;
+        //std::cout << "ia:" << manip_a(parent->actions.at(incoming_action_indice).dsigma) << sep;
+        std::cout << "ia:" << incoming_action_indice << sep;
+        std::cout << "a:";
+        for (auto &ac : actions) {
+            std::cout << manip_a(ac.dsigma) << "|";
+        }
+        std::cout << sep;
+        std::cout << "nbchild:" << children.size() << sep;
+        std::cout << "sg:" << s.sigma << sep;
+        std::cout << "z:" << s.z << "\n";
+        //std::cout << "this = " << this << " ";
+        //std::cout << "parent = " << parent << "\n";
     }
 
     /**

@@ -114,7 +114,7 @@ public:
      * @warning Dynamic cast to beeler_glider_state
      */
     beeler_glider_state transition_model(const beeler_glider_state &s, const beeler_glider_command &a) {
-        beeler_glider_state s_p = s;trans
+        beeler_glider_state s_p = s;
         ac.set_state(s_p);
         ac.set_command(a);
         transition_function(ac,fz,s_p.time,time_step_width,sub_time_step_width);
@@ -138,13 +138,15 @@ public:
     {
         (void)a; (void)sp; // unused by default
         double edot = s.zdot + s.V * s.Vdot / 9.81;
-        return sigmoid(edot,10.,0.);
+        return edot;
+        //return sigmoid(edot,10.,0.);
     }
 
     /**
      * @brief Create child
      *
-     * Create a new child corresponding to an untried action.
+     * Create a new child corresponding to an untried action. Append the new child to the
+     * children vector of the input node (reference given as input).
      * @param {uct_node &} v; parent node
      * @return Return the indice of the created child.
      */
@@ -388,8 +390,21 @@ public:
         }
     }
 
+    void print_layers(uct_node &v) { //TRM
+        std::cout << "-----------------------------------\n";
+        v.print();
+        std::cout << "-----------------------------------\n";
+        v.children.at(0).print();
+        v.children.at(1).print();
+        v.children.at(2).print();
+        std::cout << "-----------------------------------\n";
+    }
+
     /**
-     * @brief Tree computation and action selection
+     * @brief UCT policy operator
+     *
+     * Tree developpement followed by action selection. This is the main method called by the
+     * agent at each time step.
      * @param {state &} _s; reference on the state
      * @param {command &} _a; reference on the command
      * @warning dynamic cast of state and action
@@ -407,7 +422,7 @@ public:
         }
         greedy_action(v0,a);
         a.dalpha = alpha_d_ctrl(s0); // D-controller
-        print_tree(v0);//TRM
+        print_layers(v0);//TRM
         return *this;
 	}
 
