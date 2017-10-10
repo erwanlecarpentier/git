@@ -8,44 +8,44 @@
 #include <L2Fsim/utils/utils.hpp>
 #include <memory>
 
-
-/**
- * @file simulation.hpp
- * @brief Simulation environment - Every choices concerning the simulation environment e.g. aircraft, pilot, environment etc. are made in the initialization of a 'simulation' object
- * @version 1.1
- * @since 1.0
- */
-
 namespace L2Fsim {
 
+/**
+ * @brief Simulation environment
+ *
+ * @file simulation.hpp
+ * @version 1.1
+ * @since 1.0
+ * This is the simulation environment. Every choices concerning the simulation environment
+ * e.g. aircraft, pilot, environment etc. are made in the initialization of a 'simulation'
+ * object.
+ */
 class simulation {
 public:
-	/**
-	 * @brief Attributes
-	 * @param {std::unique_ptr<flight_zone>} fz; unique pointer to a flight zone
-	 * @param {std::unique_ptr<aircraft>} ac; unique pointer to an aircraft
-	 * @param {std::unique_ptr<stepper>} st; unique pointer to a stepper
-	 * @param {std::unique_ptr<pilot>} pl; unique pointer to a pilot
-	 * @param {std::string} st_log_path, fz_log_path; log file paths
-	 */
-	std::unique_ptr<flight_zone> fz;
-	std::unique_ptr<aircraft> ac;
-	std::unique_ptr<stepper> st;
-	std::unique_ptr<pilot> pl;
-	std::string st_log_path;
-	std::string fz_log_path;
+	std::unique_ptr<flight_zone> fz; ///< Unique pointer to a flight zone.
+	std::unique_ptr<aircraft> ac; ///< Unique pointer to an aircraft.
+	std::unique_ptr<stepper> st; ///< Unique pointer to a stepper.
+	std::unique_ptr<pilot> pl; ///< Unique pointer to a pilot.
+	std::string st_log_path; ///< Log file path.
+	std::string fz_log_path; ///< Log file path.
 
 	/**
 	 * @brief Stepping function
+	 *
 	 * @param {double &} current_time; time at which the step is performed
 	 * @param {const double &} time_step_width; width of the time step
-     * @param {bool &} eos; end of simulation, the simulation reached the bounds of its model and must be stopped (e.g. limit of aircraft model validity)
+     * @param {bool &} eos; end of simulation, the simulation reached the bounds of its model
+     * and must be stopped (e.g. limit of aircraft model validity)
 	 */
 	void step(double &current_time, const double &time_step_width, bool &eos) {
 		(*st)(*fz, *ac, *pl, current_time, time_step_width, eos);
 	}
 
-    /** @brief Saving function, called at each time step */
+    /**
+     * @brief Saving method
+     *
+     * Saving method, called at each time step.
+     */
 	void save() {
         save_vector(ac->get_save(),st_log_path,std::ofstream::app);
 
@@ -58,7 +58,11 @@ public:
         save_vector(w,fz_log_path,std::ofstream::app);
 	}
 
-    /** @brief Clear log files (called before the simulation) */
+    /**
+     * @brief Clear backup files
+     *
+     * Clear backup files (called at the beginning of the simulation).
+     */
 	void clear_saves() {
         std::ofstream of;
         of.open(st_log_path,std::ofstream::trunc);
