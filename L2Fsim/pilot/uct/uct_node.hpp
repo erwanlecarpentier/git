@@ -50,12 +50,16 @@ public:
         total_nb_visits = 0;
     }
 
-    /** @brief Get the next expansion action among the available actions */
+    /**
+     * @brief Next expansion action
+     *
+     * Get the next expansion action among the available actions.
+     */
     beeler_glider_command get_next_expansion_action() const {
         return actions.at(children.size());
     }
 
-    int manip_a(const double &a) {
+    int indic(const double &a) {
         if(is_less_than(a,0.)) {
             return -1;
         } else if(is_equal_to(a,0.)) {
@@ -68,7 +72,7 @@ public:
     /**
      * @brief Print
      *
-     * Print some attributes of the node.
+     * Print some attributes of the node as a standard output.
      */
     void print() {
         std::string sep = " ";
@@ -87,12 +91,12 @@ public:
         std::cout << sep;
 
         if(depth>0) {
-            std::cout << "ia:" << manip_a(parent->actions.at(incoming_action_indice).dsigma) << sep;
+            std::cout << "ia:" << indic(parent->actions.at(incoming_action_indice).dsigma) << sep;
         }
 
         std::cout << "a:";
         for (auto &ac : actions) {
-            std::cout << manip_a(ac.dsigma) << "|";
+            std::cout << indic(ac.dsigma) << "|";
         }
         std::cout << sep;
 

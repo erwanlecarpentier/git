@@ -26,7 +26,7 @@ thermal_magnitude :
 variables :
 	python3 plot/variables.py
 
-plot_all :
+plot :
 	python3 plot/2d_trajectory.py & python3 plot/3d_trajectory.py & python3 plot/variables.py
 
 clean : clean_exe clean_dat
@@ -53,10 +53,11 @@ help :
 	@echo all     : clean, compile and execute ”${EXEC}”
 	@echo
 	@echo - Plot:
-	@echo thermal_magnitude : run ”/plot/thermal_magnitude.py” with python3
-	@echo 2d_trajectory     : run ”/plot/2d_trajectory.py” with python3
-	@echo 3d_trajectory     : run ”/plot/3d_trajectory.py” with python3
-	@echo variables         : run ”/plot/variables.py” with python3
+	@echo plot              : plot 2D, 3D trajectories and variables
+	@echo thermal_magnitude : plot thermals
+	@echo 2d_trajectory     : plot 2D trajectory (seen from above)
+	@echo 3d_trajectory     : plot 3D trajectory
+	@echo variables         : plot flight variables
 	@echo
 	@echo - Clean:
 	@echo clean : remove executables and data files
