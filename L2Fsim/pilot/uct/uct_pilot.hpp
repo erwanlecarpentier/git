@@ -177,13 +177,13 @@ public:
      * @brief UCT score
      *
      * Compute the UCT score wrt the UCT tree policy formula.
-     * @param {const double &} Qsa; Q value of the state-action pair
-     * @param {double &} Ns; total number of visits
-     * @param {double &} Nsa; number of visits of the state-action pair
+     * @param {const double &} Qsa; Q value estimate of the state-action pair
+     * @param {unsigned &} Ns; total number of visits
+     * @param {unsigned &} Nsa; number of visits of the state-action pair
      * @return Return the UCT score.
      */
-    inline double uct_score(const double &Qsa, const double &Ns, const double &Nsa) {
-        return Qsa + uct_parameter * sqrt(2. * log(Ns) / Nsa);
+    inline double uct_score(const double &Qsa, const unsigned &Ns, const unsigned &Nsa) {
+        return Qsa + 2. * uct_parameter * sqrt(log((double)Ns) / ((double)Nsa));
     }
 
     /**
@@ -206,9 +206,11 @@ public:
      * @brief Tree policy
      *
      * Apply the tree policy from a 'current' node to a 'leaf' node; there are 3 cases:
-     * 1. The current node is terminal: return a reference on the current node
-     * 2. The current node is fully expanded: get the 'best' child according to UCT criteria and recursively run the method on this child
-     * 3. The current node is not fully expanded: create a new child and return a reference on this new child
+     * 1. The current node is terminal: return a reference on the current node.
+     * 2. The current node is fully expanded: get the 'best' child according to UCT criteria
+     * and recursively run the method on this child.
+     * 3. The current node is not fully expanded: create a new child and return a reference
+     * on this new child.
      * @param {uct_node &} v; current node of the tree exploration
      * @return {uct_node &} Reference on the resulting node
      * @note Recursive method
@@ -219,12 +221,68 @@ public:
         } else if (!v.is_fully_expanded()) { // expand node
             return &v.children.at(create_child(v));
         } else { // apply UCT tree policy
-            return tree_policy(best_uct_child(v)); //TODO
+            return tree_policy(best_uct_child(v));
         }
     }
 
     /**
-     * @brief Heuristic policy
+     * @brief Random policy
+     *
+     * Select an action randomly.
+     * @param {const std::vector<beeler_glider_command> &} actions; available actions
+     * @param {beeler_glider_command &} a; computed action
+     * @return Return the indice of the chosen action
+     */
+    unsigned random_policy(
+        const std::vector<beeler_glider_command> &actions,
+        beeler_glider_command &a)
+    {
+        a = actions[0]; //actions already randomized
+        return 0;
+    }
+
+    /**
+     * @brief Heuristic 'go-straight' policy
+     *
+     * Select an action among the available ones and tries to go straight.
+     * @param {const std::vector<beeler_glider_command> &} actions; available actions
+     * @param {beeler_glider_state &} s; state
+     * @param {beeler_glider_command &} a; chosen action
+     * @return Return the indice of the chosen action
+     */
+    unsigned heuristic_go_straight(
+        const std::vector<beeler_glider_command> &actions,
+        beeler_glider_state &s,
+        beeler_glider_command &a)
+    {
+        double sig = s.sigma;
+        if(is_less_than(-angle_rate_magnitude, sig) && is_less_than(sig, angle_rate_magnitude)) { // -angle_rate_magnitude < sigma < angle_rate_magnitude; select dsig=0
+            for(unsigned i=0; i<actions.size(); ++i) {
+                if(is_equal_to(actions[i].dsigma, 0.)) {
+                    a = actions[i];
+                    return i;
+                }
+            }
+        } else if(!is_less_than(sig, angle_rate_magnitude)) { // sigma >= angle_rate_magnitude; select -dsigma
+            for(unsigned i=0; i<actions.size(); ++i) { // select -dsigma
+                if(is_less_than(actions[i].dsigma, 0.)) {
+                    a = actions[i];
+                    return i;
+                }
+            }
+        } else { // sigma <= -angle_rate_magnitude; select +dsigma
+            for(unsigned i=0; i<actions.size(); ++i) { // select +dsigma
+                if(is_greater_than(actions[i].dsigma, 0.)) {
+                    a = actions[i];
+                    return i;
+                }
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * @brief Heuristic 'wind-up' policy
      *
      * Select an action among the available ones, there are two cases:
      * - lifted case (zdot >= 0); increase the magnitude of sigma
@@ -234,13 +292,14 @@ public:
      * @param {beeler_glider_command &} a; chosen action
      * @return Return the indice of the chosen action
      */
-    unsigned heuristic_policy(
+    unsigned heuristic_wind_up(
         const std::vector<beeler_glider_command> &actions,
         beeler_glider_state &s,
         beeler_glider_command &a)
     {
         double sig = s.sigma;
-        if(!is_less_than(s.zdot, 0.)) { // lifted case, zdot >= 0
+        double threshold = 1.;
+        if(!is_less_than(s.zdot, threshold)) { // lifted case, zdot >= 0
             if(!is_less_than(sig, 0.)) { // sigma >= 0; select +dsigma or 0
                 for(unsigned i=0; i<actions.size(); ++i) { // select +dsigma
                     if(is_greater_than(actions[i].dsigma, 0.)) {
@@ -269,53 +328,8 @@ public:
                 }
             }
         } else { // no lift
-            if (!is_less_than(sig, angle_rate_magnitude)) { // sigma >= angle_rate_magnitude
-                a.dsigma = -angle_rate_magnitude;
-            } else if(!is_greater_than(sig, -angle_rate_magnitude)) { //sigma <= -angle_rate_magnitude
-                a.dsigma = +angle_rate_magnitude;
-            } else { // -angle_rate_magnitude < sigma < angle_rate_magnitude
-                a.dsigma = 0.;
-            }
-
-            if(is_less_than(-angle_rate_magnitude, sig) && is_less_than(sig, angle_rate_magnitude)) { // -angle_rate_magnitude < sigma < angle_rate_magnitude; select dsig=0
-                for(unsigned i=0; i<actions.size(); ++i) {
-                    if(is_equal_to(actions[i].dsigma, 0.)) {
-                        a = actions[i];
-                        return i;
-                    }
-                }
-            } else if(!is_less_than(sig, angle_rate_magnitude)) { // sigma >= angle_rate_magnitude; select -dsigma
-                for(unsigned i=0; i<actions.size(); ++i) { // select -dsigma
-                    if(is_less_than(actions[i].dsigma, 0.)) {
-                        a = actions[i];
-                        return i;
-                    }
-                }
-            } else { // sigma <= -angle_rate_magnitude; select +dsigma
-                for(unsigned i=0; i<actions.size(); ++i) { // select +dsigma
-                    if(is_greater_than(actions[i].dsigma, 0.)) {
-                        a = actions[i];
-                        return i;
-                    }
-                }
-            }
+            return heuristic_go_straight(actions,s,a);
         }
-        return 0;
-    }
-
-    /**
-     * @brief Random policy
-     *
-     * Select an action randomly.
-     * @param {const std::vector<beeler_glider_command> &} actions; available actions
-     * @param {beeler_glider_command &} a; computed action
-     * @return Return the indice of the chosen action
-     */
-    unsigned random_policy(
-        const std::vector<beeler_glider_command> &actions,
-        beeler_glider_command &a)
-    {
-        a = actions[0]; //actions already randomized
         return 0;
     }
 
@@ -336,11 +350,14 @@ public:
         case 0: { // random policy
             return random_policy(actions,a);
         }
-        case 1: { // heuristic policy
-            return heuristic_policy(actions,s,a);
+        case 1: { // heuristic 'go straight' policy
+            return heuristic_go_straight(actions,s,a);
         }
-        default: {
-            return 0;
+        case 2: { // heuristic 'wind-up' policy
+            return heuristic_wind_up(actions,s,a);
+        }
+        default: { // default is random
+            return random_policy(actions,a);
         }
         }
     }
@@ -350,7 +367,7 @@ public:
      *
      * Run the default policy and get the value of a roll-out until the horizon. Also record
      * the indice of the first action of the roll-out.
-     * @param {uct_node *} v; pointer to the starting node
+     * @param {uct_node *} v; pointer to the starting node (leaf node of the tree)
      * @param {unsigned &} indice; indice of the first action of the roll-out
      * @return Return the collected total return.
      */
@@ -362,7 +379,9 @@ public:
         for(unsigned t=0; t<horizon; ++t) {
             s_tp = transition_model(s_t,a_t);
             total_return += pow(df,(double)t) * reward_model(s_t,a_t,s_tp);
-            if(s_tp.is_out_of_bounds()){break;}
+            if(s_tp.is_out_of_bounds()) { // termination criterion
+                break;
+            }
             s_t = s_tp;
             default_policy_switch(get_actions(s_t),s_t,a_t);
         }

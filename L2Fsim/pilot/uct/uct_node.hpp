@@ -87,7 +87,6 @@ public:
         std::cout << sep;
 
         if(depth>0) {
-            //std::cout << "iaind:" << incoming_action_indice << sep;
             std::cout << "ia:" << manip_a(parent->actions.at(incoming_action_indice).dsigma) << sep;
         }
 
@@ -100,7 +99,7 @@ public:
         std::cout << "chld:" << children.size() << sep;
         std::cout << "sg:" << s.sigma << sep;
         std::cout << "z:" << s.z << sep;
-        std::cout << "E:" << s.z + s.V * s.V / (2. * 9.81) << "\n";
+        std::cout << "E:" << s.z + s.V * s.V / (2. * 9.81) << sep;
         std::cout << "Ed:" << s.zdot + s.V * s.Vdot / 9.81 << "\n";
         //std::cout << "this = " << this << " ";
         //std::cout << "parent = " << parent << "\n";
