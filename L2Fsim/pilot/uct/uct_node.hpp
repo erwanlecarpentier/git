@@ -19,7 +19,7 @@ public:
     beeler_glider_state s; ///< State of the node
     uct_node *parent; ///< Pointer to the parent node
     std::vector<beeler_glider_command> actions; ///< Available actions
-    std::vector<double> Q_values; ///< state-action values
+    std::vector<double> values; ///< state-action values
     std::vector<double> rewards; ///< state-action rewards
     std::vector<unsigned> nb_visits; ///< state-action number of visits
     std::vector<uct_node> children; ///< state-action resulting children
@@ -44,7 +44,7 @@ public:
         depth(_depth)
     {
         unsigned sz = actions.size();
-        Q_values = std::vector<double>(sz,0.);
+        values = std::vector<double>(sz,0.);
         rewards = std::vector<double>(sz,0.);
         nb_visits = std::vector<unsigned>(sz,0);
         total_nb_visits = 0;
@@ -86,7 +86,7 @@ public:
 
         std::cout << "Q:";
         for(unsigned i=0; i<children.size(); ++i) {
-            std::cout << Q_values.at(i) << "|";
+            std::cout << values.at(i) << "|";
         }
         std::cout << sep;
 

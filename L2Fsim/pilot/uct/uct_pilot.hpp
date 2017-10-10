@@ -197,7 +197,7 @@ public:
         std::vector<double> scores;
         unsigned Ns = v.total_nb_visits;
         for(unsigned i=0; i<v.children.size(); ++i) {
-            scores.push_back(uct_score(v.Q_values[i], Ns, v.nb_visits[i]));
+            scores.push_back(uct_score(v.values[i], Ns, v.nb_visits[i]));
         }
         return v.children[argmax(scores)];
     }
@@ -400,7 +400,7 @@ public:
     void backup(uct_node *v, unsigned &indice, double &delta) {
         v->total_nb_visits += 1;
         v->nb_visits[indice] += 1;
-        v->Q_values[indice] += 1./((double)v->nb_visits[indice]) * (delta - v->Q_values[indice]);
+        v->values[indice] += 1./((double)v->nb_visits[indice]) * (delta - v->values[indice]);
         if(v->depth > 0) {
             delta = v->parent->rewards[v->incoming_action_indice] + df * delta;
             backup(v->parent, v->incoming_action_indice, delta);
@@ -417,7 +417,7 @@ public:
     unsigned argmax_value(const uct_node &v) {
         std::vector<double> values;
         for(unsigned i=0; i<v.children.size(); ++i) {
-            values.push_back(v.Q_values[i]);
+            values.push_back(v.values[i]);
         }
         return argmax(values);
     }
