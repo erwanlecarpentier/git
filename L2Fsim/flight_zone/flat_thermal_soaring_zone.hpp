@@ -8,45 +8,36 @@
  * @file flat_thermal_soaring_zone.hpp
  * @version 1.1
  * @since 1.0
- * @brief This class implements the components of the wind vector by introducing the thermals in the flat zone
- * @note The abstract class flat_thermal_soaring_zone is a subclass of flat_zone
+ * @brief Flat thermal soaring zone
+ *
+ * This class implements the components of the wind vector by introducing the thermals in the flat zone
+ * The abstract class flat_thermal_soaring_zone is a subclass of flat_zone.
+ * Default setting is noiseless.
+ * No seed selection is done - you would have to implement this if you want to re-generate matching pseudo-random sequences
  */
 
 namespace L2Fsim {
 
 class flat_thermal_soaring_zone : public flat_zone {
 public:
-    /**
-     * @brief Attributes
-     * @param {double} t_start; starting time of the simulation
-     * @param {double} t_limit; ending time of the simulation
-     * @param {double} windx, windy; horizontal components of the wind velocity
-     * @param {double} w_star_min, w_star_max; minimum and maximum average updraft velocity
-     * @param {double} zi_min, zi_max; minimum and maximum mixing layer thickness
-     * @param {double} lifespan_min, lifespan_max; minimum and maximum lifespan
-     * @param {double} x_min, x_max, y_min, y_max, z_min, z_max; boundaries
-     * @param {double} ksi_min, ksi_max; minimum and maximum roll-off parameter
-     * @param {double} d_min; minimum radius of a thermal
-     * @param {unsigned int} nbth; maximum number of thermals in the scenario
-     * @param {std::vector<thermal *>} thermals; list of the thermals created in the simulation
-     * @param {double} noise_stddev; standard deviation of the normal law whose samples are added to each component of the wind velocity vector
-     * @note No seed selection is done - you would have to implement this if you want to re-generate matching pseudo-random sequences
-     * @note Default setting is noiseless
-     */
-    double t_start = 0.;
-    double t_limit;
-    double windx, windy;
-    double w_star_min, w_star_max;
-    double zi_min, zi_max;
-    double lifespan_min, lifespan_max;
-    double x_min, x_max, y_min, y_max, z_min, z_max;
-    double ksi_min, ksi_max;
-    double d_min;
-    unsigned int nbth;
-    std::vector<thermal *> thermals;
-    double noise_stddev = 0.;
+    double t_start = 0.; ///< Starting time of the simulation
+    double t_limit; ///< Ending time of the simulation
+    double windx, windy; ///< Horizontal components of the wind velocity
+    double w_star_min, w_star_max; ///< Minimum and maximum average updraft velocity
+    double zi_min, zi_max; ///< Minimum and maximum mixing layer thickness
+    double lifespan_min, lifespan_max; ///< Minimum and maximum lifespan
+    double x_min, x_max, y_min, y_max, z_min, z_max; ///< Boundaries
+    double ksi_min, ksi_max; ///< Minimum and maximum roll-off parameters
+    double d_min; ///< Minimum radius of a thermal
+    unsigned int nbth; ///< Maximum number of thermals in the scenario
+    std::vector<thermal *> thermals; ///< List of the thermals created in the simulation
+    double noise_stddev = 0.; ///< Standard deviation of the normal law whose samples are added to each component of the wind velocity vector
 
-    /** @brief Constructor; create an empty zone defined by its extremum dimensions */
+    /**
+     * @brief Constructor
+     *
+     * Create an empty zone defined by its extremum dimensions.
+     */
     flat_thermal_soaring_zone(
         double _t_start,
         double _t_limit,
@@ -91,8 +82,10 @@ public:
     {}
 
     /**
-     * @brief Constructor; Read a pre-saved thermal scenario (method save_scenario) in order to play an identical simulation
-     * @warning Expect same order of variables as in save_scenario and save_fz_cfg method; do not modify one without the other
+     * @brief Constructor
+     *
+     * Read a pre-saved thermal scenario (method save_scenario) in order to play an identical simulation.
+     * @warning Expect same order of variables as in save_scenario and save_fz_cfg method, do not modify one without the other.
      * @param {std::string} th_sc_p; thermal scenario input path
      * @param {std::string} fz_cfg_p; flight zone configuration input path
      */
@@ -171,10 +164,14 @@ public:
     }
 
     /**
-     * @brief Define the center of a new thermal depending on positions of other thermals
-     * @note The new center is randomly picked within [x_min,x_max]*[y_min,y_max] and its validity is ensured
+     * @brief Create thermal center
+     *
+     * Define the center of a new thermal depending on positions of other thermals.
+     * The new center is randomly picked within [x_min,x_max]*[y_min,y_max] and its validity
+     * is ensured.
      * @param {double} t; time
      * @param {std::vector<double> &} center; computed center
+     * @return Return true if a valid center is found.
      */
     bool create_thermal_center(double t, std::vector<double> &center) {
         double x_new=0., y_new=0.;
@@ -210,8 +207,11 @@ public:
     }
 
     /**
-     * @brief Count the number of alive thermals at time t
+     * @brief Number of alive thermal
+     *
+     * Count the number of alive thermals at time t.
      * @param {double} t; time
+     * @return Return the number of alive thermal at time t.
      */
     int nb_th_alive_at_time(double t) {
         int counter = 0;
@@ -220,8 +220,11 @@ public:
     }
 
     /**
-     * @brief Compute the global environment sink rate
+     * @brief Sink rate
+     *
+     * Compute the global environment sink rate.
      * @param {double} z, t; altitude and time
+     * @return Return the global sink rate.
      */
     double global_sink_rate(double z, double t) {
         double thermals_area=0., mass_flow=0.;
@@ -243,14 +246,22 @@ public:
     }
 
     /**
-     * @brief return ksi in range [w_star_min,w_star_max]
-     * @note used for thermal creation
+     * @brief Pick w_star
+     *
+     * Return w_star in range [w_star_min,w_star_max].
+     * This is used for thermal creation.
+     * @return Return w_star
      */
-    double pick_w_star() {return rand_double(w_star_min,w_star_max);}
+    double pick_w_star() {
+        return rand_double(w_star_min,w_star_max);
+    }
 
     /**
-     * @brief return zi in range [zi_min,zi_max]
-     * @note used for thermal creation
+     * @brief Pick zi
+     *
+     * Return zi in range [zi_min,zi_max].
+     * This is used for thermal creation.
+     * @return Return zi.
      */
     double pick_zi() {//(double w_star) {
         //double noise = rand_double(-50.,50.);
@@ -259,8 +270,11 @@ public:
     }
 
     /**
-     * @brief return lifespan as a function of w_star
-     * @note used for thermal creation
+     * @brief Pick lifespan
+     *
+     * Return lifespan as a function of w_star.
+     * This is used for thermal creation.
+     * @return Return lifespan.
      */
     double pick_lifespan(const double &w_star) {
         double a = (lifespan_max - lifespan_min) / (w_star_max - w_star_min);
@@ -269,27 +283,42 @@ public:
     }
 
     /**
-     * @brief return ksi in range [ksi_min,ksi_max]
-     * @note used for thermal creation
+     * @brief Pick ksi
+     *
+     * Return ksi in range [ksi_min,ksi_max].
+     * This is used for thermal creation.
+     * @return Return ksi.
      */
     double pick_ksi() {
         return rand_double(ksi_min,ksi_max);
     }
 
-    /** @brief Print the full scenario in the standard output stream */
+    /**
+     * @brief Print scenario
+     *
+     * Print the full scenario in the standard output stream
+     */
     void print_scenario() {
         for(auto &th : thermals) {th->print();}
     }
 
-    /** @brief Return the total number of thermals in the whole scenario */
+    /**
+     * @brief Get total number of thermals
+     *
+     * Get the total number of thermals in the whole scenario.
+     * @return Return the total number of thermals.
+     */
     unsigned int get_total_nb_of_th() {
         return thermals.size();
     }
 
 	/**
-     * @brief Compute the wind velocity vector w at coordinate (x,y,z,t)
+     * @brief Wind
+     *
+     * Compute the wind velocity vector w at coordinate (x,y,z,t).
      * @param {double} x, y, z, t; coordinates
      * @param {std::vector<double> &} w; wind velocity vector [wx, wy, wz]
+     * @return Return '*this'
      */
     flat_thermal_soaring_zone& wind(double x, double y, double z, double t, std::vector<double> &w) override {
         w.assign({windx,windy,0.});
@@ -313,9 +342,11 @@ public:
     }
 
     /**
-     * @brief Assert that the aircraft is inside the flight zone
+     * @brief Is within flightzone
+     *
+     * Assert that the aircraft is inside the flight zone.
      * @param {const double &} x, y, z; coordinates  in the earth frame
-     * @return true if the input position belongs to the flight zone
+     * @return Return true if the input position belongs to the flight zone.
      */
     virtual bool is_within_fz(const double &x, const double &y, const double &z) override {
         (void) z; //unused by default
@@ -324,7 +355,9 @@ public:
     }
 
     /**
-     * @brief Create a new thermal and push it back to 'thermals' vector attribute
+     * @brief Create thermal
+     *
+     * Create a new thermal and push it back to 'thermals' vector attribute.
      * @param {int} model; thermal model
      * @param {double} t; current time, thermal's date of birth
      */
@@ -342,7 +375,9 @@ public:
     }
 
     /**
-     * @brief Create a scenario i.e. fill the 'thermals' vector attribute
+     * @brief Create scenario
+     *
+     * Create a scenario i.e. fill the 'thermals' vector attribute.
      * @param {double} dt, refresh rate
      * @param {int} model; thermal model
      */
@@ -355,9 +390,12 @@ public:
     }
 
     /**
-     * @brief Write the updraft values in a file for visualization
+     * @brief Save updraft values
+     *
+     * Write the updraft values in a file for visualization
      * @param {const double &} dx, dy; mesh precision
-     * @param {const std::vector<double> &} z, t; altitudes and times of the saved updraft field
+     * @param {const std::vector<double> &} z, t; altitudes and times of the saved updraft
+     * field
      * @param {const std::string &} op; output path
      */
     void save_updraft_values(
@@ -395,7 +433,9 @@ public:
     }
 
     /**
-     * @brief Save a scenario at the specified output path
+     * @brief Save scenario
+     *
+     * Save a scenario at the specified output path.
      * @param {std::string} op; output path
      */
     void save_scenario(std::string op) {
@@ -427,7 +467,9 @@ public:
     }
 
     /**
-     * @brief Save the flight zone dimensions
+     * @brief Save flight zone configuration
+     *
+     * Save the flight zone dimensions, d_min and horizontal wind velocities.
      * @param {std::string} op; output path
      */
     void save_fz_cfg(std::string op) {
@@ -457,4 +499,4 @@ public:
 
 }
 
-#endif
+#endif // end L2FSIM_FLAT_THERMAL_SOARING_ZONE_HPP_
