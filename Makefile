@@ -26,7 +26,7 @@ thermal_magnitude :
 variables :
 	python3 plot/variables.py
 
-plot :
+plot_all :
 	python3 plot/2d_trajectory.py & python3 plot/3d_trajectory.py & python3 plot/variables.py
 
 clean : clean_exe clean_dat

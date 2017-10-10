@@ -8,12 +8,15 @@
 #include <L2Fsim/pilot/uct/uct_node.hpp>
 #include <L2Fsim/stepper/euler_integrator.hpp>
 
+namespace L2Fsim{
+
 /**
+ * @brief UCT pilot
+ *
  * @file uct_pilot.hpp
- * @brief An online-anytime implementation of a deterministic UCT algorithm
  * @version 1.1
  * @since 1.0
- *
+ * An online-anytime implementation of a deterministic UCT algorithm
  * Compatibility: 'flat_thermal_soaring_zone.hpp'; 'beeler_glider.hpp';
  * 'beeler_glider_state.hpp'; 'beeler_glider_command.hpp'.
  * Make use of: 'uct_node.hpp'.
@@ -21,9 +24,6 @@
  * The transition model is defined in method 'transition_model'.
  * The reward model is defined in method 'reward_model'.
  */
-
-namespace L2Fsim{
-
 class uct_pilot : public pilot {
 public:
     beeler_glider ac; ///< Aircraft model
@@ -70,7 +70,7 @@ public:
     {}
 
     /**
-     * @brief D-controller
+     * @brief Alpha D-controller
      *
      * Get the value of dalpha with a D-controller in order to soften the phugoid behaviour.
      * @param {beeler_glider_state &} s; current state
@@ -538,4 +538,4 @@ public:
 
 }
 
-#endif
+#endif // end L2FSIM_UCT_PILOT_HPP_

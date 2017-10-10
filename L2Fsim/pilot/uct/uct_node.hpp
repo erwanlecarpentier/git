@@ -4,16 +4,17 @@
 #include <cstdio>
 #include <cstdlib>
 
-/**
- * @file uct_node.hpp
- * @brief Node for MCTS for 'beeler_glider.hpp' model
- * @version 1.1
- * @since 1.0
- * @note compatibility: 'beeler_glider.hpp'; 'beeler_glider_state.hpp'; 'beeler_glider_command.hpp'
- */
-
 namespace L2Fsim{
 
+/**
+ * @brief Node for UCT pilot
+ *
+ * @file uct_node.hpp
+ * @version 1.1
+ * @since 1.0
+ * Node for MCTS for 'beeler_glider.hpp' model
+ * compatibility: 'beeler_glider.hpp'; 'beeler_glider_state.hpp'; 'beeler_glider_command.hpp'
+ */
 class uct_node {
 public:
     beeler_glider_state s; ///< State of the node
@@ -134,4 +135,4 @@ public:
 
 }
 
-#endif
+#endif // end L2FSIM_UCT_NODE_HPP_
