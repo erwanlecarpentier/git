@@ -139,6 +139,7 @@ public:
         (void)a; (void)sp; // unused by default
         double edot = s.zdot + s.V * s.Vdot / 9.81;
         return edot;
+        //double e = s.z + s.V * s.V / (2 * 9.81);
         //return sigmoid(edot,10.,0.);
     }
 
@@ -157,6 +158,20 @@ public:
         v.rewards.at(indice) = reward_model(v.s,v.actions.at(indice),s_p); // save the transition reward
         return indice;
     }
+
+    /**
+     * @brief Expansion method
+     *
+     * Expand the node i.e. create a new leaf node.
+     * @return Return a pointer to the created leaf node
+     */
+//    uct_node * expand(uct_node &v) {
+//        int nodes_action = v.get_next_expansion_action();
+//        beeler_glider_state s_p = transition_model(v.s,nodes_action);
+//        v.children.emplace_back(s_p, &v, get_actions(s_p), indice, v.depth+1);
+//        return v.get_last_child();
+//    }
+
 
     /**
      * @brief UCT score
@@ -198,13 +213,13 @@ public:
      * @return {uct_node &} Reference on the resulting node
      * @note Recursive method
      */
-    uct_node * tree_policy(uct_node &v) { //TODO
-        if (v.is_terminal()) {
+    uct_node * tree_policy(uct_node &v) {
+        if (v.is_terminal()) { // terminal
             return &v;
-        } else if (v.is_fully_expanded()) {
-            return tree_policy(best_uct_child(v));
-        } else {
+        } else if (!v.is_fully_expanded()) { // expand node
             return &v.children.at(create_child(v));
+        } else { // apply UCT tree policy
+            return tree_policy(best_uct_child(v)); //TODO
         }
     }
 
@@ -305,43 +320,53 @@ public:
     }
 
     /**
-     * @brief Default policy
+     * @brief Default policy switch
      *
-     * Run the default policy and get the value of a rollout until the horizon
-     * @param {uct_node *} v; pointer to the starting node
-     * @param {unsigned &} indice; first action's indice
-     * @param {double &} delta; computed value
+     * Switch between the available default policies (e.g. random, heuristics).
+     * Set the action given as an argument to the one undertaken by the default policy.
+     * @param {const std::vector<beeler_glider_command> &} actions; available actions
+     * @param {beeler_glider_command &} a; computed action
      */
-    void default_policy(uct_node *v, unsigned &indice, double &delta) {
-        delta = 0.;
-        beeler_glider_state s_tp, s_t = v->s;
-        beeler_glider_command a_t;
+    unsigned default_policy_switch(
+        const std::vector<beeler_glider_command> &actions,
+        beeler_glider_state &s,
+        beeler_glider_command &a)
+    {
         switch(default_policy_selector) {
         case 0: { // random policy
-            indice = random_policy(v->actions,a_t);
-            break;
+            return random_policy(actions,a);
         }
         case 1: { // heuristic policy
-            indice = heuristic_policy(v->actions,s_t,a_t);
-            break;
+            return heuristic_policy(actions,s,a);
+        }
+        default: {
+            return 0;
         }
         }
+    }
+
+    /**
+     * @brief Default policy
+     *
+     * Run the default policy and get the value of a roll-out until the horizon. Also record
+     * the indice of the first action of the roll-out.
+     * @param {uct_node *} v; pointer to the starting node
+     * @param {unsigned &} indice; indice of the first action of the roll-out
+     * @return Return the collected total return.
+     */
+    double default_policy(uct_node *v, unsigned &indice) {
+        double total_return = 0.;
+        beeler_glider_state s_tp, s_t = v->s;
+        beeler_glider_command a_t;
+        indice = default_policy_switch(v->actions,s_t,a_t);
         for(unsigned t=0; t<horizon; ++t) {
             s_tp = transition_model(s_t,a_t);
-            delta += pow(df,(double)t) * reward_model(s_t,a_t,s_tp);
+            total_return += pow(df,(double)t) * reward_model(s_t,a_t,s_tp);
             if(s_tp.is_out_of_bounds()){break;}
             s_t = s_tp;
-            switch(default_policy_selector) {
-            case 0: { // random policy
-                random_policy(get_actions(s_t),a_t);
-                break;
-            }
-            case 1: { // heuristic policy
-                heuristic_policy(get_actions(s_t),s_t,a_t);
-                break;
-            }
-            }
+            default_policy_switch(get_actions(s_t),s_t,a_t);
         }
+        return total_return;
     }
 
     /**
@@ -402,14 +427,19 @@ public:
         }
     }
 
-    void print_layers(uct_node &v) { //TRM
-        std::cout << "-----------------------------------\n";
+    /**
+     * @brief Print layer
+     *
+     * Print nodes at depths 0 and 1.
+     */
+    void print_layers(uct_node &v) {
+        std::cout << "============================================================\n";
         v.print();
-        std::cout << "-----------------------------------\n";
-        v.children.at(0).print();
-        v.children.at(1).print();
-        v.children.at(2).print();
-        std::cout << "-----------------------------------\n";
+        std::cout << "\n";
+        for(auto &ch : v.children) {
+            ch.print();
+        }
+        std::cout << "============================================================\n";
     }
 
     /**
@@ -420,10 +450,9 @@ public:
      */
     void build_uct_tree(uct_node &v) {
         for(unsigned i=0; i<budget; ++i) {
-            uct_node * ptr = tree_policy(v);
-            double total_return = 0.;
+            uct_node * ptr = tree_policy(v); // ptr points to the leaf node
             unsigned indice = 0;
-            default_policy(ptr,indice,total_return);
+            double total_return = default_policy(ptr,indice);
             backup(ptr,indice,total_return);
         }
     }
@@ -444,6 +473,7 @@ public:
         build_uct_tree(v0);
         a = recommended_action(v0);
         a.dalpha = alpha_d_ctrl(s0); // Add D-controller
+        std::cout << "Recommended action dsigma: " << a.dsigma << "\n"; //TRM
         print_layers(v0);//TRM
         return *this;
 	}

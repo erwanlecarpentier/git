@@ -50,6 +50,11 @@ public:
         total_nb_visits = 0;
     }
 
+    /** @brief Get the next expansion action among the available actions */
+    beeler_glider_command get_next_expansion_action() const {
+        return actions.at(children.size());
+    }
+
     int manip_a(const double &a) {
         if(is_less_than(a,0.)) {
             return -1;
@@ -67,20 +72,36 @@ public:
      */
     void print() {
         std::string sep = " ";
-        std::cout << "d:" << depth << sep;
-        std::cout << "n:" << total_nb_visits << sep;
-        std::cout << "nc:" << nb_visits[0] << "|" << nb_visits[1] << "|" << nb_visits[2] << sep;
-        std::cout << "Qc:" << Q_values[0] << "|" << Q_values[1] << "|" << Q_values[2] << sep;
-        //std::cout << "ia:" << manip_a(parent->actions.at(incoming_action_indice).dsigma) << sep;
-        std::cout << "ia:" << incoming_action_indice << sep;
+        std::cout << "d" << depth << sep;
+        std::cout << "nv:" << total_nb_visits << sep;
+
+        for(unsigned i=0; i<children.size(); ++i) {
+            std::cout << nb_visits.at(i) << "|";
+        }
+        std::cout << sep;
+
+        std::cout << "Q:";
+        for(unsigned i=0; i<children.size(); ++i) {
+            std::cout << Q_values.at(i) << "|";
+        }
+        std::cout << sep;
+
+        if(depth>0) {
+            //std::cout << "iaind:" << incoming_action_indice << sep;
+            std::cout << "ia:" << manip_a(parent->actions.at(incoming_action_indice).dsigma) << sep;
+        }
+
         std::cout << "a:";
         for (auto &ac : actions) {
             std::cout << manip_a(ac.dsigma) << "|";
         }
         std::cout << sep;
-        std::cout << "nbchild:" << children.size() << sep;
+
+        std::cout << "chld:" << children.size() << sep;
         std::cout << "sg:" << s.sigma << sep;
-        std::cout << "z:" << s.z << "\n";
+        std::cout << "z:" << s.z << sep;
+        std::cout << "E:" << s.z + s.V * s.V / (2. * 9.81) << "\n";
+        std::cout << "Ed:" << s.zdot + s.V * s.Vdot / 9.81 << "\n";
         //std::cout << "this = " << this << " ";
         //std::cout << "parent = " << parent << "\n";
     }
