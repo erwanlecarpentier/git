@@ -179,8 +179,8 @@ public:
         bool center_is_valid = false;
         while(!center_is_valid) {
             counter++;
-            x_new = rand_double(x_min,x_max);
-            y_new = rand_double(y_min,y_max);
+            x_new = uniform_double(x_min,x_max);
+            y_new = uniform_double(y_min,y_max);
             if(thermals.size()>0) { // compare picked center to other thermals
                 std::vector<double> distances;
                 for(auto& th : thermals) { // compute the distances to other alive thermals
@@ -253,7 +253,7 @@ public:
      * @return Return w_star
      */
     double pick_w_star() {
-        return rand_double(w_star_min,w_star_max);
+        return uniform_double(w_star_min,w_star_max);
     }
 
     /**
@@ -264,9 +264,9 @@ public:
      * @return Return zi.
      */
     double pick_zi() {//(double w_star) {
-        //double noise = rand_double(-50.,50.);
+        //double noise = uniform_double(-50.,50.);
         //return 961.0264191 * w_star - 701.9624694 + noise;
-        return rand_double(zi_min,zi_max);
+        return uniform_double(zi_min,zi_max);
     }
 
     /**
@@ -290,7 +290,7 @@ public:
      * @return Return ksi.
      */
     double pick_ksi() {
-        return rand_double(ksi_min,ksi_max);
+        return uniform_double(ksi_min,ksi_max);
     }
 
     /**

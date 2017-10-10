@@ -6,6 +6,7 @@
 #include <L2Fsim/stepper/stepper.hpp>
 #include <L2Fsim/pilot/pilot.hpp>
 #include <L2Fsim/utils/utils.hpp>
+#include <L2Fsim/utils/save.hpp>
 #include <memory>
 
 namespace L2Fsim {
@@ -47,7 +48,7 @@ public:
      * Saving method, called at each time step.
      */
 	void save() {
-        save_vector(ac->get_save(),st_log_path,std::ofstream::app);
+        save_vector(ac->get_save(),st_log_path," ",std::ofstream::app);
 
         std::vector<double> w;
         fz->wind(
@@ -55,7 +56,7 @@ public:
             ac->get_state().gety(),
             ac->get_state().getz(),
             ac->get_state().gett(),w);
-        save_vector(w,fz_log_path,std::ofstream::app);
+        save_vector(w,fz_log_path," ",std::ofstream::app);
 	}
 
     /**

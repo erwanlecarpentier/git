@@ -288,7 +288,7 @@ protected:
         } else if (X_w.at(0) / cos_gamma_w < -1.) {
             khi_w = M_1_PI;
         } else {
-            khi_w = sgn(X_w.at(1) / cos_gamma_w) * acos(X_w.at(0) / cos_gamma_w);
+            khi_w = sign(X_w.at(1) / cos_gamma_w) * acos(X_w.at(0) / cos_gamma_w);
         }
 		double cos_khi_w = cos(khi_w);
 		double sin_khi_w = sin(khi_w);
@@ -346,7 +346,7 @@ protected:
         }else if(m.at(8) / cos_alpha_w < -1.){
             sigma_w = M_1_PI;
         }else{
-            sigma_w = sgn(-m.at(5) / cos_alpha_w) * acos(m.at(8) / cos_alpha_w);
+            sigma_w = sign(-m.at(5) / cos_alpha_w) * acos(m.at(8) / cos_alpha_w);
         }
 
         if(m.at(0) / cos_alpha_w > 1.) {
@@ -354,7 +354,7 @@ protected:
         }else if(m.at(0) / cos_alpha_w < -1.){
             beta_w = M_1_PI;
         }else{
-            beta_w = sgn(m.at(1) / cos_alpha_w) * acos(m.at(0) / cos_alpha_w);
+            beta_w = sign(m.at(1) / cos_alpha_w) * acos(m.at(0) / cos_alpha_w);
         }
 
         /** Calc of the aerodynamic force coefficients with wind */

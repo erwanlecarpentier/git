@@ -166,9 +166,9 @@ public:
         z += dt * zdot;
         V += dt * Vdot;
         gamma += dt * gammadot;
-        gamma = acos(cos(gamma))*sgn(sin(gamma));
+        gamma = acos(cos(gamma))*sign(sin(gamma));
         khi += dt * khidot;
-        khi = acos(cos(khi))*sgn(sin(khi));
+        khi = acos(cos(khi))*sign(sin(khi));
     }
 
     /**

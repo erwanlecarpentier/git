@@ -9,8 +9,9 @@
 #include <cassert>
 
 /**
- * @file utils.hpp
  * @brief Helpful methods for 'l2f' project
+ *
+ * @file utils.hpp
  * @version 1.1
  * @since 1.0
  */
@@ -22,31 +23,50 @@ constexpr double COMPARISON_THRESHOLD = 1e-6;
 
 inline void pop(){std::cout<<"pop"<<std::endl;}
 
-/** @brief Return true if a == b up to a certain precision */
+/**
+ * @brief Equality comparison
+ *
+ * Template method.
+ * @return Return true if a < b up to a certain precision defined with COMPARISON_THRESHOLD
+ * variable.
+ */
 template <class T1, class T2>
 constexpr bool is_equal_to(T1 a, T2 b) {
     return std::fabs(a-b)<COMPARISON_THRESHOLD;
 }
 
-/** @brief Return true if a < b  up to a certain precision */
+/**
+ * @brief Strict inferiority comparison
+ *
+ * Template method.
+ * @return Return true if a < b up to a certain precision defined with COMPARISON_THRESHOLD
+ * variable.
+ */
 template <class T1, class T2>
 constexpr bool is_less_than(T1 a, T2 b) {
     return a<(b-COMPARISON_THRESHOLD);
 }
 
-/** @brief Return true if a > b  up to a certain precision */
+/**
+ * @brief Strict superiority comparison
+ *
+ * Template method.
+ * @return Return true if a < b up to a certain precision defined with COMPARISON_THRESHOLD
+ * variable.
+ */
 template <class T1, class T2>
 constexpr bool is_greater_than(T1 a, T2 b) {
     return a>(b+COMPARISON_THRESHOLD);
 }
 
 /**
- * @brief Sort the indices of the input vector
+ * @brief Sort indices
+ *
+ * Sort the indices of the input vector. Template method.
  * @param {const std::vector<double> &} v; input vector
  * @param {std::vector<unsigned int> &} up_ind; indices of the elements of v
  * reaching the maximum values
  * @param {std::vector<unsigned int> &} dw_ind; indices of the other elements of v
- * @note Template method, independent of the content type
  */
 template <class T>
 inline void sort_indices(
@@ -56,18 +76,18 @@ inline void sort_indices(
 {
     double maxval = *std::max_element(v.begin(),v.end());
     for (unsigned int j=0; j<v.size(); ++j) {
-        //if(v[j] < maxval) {dw_ind.push_back(j);} // outdated: incorrect comparison between float, double, etc.
         if(is_less_than(v[j],maxval)) {dw_ind.push_back(j);}
         else {up_ind.push_back(j);}
     }
 }
 
 /**
- * @brief Pick a random indice of the input vector
+ * @brief Random indice
+ *
+ * Pick a random indice of the input vector. You should initialize a random seed when
+ * executing your program. Template method.
  * @param {const std::vector<T> &} v; input vector
- * @return {unsigned int} a random indice
- * @note Initialize a random seed when executing your program
- * @note Template method, independent of the content type
+ * @return Return a random indice.
  */
 template <class T>
 inline unsigned int rand_indice(const std::vector<T> &v) {
@@ -76,43 +96,85 @@ inline unsigned int rand_indice(const std::vector<T> &v) {
 }
 
 /**
- * @brief Pick a random element of the input vector
+ * @brief Random element
+ *
+ * Pick a random element of the input vector. You should initialize a random seed when
+ * executing your program. Template method.
  * @param {const std::vector<T> &} v; input vector
- * @return {int} a random indice
- * @note Initialize a random seed when executing your program
- * @note Template method, independent of the content type
+ * @return Return a random element.
  */
 template <class T>
 inline T rand_element(const std::vector<T> &v) {
     return v.at(rand_indice(v));
 }
 
+/**
+ * @brief Shuffle
+ *
+ * Shuffle the content of the vector randomly. Template method.
+ */
 template <class T>
 inline void shuffle(std::vector<T> &v) {
     std::random_shuffle(v.begin(), v.end());
 }
 
-/** @brief Return the sign of the input double */
-inline double sgn(double x) {
-    return is_less_than(x,0.) ? -1. : 1.;
-}
-
-/** @return a uniformly picked double in range [fmin,fmax] */
-inline double rand_double(double fmin, double fmax) {
-    return (rand() / (double)RAND_MAX) * (fmax-fmin) + fmin;
-}
-
-/** @return a uniformly picked int in range [fmin,fmax] */
-inline int rand_int(int fmin, int fmax) {
-    return (rand() % (fmax-fmin) + fmin);
+/**
+ * @brief Sign function
+ *
+ * Template method.
+ * @return Return -1. if x < 0., +1. else
+ */
+template <class T>
+double sign(T x) {
+    return (is_less_than(x,0.)) ? -1. : 1.;
 }
 
 /**
- * @brief Get the indice of the maximum element in the input vector, ties are
- * broken arbitrarily
+ * @brief Uniformly distributed integer
+ *
+ * Generate a uniformly distributed integer
+ * @return Return the sample
+ */
+int uniform_integer(int int_min, int int_max) {
+    std::random_device rd;
+    std::default_random_engine generator(rd());
+    std::uniform_int_distribution<int> distribution(int_min,int_max);
+    return distribution(generator);
+}
+
+/**
+ * @brief Uniformly distributed double
+ *
+ * Generate a uniformly distributed double
+ * @return Return the sample
+ */
+double uniform_double(double double_min, double double_max) {
+    std::random_device rd;
+    std::default_random_engine generator(rd());
+    std::uniform_real_distribution<double> distribution(double_min,double_max);
+    return distribution(generator);
+}
+
+/**
+ * @brief Normally distributed double
+ *
+ * Generate a normally distributed double
+ * @return Return the sample
+ */
+double normal_double(double mean, double stddev) {
+    std::random_device rd;
+    std::default_random_engine generator(rd());
+    std::normal_distribution<double> distribution(mean,stddev);
+    return distribution(generator);
+}
+
+/**
+ * @brief Argmax
+ *
+ * Get the indice of the maximum element in the input vector, ties are broken arbitrarily.
+ * Template method.
  * @param {const std::vector<T> &} v; input vector
- * @return Indice of the maximum element in the input vector
- * @note template method
+ * @return Return the indice of the maximum element in the input vector.
  */
 template <class T>
 inline unsigned argmax(const std::vector<T> &v) {
@@ -124,7 +186,11 @@ inline unsigned argmax(const std::vector<T> &v) {
     return rand_element(up_ind);
 }
 
-/** @brief See 'argmax' method */
+/**
+ * @brief Argmin
+ *
+ * See 'argmax' method. Template method.
+ */
 template <class T>
 inline unsigned argmin(const std::vector<T> &v) {
     double minval = *std::min_element(v.begin(),v.end());
@@ -137,11 +203,13 @@ inline unsigned argmin(const std::vector<T> &v) {
 
 /**
  * @brief Save a vector into a file
+ *
  * @note template method
  * @param {const std::vector<content_type> &} v; input vector, can contain any implementation-defined type
  * @param {const std::string &} path; path to output file
  * @param {std::ofstream::openmode} mode; writing mode, default overrides
  */
+/*
 template <class content_type>
 inline void save_vector(
     const std::vector<content_type> &v,
@@ -156,9 +224,11 @@ inline void save_vector(
     outfile << std::endl;
     outfile.close();
 }
+*/
 
 /**
  * @brief Sigmoid function
+ *
  * @param {const double &} x; point to evaluate the sigmoid
  * @param {const double &} x_max; point the sigmoid is 0.99
  * @param {const double &} x_middle; point the sigmoid is 0.5
