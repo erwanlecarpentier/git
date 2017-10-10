@@ -492,8 +492,8 @@ public:
         build_uct_tree(v0);
         a = recommended_action(v0);
         a.dalpha = alpha_d_ctrl(s0); // Add D-controller
-        std::cout << "Recommended action dsigma: " << a.dsigma << "\n"; //TRM
-        print_layers(v0);//TRM
+        //std::cout << "Recommended action dsigma: " << a.dsigma << "\n"; //TRM
+        //print_layers(v0);//TRM
         return *this;
 	}
 
