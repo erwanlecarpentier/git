@@ -202,31 +202,6 @@ inline unsigned argmin(const std::vector<T> &v) {
 }
 
 /**
- * @brief Save a vector into a file
- *
- * @note template method
- * @param {const std::vector<content_type> &} v; input vector, can contain any implementation-defined type
- * @param {const std::string &} path; path to output file
- * @param {std::ofstream::openmode} mode; writing mode, default overrides
- */
-/*
-template <class content_type>
-inline void save_vector(
-    const std::vector<content_type> &v,
-    const std::string &path,
-    std::ofstream::openmode mode = std::ofstream::out)
-{
-    std::ofstream outfile;
-    outfile.open(path,mode);
-    for (unsigned int i=0; i<v.size(); ++i) {
-        outfile << v[i] << " ";
-    }
-    outfile << std::endl;
-    outfile.close();
-}
-*/
-
-/**
  * @brief Sigmoid function
  *
  * @param {const double &} x; point to evaluate the sigmoid
@@ -239,4 +214,4 @@ inline double sigmoid(const double &x, const double &x_max, const double &x_midd
 
 }
 
-#endif
+#endif // L2FSIM_UTILS_HPP_

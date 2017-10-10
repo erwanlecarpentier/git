@@ -75,4 +75,4 @@ public:
 
 }
 
-#endif
+#endif // L2FSIM_SIMULATION_HPP_

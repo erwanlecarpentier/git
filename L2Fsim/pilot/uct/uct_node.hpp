@@ -135,4 +135,4 @@ public:
 
 }
 
-#endif // end L2FSIM_UCT_NODE_HPP_
+#endif // L2FSIM_UCT_NODE_HPP_
