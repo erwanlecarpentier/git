@@ -178,7 +178,7 @@ double normal_double(double mean, double stddev) {
  */
 template <class T>
 inline unsigned argmax(const std::vector<T> &v) {
-    double maxval = *std::max_element(v.begin(),v.end());
+    auto maxval = *std::max_element(v.begin(),v.end());
     std::vector<unsigned int> up_ind;
     for (unsigned int j=0; j<v.size(); ++j) {
         if(!is_less_than(v[j],maxval)) {up_ind.push_back(j);}
@@ -193,7 +193,7 @@ inline unsigned argmax(const std::vector<T> &v) {
  */
 template <class T>
 inline unsigned argmin(const std::vector<T> &v) {
-    double minval = *std::min_element(v.begin(),v.end());
+    auto minval = *std::min_element(v.begin(),v.end());
     std::vector<unsigned int> lo_ind;
     for (unsigned int j=0; j<v.size(); ++j) {
         if(!is_greater_than(v[j],minval)) {lo_ind.push_back(j);}

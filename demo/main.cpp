@@ -33,21 +33,21 @@ void create_environment(const bool &save) {
     double windx = 0.;
     double windy = 0.;
     double w_star_min = 2.;
-    double w_star_max = 4.;
+    double w_star_max = 2.8;
     double zi_min = 1300.;
     double zi_max = 1400.;
     double lifespan_min = 600.;
     double lifespan_max = 1200.;
-    double x_min = -1500.;
-    double x_max = +1500.;
-    double y_min = -1500.;
-    double y_max = +1500.;
-    double z_min = +0.;
-    double z_max = +2000.;
+    double x_min = -1500.; ///< Range
+    double x_max = +1500.; ///< Range
+    double y_min = -1500.; ///< Range
+    double y_max = +1500.; ///< Range
+    double z_min = +0.; ///< Range
+    double z_max = +2000.; ///< Range
     double ksi_min = .3;
     double ksi_max = .7;
     double d_min = 150.;
-    unsigned int nbth = 15;
+    unsigned int nbth = 15; ///< Number of thermals
 
     // 1. Initialize an empty zone and define its boundaries
     flat_thermal_soaring_zone fz(
