@@ -18,7 +18,7 @@ public:
     virtual ~state() = default;
 
     /** @brief Set time variable */
-    virtual void set_time(const double &t) = 0;
+    virtual void set_time(double t) = 0;
 
     /**
      * @fn virtual double getx() = 0; @brief Get x coordinate in earth frame
@@ -51,16 +51,16 @@ public:
     /**
      * @brief Add the dynamic of a state to the current state
      * @param {state &} s; state from which the dynamic components are added
-     * @param {const double} coef; a multiplicative coefficient
+     * @param {double} coef; a multiplicative coefficient
      * @warning may implement a dynamic cast from state to a derived class
      */
-    virtual void add_to_dynamic(state &_s, const double coef) = 0;
+    virtual void add_to_dynamic(state &_s, double coef) = 0;
 
     /**
      * @brief Apply a first order dynamic transition based on the values of the dynamic attributes (time derivatives)
      * @param {double} dt; time step
      */
-    virtual void apply_dynamic(const double dt) = 0;
+    virtual void apply_dynamic(double dt) = 0;
 
     /**
      * @brief Get a vector containing the saved variables

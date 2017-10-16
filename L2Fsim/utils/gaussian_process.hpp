@@ -76,11 +76,11 @@ public:
 	/**
 	 * @brief Append a single point to the data set and update the covariance matrix
 	 * @param {const std::vector<double> &} x; input
-	 * @param {const double &} y; output
+	 * @param {const double} y; output
 	 */
 	void add_point(
 		const std::vector<double> &x,
-		const double &y)
+		const double y)
 	{
 		xdat.push_back(x);
 		ydat.push_back(y);

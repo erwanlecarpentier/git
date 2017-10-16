@@ -186,15 +186,15 @@ public:
      * @param {aircraft &} ac; aircraft model
      * @param {flight_zone &} fz; atmosphere model
      * @param {double &} current_time; current time
-     * @param {const double &} time_step_width; time-step-width
-     * @param {const double &} sdt; sub-time-step-width
+     * @param {const double} time_step_width; time-step-width
+     * @param {const double} sdt; sub-time-step-width
      */
     static void transition_function(
         aircraft &ac,
         flight_zone &fz,
         double &current_time,
-        const double &time_step_width,
-        const double &sdt)
+        const double time_step_width,
+        const double sdt)
     {
         for(unsigned int n=0; n<(unsigned int)(time_step_width/sdt); ++n) {
             ac.apply_command();

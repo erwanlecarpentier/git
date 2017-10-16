@@ -274,9 +274,10 @@ public:
      *
      * Return lifespan as a function of w_star.
      * This is used for thermal creation.
+     * @param {double} w_star; given w_star
      * @return Return lifespan.
      */
-    double pick_lifespan(const double &w_star) {
+    double pick_lifespan(double w_star) {
         double a = (lifespan_max - lifespan_min) / (w_star_max - w_star_min);
         double b = lifespan_min - a * w_star_min;
         return a * w_star + b;
@@ -345,10 +346,10 @@ public:
      * @brief Is within flightzone
      *
      * Assert that the aircraft is inside the flight zone.
-     * @param {const double &} x, y, z; coordinates  in the earth frame
+     * @param {double} x, y, z; coordinates  in the earth frame
      * @return Return true if the input position belongs to the flight zone.
      */
-    virtual bool is_within_fz(const double &x, const double &y, const double &z) override {
+    virtual bool is_within_fz(double x, double y, double z) override {
         (void) z; //unused by default
         if (x_min<x && x<x_max && y_min<y && y<y_max) {return true;}
         return false;
@@ -393,14 +394,14 @@ public:
      * @brief Save updraft values
      *
      * Write the updraft values in a file for visualization
-     * @param {const double &} dx, dy; mesh precision
+     * @param {double} dx, dy; mesh precision
      * @param {const std::vector<double> &} z, t; altitudes and times of the saved updraft
      * field
      * @param {const std::string &} op; output path
      */
     void save_updraft_values(
-        const double &dx,
-        const double &dy,
+        double dx,
+        double dy,
         const std::vector<double> &z_vec,
         const std::vector<double> &t_vec,
         const std::string &op)

@@ -34,11 +34,11 @@ public:
 	 * @brief Stepping function
 	 *
 	 * @param {double &} current_time; time at which the step is performed
-	 * @param {const double &} time_step_width; width of the time step
+	 * @param {const double} time_step_width; width of the time step
      * @param {bool &} eos; end of simulation, the simulation reached the bounds of its model
      * and must be stopped (e.g. limit of aircraft model validity)
 	 */
-	void step(double &current_time, const double &time_step_width, bool &eos) {
+	void step(double &current_time, const double time_step_width, bool &eos) {
 		(*st)(*fz, *ac, *pl, current_time, time_step_width, eos);
 	}
 

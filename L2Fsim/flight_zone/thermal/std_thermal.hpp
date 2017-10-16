@@ -97,7 +97,7 @@ public:
      * @brief Calculate the distance between the given point(x,y,z) and the thermals center
      * @note Effect of ambient winds and thermal drifting is considered
      */
-    double dist_to_updraft_center(const double &x, const double &y, const double &z) override {
+    double dist_to_updraft_center(const double x, const double y, const double z) override {
         double xcz = xc0 + windx*z; // drifted center at alttitude z
         double ycz = yc0 + windy*z; // drifted center at alttitude z
         return sqrt((xcz-x)*(xcz-x) + (ycz-y)*(ycz-y));
@@ -105,17 +105,17 @@ public:
 
     /**
      * @brief Return true if the thermal is alive, else false
-     * @param {const double &} t; current time
+     * @param {const double} t; current time
      */
-    bool is_alive(const double &t) override {
+    bool is_alive(const double t) override {
         return ((t_birth<=t) && (t<=(t_birth+lifespan)))?true:false;
     }
 
     /**
      * @brief Return the thermal life cycle coefficient
-     * @param {const double &} t; current time
+     * @param {const double} t; current time
      */
-    double lifetime_coefficient(const double &t) override
+    double lifetime_coefficient(const double t) override
     {
         double abstau = fabs(t-t_birth-lifespan/2.);
         double T = (1.+ksi) / lifespan;
@@ -130,10 +130,10 @@ public:
 
     /**
      * @brief Allen's thermal model
-     * @param {const double &} r, z, t; radius, altitude and time
+     * @param {const double} r, z, t; radius, altitude and time
      * @note The time normally does not have an influence in the Allen model; However, here we compute the lifetime coefficient inside the 'allen_model' method in order to optimize the code
 	 */
-    double allen_model(const double &r, const double &z, const double &t)
+    double allen_model(const double r, const double z, const double t)
     {
         double z_zi = z/zi;
         double r2 = std::max(10.,.102*pow(z_zi,1./3.)*(1.-.25*z_zi)*zi);
@@ -158,10 +158,10 @@ public:
 
     /**
      * @brief Childress's thermal model
-     * @param {const double &} r, z; radius and altitude
+     * @param {const double} r, z; radius and altitude
      * @ref An Empirical Model of thermal Updrafts Using Data Obtained From a Manned Glider, Christopher E. Childress
 	 */
-    double childress_model(const double &r, const double &z)
+    double childress_model(const double r, const double z)
     {
         double w_total = 0.;
         if(z>zi) {w_total=0.;} // flight level higher than CBL
@@ -211,10 +211,10 @@ public:
 
     /**
      * @brief Lenschow's thermal model
-     * @param {const double &} r, z; radius and altitude
-     * @param {const bool &} choice; 1: with Gaussian distribution; 2: with Geodon model
+     * @param {const double} r, z; radius and altitude
+     * @param {const bool} choice; 1: with Gaussian distribution; 2: with Geodon model
 	 */
-    double lenschow_model(const double &r, const double &z, const bool &choice)
+    double lenschow_model(const double r, const double z, const bool choice)
     {
         double w_total = 0.;
         if(z>zi) {w_total=0.;} // flight level higher than CBL
@@ -249,7 +249,7 @@ public:
         return 1./(2.64 * pow((h/1400.),1./3.) * (1. - 1.1*h/1400.));
     }
 
-    double simpsons(double (*f)(double x), const double &a, const double &b, const int &n)
+    double simpsons(double (*f)(double x), const double a, const double b, const int n)
     {
         double h = (b-a) / (double)n;
         double x=0., r=0., s=0.;
@@ -270,14 +270,14 @@ public:
     /**
      * @brief Lawrance's thermal model
      * @param {std::vector<double> &} w; wind vector
-     * @param {double} x, y, z, t; spatio-temporal coordinates
+     * @param {const double} x, y, z, t; spatio-temporal coordinates
 	 */
     void lawrance_model(
         std::vector<double> &w,
-        const double &x,
-        const double &y,
-        const double &z,
-        const double &t)
+        const double x,
+        const double y,
+        const double z,
+        const double t)
     {
         (void) t; // Unused by default
         double r1_rT = .36;
@@ -335,7 +335,7 @@ public:
         }*/
     }
 
-    std_thermal& wind(const double &x, const double &y, const double &z, const double &t, std::vector<double> &w) override
+    std_thermal& wind(const double x, const double y, const double z, const double t, std::vector<double> &w) override
     {
         if (z>zi || z<zc0) {w[2]=0.;}
         else {

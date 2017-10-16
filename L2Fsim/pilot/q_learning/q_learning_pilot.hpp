@@ -60,11 +60,11 @@ public:
 
     /**
      * @brief Normalizing function, sigmoid-like
-     * @param {const double &} x; quantity wished to be maximised
-     * @param {const double &} x_max; maximum magnitude
+     * @param {const double} x; quantity wished to be maximised
+     * @param {const double} x_max; maximum magnitude
      * @return {double} normalized quantity scaled in ]-1,1[ interval
      */
-    double scale(const double &x, const double &x_max) {
+    double scale(const double x, const double x_max) {
         return 2. * sigmoid(x,x_max,0.) - 1.;
     }
 
@@ -202,12 +202,12 @@ public:
      * @brief Update the parameters vector
      * @param {const beeler_glider_state &} s; state of the update
      * @param {const beeler_glider_command &} a; action of the update
-     * @param {const double &} delta; cf q-learning update equation
+     * @param {const double} delta; cf q-learning update equation
      */
     void update_parameters(
         const beeler_glider_state &s,
         const beeler_glider_command &a,
-        const double &delta)
+        const double delta)
     {
         std::vector<double> phi = get_feature_vector(s,a);
         for (unsigned int i=0; i<parameters.size(); ++i) {

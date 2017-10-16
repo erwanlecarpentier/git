@@ -29,20 +29,20 @@ public:
 
     /**
 	 * @brief Compute the altitude at (x,y)
-	 * @param {const double &} x, y; coordinates in earth frame
+	 * @param {double} x, y; coordinates in earth frame
 	 * @param {double &} z; altitude
 	 */
-    flight_zone& ground(const double &x, const double &y, double &z) {
+    flight_zone& ground(double x, double y, double &z) {
         (void) x; (void) y; z=0.; // this is default
         return *this;
     }
 
     /**
      * @brief Assert that the aircraft is inside the flight zone
-     * @param {const double &} x, y, z; coordinates  in the earth frame
+     * @param {double} x, y, z; coordinates  in the earth frame
      * @return true if the input position belongs to the flight zone
      */
-    virtual bool is_within_fz(const double &x, const double &y, const double &z) = 0;
+    virtual bool is_within_fz(double x, double y, double z) = 0;
 };
 
 }

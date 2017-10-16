@@ -68,13 +68,13 @@ public :
 
     /**
      * @brief Write the updraft values in a file for visualization
-     * @param {const double &} dx, dy; mesh precision
+     * @param {const double} dx, dy; mesh precision
      * @param {const std::vector<double> &} z, t; altitudes and times of the saved updraft field
      * @param {const std::string &} op; output path
      */
     void save_updraft_values(
-        const double &dx,
-        const double &dy,
+        const double dx,
+        const double dy,
         const std::vector<double> &z_vec,
         const std::vector<double> &t_vec,
         const std::string &op)

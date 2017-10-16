@@ -60,7 +60,7 @@ public:
         return actions.at(children.size());
     }
 
-    int indic(const double &a) {
+    int indic(double a) {
         if(is_less_than(a,0.)) {
             return -1;
         } else if(is_equal_to(a,0.)) {

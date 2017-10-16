@@ -28,7 +28,7 @@ class uct_pilot : public pilot {
 public:
     beeler_glider ac; ///< Aircraft model
     flat_thermal_soaring_zone fz; ///< Atmosphere model
-    void (*transition_function)(aircraft &, flight_zone &, double &, const double &, const double &); ///< Transition function
+    void (*transition_function)(aircraft &, flight_zone &, double &, const double, const double); ///< Transition function
     double angle_rate_magnitude; ///< Magnitude of the angles increments (action magnitude)
     double kdalpha; ///< Coefficient for the alpha-D-controller
     double uct_parameter; ///< UCT parameter
@@ -45,7 +45,7 @@ public:
         std::string sc_path,
         std::string envt_cfg_path,
         double noise_stddev,
-        void (*_transition_function)(aircraft &, flight_zone &, double &, const double &, const double &),
+        void (*_transition_function)(aircraft &, flight_zone &, double &, const double, const double),
         double _angle_rate_magnitude=.01,
         double _kdalpha=.01,
         double _uct_parameter=1.,
@@ -177,12 +177,12 @@ public:
      * @brief UCT score
      *
      * Compute the UCT score wrt the UCT tree policy formula.
-     * @param {const double &} Qsa; Q value estimate of the state-action pair
-     * @param {unsigned &} Ns; total number of visits
-     * @param {unsigned &} Nsa; number of visits of the state-action pair
+     * @param {double} Qsa; Q value estimate of the state-action pair
+     * @param {unsigned} Ns; total number of visits
+     * @param {unsigned} Nsa; number of visits of the state-action pair
      * @return Return the UCT score.
      */
-    inline double uct_score(const double &Qsa, const unsigned &Ns, const unsigned &Nsa) {
+    inline double uct_score(double Qsa, unsigned Ns, unsigned Nsa) {
         return Qsa + 2. * uct_parameter * sqrt(log((double)Ns) / ((double)Nsa));
     }
 

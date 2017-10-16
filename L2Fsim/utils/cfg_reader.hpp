@@ -144,7 +144,7 @@ struct cfg_reader {
     }
 
     /** @brief Read and initialise a stepper */
-    std::unique_ptr<stepper> read_stepper(const libconfig::Config &cfg, const double &sub_dt) {
+    std::unique_ptr<stepper> read_stepper(const libconfig::Config &cfg, const double sub_dt) {
         if(cfg.exists("stepper_selector")) {
             unsigned int sl = cfg.lookup("stepper_selector");
             switch(sl) {

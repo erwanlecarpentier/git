@@ -69,7 +69,7 @@ public:
     }
 
     /** @brief Set time variable */
-    void set_time(const double &t) override {time = t;}
+    void set_time(double t) override {time = t;}
 
     /** @brief Get x coordinate in the earth frame */
     double getx() {return x;}
