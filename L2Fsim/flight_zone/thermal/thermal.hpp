@@ -3,13 +3,15 @@
 
 #include <vector>
 
+namespace L2Fsim {
+
 /**
+ * @brief Thermal abstract class
+ *
  * @file thermal.hpp
  * @version 1.0
  * @brief The abstract class thermal calculates the wind vector w linked with a thermal, at time t
  */
-
-namespace L2Fsim {
 
 class thermal {
 protected:
@@ -20,50 +22,77 @@ protected:
     double windx, windy;
 
 public:
-    /** Destructor */
+    /**
+     * @brief Destructor
+     */
     virtual ~thermal() = default;
 
-    /** Get average updraft velocity */
+    /**
+     * @brief Get average updraft velocity.
+     */
     virtual double get_w_star() = 0;
 
-    /** Get thermal's date of birth */
+    /**
+     * @brief Get thermal's date of birth.
+     */
     virtual double get_t_birth() = 0;
 
-    /** Get thermal lifespan */
+    /**
+     * @brief Get thermal lifespan.
+     */
     virtual double get_lifespan() = 0;
 
-    /** Get mixing layer thickness */
+    /**
+     * @brief Get mixing layer thickness.
+     */
     virtual double get_zi() = 0;
 
-    /** Get thermal model */
+    /**
+     * @brief Get thermal model.
+     */
     virtual int get_model() = 0;
 
-    /** Get shape parameter */
+    /**
+     * @brief Get shape parameter.
+     */
     virtual double get_ksi() = 0;
 
-    /** Get vector of thermal centers */
+    /**
+     * @brief Get vector of thermal centers.
+     */
     virtual std::vector<double> get_center() = 0;
 
     /**
-     * @brief Return true if the thermal is alive, else false
+     * @brief Is thermal alive
+     *
+     * Test if the thermal is alive.
      * @param {double } t; current time
+     * @return Return true if the thermal is alive.
      */
     virtual bool is_alive(const double t) = 0;
 
     /**
-     * @brief Return the thermal life cycle coefficient
+     * @brief Lifetime coefficient
+     *
      * @param {const double} t; current time
+     * @return Return the thermal life cycle coefficient.
      */
     virtual double lifetime_coefficient(const double t) = 0;
 
     /**
-     * @brief Get the Euclidean distance between a point (x,y,z) and the center of the thermal. If z =! 0 then it considers the drift of the thermal center at the height z.
+     * @brief Distance to updraft center
+     *
+     * Get the Euclidean distance between a point (x,y,z) and the center of the thermal.
+     * If z =! 0 then it considers the drift of the thermal center at the height z.
      * @param {const double} x, y, z; coordinate in the earth frame
+     * @return Return the distance to the center.
 	 */
     virtual double dist_to_updraft_center(const double x, const double y, const double z) = 0;
 
     /**
-     * @brief Set the wind speed onto the x-axis and y-axis.
+     * @brief Set horizontal wind
+     *
+     * Set the wind speed onto the x-axis and y-axis.
      * @param {const double} wx, wy; wind velocity vector coordinates in the earth frame
 	 */
     void set_horizontal_wind(const double wx, const double wy) {
@@ -72,17 +101,23 @@ public:
     }
 
 	/**
-     * @brief Computes the wind vector w, at point (x,y,z), at time t.
+     * @brief Wind
+     *
+     * Computes the wind vector w, at point (x,y,z), at time t.
      * @param {double} x, y, z; coordinate in the earth frame
      * @param {double} t; time
      * @param {std::vector<double> &} w; wind velocity vector in the earth frame
 	 */
 	virtual thermal& wind(const double x, const double y, const double z, const double t, std::vector<double> &w) = 0;
 
-	/** @brief Print the thermal's features in the standard output stream */
+	/**
+	 * @brief Print
+	 *
+	 * Print the thermal's features in the standard output stream.
+	 */
 	virtual void print() = 0;
 };
 
 }
 
-#endif
+#endif // L2FSIM_THERMAL_HPP_
