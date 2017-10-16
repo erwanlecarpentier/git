@@ -4,8 +4,9 @@
 #include <L2Fsim/stepper/stepper.hpp>
 
 /**
- * @file rk4_integrator.hpp
  * @brief RK4 stepper
+ *
+ * @file rk4_integrator.hpp
  * @version 1.1
  * @since 1.0
  */
@@ -16,16 +17,21 @@ class rk4_integrator : public stepper {
 public:
     /**
      * @brief Attributes
+     *
      * @param {double} dt; width of the integration sub-step
      */
     double dt;
 
-	/** @brief Constructor */
+	/**
+	 * @brief Constructor
+	 */
 	rk4_integrator(double _dt=.01) : dt(_dt) {}
 
     /**
-     * @brief Transition function; perform a transition given: an aircraft model with a correct state and command; an atmospheric model; the current time; the time-step-width and the sub-time-step-width
-     * @note static method for use within an external simulator
+     * @brief Transition function
+     *
+     * Perform a transition given: an aircraft model with a correct state and command; an atmospheric model; the current time; the time-step-width and the sub-time-step-width.
+     * Static method for use within an external simulator
      * @param {aircraft &} ac; aircraft model
      * @param {flight_zone &} fz; atmosphere model
      * @param {double &} current_time; current time
@@ -79,7 +85,8 @@ public:
     }
 
     /**
-     * Stepping operator
+     * @brief Stepping operator
+     *
      * @param {flight_zone &} fz; flight zone
      * @param {aircraft &} ac; aircraft
      * @param {pilot &} pl; pilot
@@ -95,21 +102,21 @@ public:
         const double time_step_width,
         bool &eos) override
     {
-        /// 1. Apply the policy and store the command into command attribute of aircraft
+        // 1. Apply the policy and store the command into command attribute of aircraft
         if (!fz.is_within_fz(ac.get_state().getx(),ac.get_state().gety(),ac.get_state().getz())) {
             pl.out_of_boundaries(ac.get_state(),ac.get_command());
         } else {
             pl(ac.get_state(),ac.get_command());
         }
 
-        /// 2. Apply the transition with RK4 method
+        // 2. Apply the transition with RK4 method
         transition_function(ac,fz,current_time,time_step_width,dt);
 
-        /// 3. Check aircraft's configuration validity
+        // 3. Check aircraft's configuration validity
         if(!ac.is_in_model()){eos=true;}
     }
 };
 
 }
 
-#endif
+#endif // L2FSIM_RK4_INTEGRATOR_HPP_

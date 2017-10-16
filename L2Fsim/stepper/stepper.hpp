@@ -4,8 +4,9 @@
 #include <L2Fsim/pilot/pilot.hpp>
 
 /**
- * @file stepper.hpp
  * @brief Stepper virtual class
+ *
+ * @file stepper.hpp
  * @version 1.1
  * @since 1.0
  */
@@ -17,7 +18,9 @@ public:
     virtual ~stepper() = default;
 
     /**
-     * Temporal integrator of the model
+     * @brief Stepper method
+     *
+     * Temporal integrator of the model.
      * @param {flight_zone &} fz; flight zone
      * @param {aircraft &} ac; aircraft
      * @param {pilot &} pl; pilot
@@ -36,4 +39,4 @@ public:
 
 }
 
-#endif
+#endif //L2FSIM_STEPPER_HPP_
