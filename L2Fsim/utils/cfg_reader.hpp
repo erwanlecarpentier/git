@@ -26,36 +26,57 @@
 #include <L2Fsim/pilot/optimistic/optimistic_pilot.hpp>
 
 /**
+ * @brief Configuration file reader
+ *
  * @file cfg_reader.hpp
- * @brief Configuration reader
  * @version 1.0
  */
 
 namespace L2Fsim {
 
 struct cfg_reader {
-    /** @brief Constructor */
+    /**
+     * @brief Constructor
+     */
     cfg_reader() {}
 
-    void disp_err(std::string meth) {
-        std::cout << "Error: variable initialisation in config file; config file reader stopped at "<< meth << std::endl;
+    /**
+     * @brief Display error
+     *
+     * Generic error message.
+     * @param {std::string} method_name; name of the called method, for clarity when debugging.
+     */
+    void disp_err(std::string method_name) {
+        std::cout << "Error: variable initialisation in config file; config file reader stopped at "<< method_name << std::endl;
     }
 
-    /** @brief Read the path to the state log file */
+    /**
+     * @brief Read path
+     *
+     * Read the path to the state log file.
+     */
     std::string read_st_log_path(const libconfig::Config &cfg) {
         if(cfg.exists("st_log_path")) {return cfg.lookup("st_log_path");}
         else {disp_err("read_st_log_path");}
         return nullptr;
     }
 
-    /** @brief Read the path to the envt log file */
+    /**
+     * @brief Read path
+     *
+     * Read the path to the environment log file.
+     */
     std::string read_fz_log_path(const libconfig::Config &cfg) {
         if(cfg.exists("fz_log_path")) {return cfg.lookup("fz_log_path");}
         else {disp_err("read_fz_log_path");}
         return nullptr;
     }
 
-    /** @brief Read and initialise the time variables */
+    /**
+     * @brief Read time variables
+     *
+     * Read and initialise the time variables.
+     */
     void read_time_variables(const libconfig::Config &cfg, double &t_lim, double &Dt, double &nb_dt) {
         if(cfg.lookupValue("limit_time",t_lim)
         && cfg.lookupValue("time_step_width",Dt)
@@ -63,7 +84,11 @@ struct cfg_reader {
         else {disp_err("read_time_variables");}
     }
 
-    /** @brief Read and initialise an environment */
+    /**
+     * @brief Read environment
+     *
+     * Read and initialise an environment.
+     */
     std::unique_ptr<flight_zone> read_environment(const libconfig::Config &cfg) {
         unsigned int sl=0;
         if(cfg.lookupValue("envt_selector", sl)) {
@@ -90,7 +115,11 @@ struct cfg_reader {
         return std::unique_ptr<flight_zone> (nullptr);
     }
 
-    /** @brief Read and set the values of the state variables */
+    /**
+	 * @brief Read state
+	 *
+	 * Read and set the values of the state variables.
+     */
     void read_state(
         const libconfig::Config &cfg,
         double &_x0,
@@ -124,7 +153,11 @@ struct cfg_reader {
         else {disp_err("read_state");}
     }
 
-    /** @brief Read and initialise an aircraft */
+    /**
+	 * @brief Read aircraft
+	 *
+	 * Read and initialise an aircraft.
+     */
     std::unique_ptr<aircraft> read_aircraft(const libconfig::Config &cfg) {
         if(cfg.exists("aircraft_selector")) {
             unsigned int sl = cfg.lookup("aircraft_selector");
@@ -143,7 +176,11 @@ struct cfg_reader {
         return std::unique_ptr<aircraft> (nullptr);
     }
 
-    /** @brief Read and initialise a stepper */
+    /**
+     * @brief Read stepper
+     *
+     * Read and initialise a stepper.
+     */
     std::unique_ptr<stepper> read_stepper(const libconfig::Config &cfg, const double sub_dt) {
         if(cfg.exists("stepper_selector")) {
             unsigned int sl = cfg.lookup("stepper_selector");
@@ -161,7 +198,9 @@ struct cfg_reader {
     }
 
     /**
-     * @brief Read and initialise a pilot
+     * @brief Read pilot
+     *
+     * Read and initialise a pilot.
      * @todo write a method for each case
      */
     std::unique_ptr<pilot> read_pilot(const libconfig::Config &cfg) {
@@ -266,4 +305,4 @@ struct cfg_reader {
 
 }
 
-#endif
+#endif // L2FSIM_CFG_READER_HPP_
