@@ -3,8 +3,8 @@
 #include <ctime>
 #include <string>
 #include <libconfig.h++>
-#include <L2Fsim/simulation.hpp>
-#include <L2Fsim/utils/cfg_reader.hpp>
+#include <src/simulation.hpp>
+#include <src/utils/cfg_reader.hpp>
 
 using namespace L2Fsim;
 
@@ -12,22 +12,16 @@ using namespace L2Fsim;
  * @brief Create environment
  *
  * Create an environment and save it at the specified location.
- * @param {const bool &} save; if true, save the scenario for vizualization
+ * @param {bool} save; if true, save the scenario for vizualization
+ * @param {double} dt; thermal refreshment rate (s)
+ * @param {int} model; thermal model selection
+ * 1: Allen
+ * 2: Childress
+ * 3: Lenschow
+ * 4: Geodon
+ * 5: Lawrance
  */
-void create_environment(const bool &save) {
-    /*
-     * Parameters, see the used flight zone for description of the parameters
-     * @param {double} dt; thermal refreshment rate (s)
-     * @param {int} model; thermal model selection
-     * 1: Allen
-     * 2: Childress
-     * 3: Lenschow
-     * 4: Geodon
-     * 5: Lawrance
-     */
-    int model = 1;
-    double dt = 1.;
-
+void create_environment(bool save, double dt=1., int model=1) {
     double t_start = -500.;
     double t_limit = 1000.;
     double windx = 0.;
@@ -97,7 +91,7 @@ void run_with_config(const char *cfg_path) {
     // 2. General settings
 	mysim.st_log_path = cfgr.read_st_log_path(cfg);
 	mysim.fz_log_path = cfgr.read_fz_log_path(cfg);
-    double Dt=.1, t_lim=1e3, nb_dt=1., t=0.; // default values
+    double Dt = .1, t_lim = 1e3, nb_dt = 1., t = 0.; // default values
     cfgr.read_time_variables(cfg,t_lim,Dt,nb_dt);
 
     // 3. Environment
@@ -128,14 +122,14 @@ void run_with_config(const char *cfg_path) {
 int main() {
     try {
         srand(time(NULL));
-        //create_environment(false);
+        create_environment(false);
         run_with_config("config/main.cfg");
     }
     catch(const std::exception &e) {
         std::cerr<<"[error] In main(): standard exception caught: "<<e.what()<<std::endl;
     }
     catch(...) {
-        std::cerr<<"[error] In main(): Unknown exception caught"<<std::endl;
+        std::cerr<<"[error] In main(): unknown exception caught"<<std::endl;
     }
     return 0;
 }

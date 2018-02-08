@@ -1,5 +1,6 @@
 CCC=g++
-CCFLAGS=-std=c++11 -Wall -Wextra -I. -O2 -g
+INCLUDE = -I./src -I./src/aircraft -I./src/flight_zone -I./src/pilot -I./src/stepper -I./src/utils
+CCFLAGS=-std=c++11 -Wall -Wextra -I. ${INCLUDE} -O2 -g
 LDFLAGS=-lm -lconfig++ #-s
 EXEC=main
 MAIN_CPP=demo/main.cpp

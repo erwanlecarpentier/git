@@ -1,0 +1,8 @@
+# Untracked:
+data/
+local_save/
+outdated/
+main
+
+# ignore objects and archives anywhere in the tree
+*.[oa]
