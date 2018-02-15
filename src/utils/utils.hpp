@@ -9,11 +9,7 @@
 #include <cassert>
 
 /**
- * @brief Helpful methods for 'l2f' project
- *
- * @file utils.hpp
- * @version 1.1
- * @since 1.0
+ * @brief Helpful functions
  */
 
 namespace L2Fsim {
@@ -21,42 +17,95 @@ namespace L2Fsim {
 constexpr double TO_RAD = 0.01745329251;
 constexpr double COMPARISON_THRESHOLD = 1e-6;
 
+/**
+ * @brief Print
+ *
+ * Generic printing method. Template method.
+ */
+template <class T>
+void print(T t) {
+	std::cout << t << std::endl;
+}
+
+/**
+ * @brief Print
+ *
+ * Generic printing method for containers. Template method.
+ */
+template <class T>
+void printv(std::vector<T> v) {
+	for (auto &elt : v) {
+		std::cout << elt << " ";
+	}
+	std::cout << std::endl;
+}
+
 inline void pop(){std::cout<<"pop"<<std::endl;}
 
 /**
  * @brief Equality comparison
  *
+ * Test if the input arguments are equal.
  * Template method.
- * @return Return true if a < b up to a certain precision defined with COMPARISON_THRESHOLD
- * variable.
+ * @param {T1} a; 1st argument
+ * @param {T2} b; 2nd argument
+ * @param {double} precision; precision of the test
+ * @return Return true if the input arguments are equal.
  */
 template <class T1, class T2>
-constexpr bool is_equal_to(T1 a, T2 b) {
-    return std::fabs(a-b)<COMPARISON_THRESHOLD;
+constexpr bool are_equal(const T1 a, const T2 b, double precision = COMPARISON_THRESHOLD) {
+    return std::fabs(a-b)<precision;
 }
 
 /**
  * @brief Strict inferiority comparison
  *
+ * Test if the 1st input arguments is strictly inferior to the 2nd one.
  * Template method.
- * @return Return true if a < b up to a certain precision defined with COMPARISON_THRESHOLD
- * variable.
+ * @param {T1} a; 1st argument
+ * @param {T2} b; 2nd argument
+ * @param {double} precision; precision of the test
+ * @return Return true if the 1st input arguments is strictly inferior to the 2nd one.
  */
 template <class T1, class T2>
-constexpr bool is_less_than(T1 a, T2 b) {
-    return a<(b-COMPARISON_THRESHOLD);
+constexpr bool is_less_than(const T1 a, const T2 b, double precision = COMPARISON_THRESHOLD) {
+    return a<(b-precision);
 }
 
 /**
  * @brief Strict superiority comparison
  *
+ * Test if the 1st input arguments is strictly superior to the 2nd one.
  * Template method.
- * @return Return true if a < b up to a certain precision defined with COMPARISON_THRESHOLD
- * variable.
+ * @param {T1} a; 1st argument
+ * @param {T2} b; 2nd argument
+ * @param {double} precision; precision of the test
+ * @return Return true if the 1st input arguments is strictly superior to the 2nd one.
  */
 template <class T1, class T2>
-constexpr bool is_greater_than(T1 a, T2 b) {
-    return a>(b+COMPARISON_THRESHOLD);
+constexpr bool is_greater_than(const T1 a, const T2 b, double precision = COMPARISON_THRESHOLD) {
+    return a>(b+precision);
+}
+
+/**
+ * @brief Sign function
+ *
+ * Template method.
+ * @return Return -1. if x < 0., +1. else
+ */
+template <class T>
+double sign(T x) {
+    return (is_less_than(x,0.)) ? -1. : 1.;
+}
+
+/**
+ * @brief Shuffle
+ *
+ * Shuffle the content of the vector randomly. Template method.
+ */
+template <class T>
+inline void shuffle(std::vector<T> &v) {
+    std::random_shuffle(v.begin(), v.end());
 }
 
 /**
@@ -109,24 +158,53 @@ inline T rand_element(const std::vector<T> &v) {
 }
 
 /**
- * @brief Shuffle
+ * @brief Remove elements
  *
- * Shuffle the content of the vector randomly. Template method.
+ * Remove the given elements of the input vector.
+ * @param {std::vector<T> &} v; input vector
+ * @param {std::vector<unsigned> &} indices; indices of the vectors to be removed
  */
 template <class T>
-inline void shuffle(std::vector<T> &v) {
-    std::random_shuffle(v.begin(), v.end());
+void remove_elements(std::vector<T> &v, std::vector<unsigned> &indices) {
+    for (unsigned i=0; i<indices.size(); ++i) {
+        v.erase(v.begin() + indices[i]);
+        for(unsigned j=i+1; j<indices.size(); ++j) {
+            --indices[j];
+        }
+    }
 }
 
 /**
- * @brief Sign function
+ * @brief Argmax
  *
+ * Get the indice of the maximum element in the input vector, ties are broken arbitrarily.
  * Template method.
- * @return Return -1. if x < 0., +1. else
+ * @param {const std::vector<T> &} v; input vector
+ * @return Return the indice of the maximum element in the input vector.
  */
 template <class T>
-double sign(T x) {
-    return (is_less_than(x,0.)) ? -1. : 1.;
+inline unsigned argmax(const std::vector<T> &v) {
+    auto maxval = *std::max_element(v.begin(),v.end());
+    std::vector<unsigned> up_ind;
+    for (unsigned j=0; j<v.size(); ++j) {
+        if(!is_less_than(v[j],maxval)) {up_ind.push_back(j);}
+    }
+    return rand_element(up_ind);
+}
+
+/**
+ * @brief Argmin
+ *
+ * See 'argmax' method. Template method.
+ */
+template <class T>
+inline unsigned argmin(const std::vector<T> &v) {
+    auto minval = *std::min_element(v.begin(),v.end());
+    std::vector<unsigned> lo_ind;
+    for (unsigned j=0; j<v.size(); ++j) {
+        if(!is_greater_than(v[j],minval)) {lo_ind.push_back(j);}
+    }
+    return rand_element(lo_ind);
 }
 
 /**
@@ -169,46 +247,13 @@ double normal_double(double mean, double stddev) {
 }
 
 /**
- * @brief Argmax
- *
- * Get the indice of the maximum element in the input vector, ties are broken arbitrarily.
- * Template method.
- * @param {const std::vector<T> &} v; input vector
- * @return Return the indice of the maximum element in the input vector.
- */
-template <class T>
-inline unsigned argmax(const std::vector<T> &v) {
-    auto maxval = *std::max_element(v.begin(),v.end());
-    std::vector<unsigned int> up_ind;
-    for (unsigned int j=0; j<v.size(); ++j) {
-        if(!is_less_than(v[j],maxval)) {up_ind.push_back(j);}
-    }
-    return rand_element(up_ind);
-}
-
-/**
- * @brief Argmin
- *
- * See 'argmax' method. Template method.
- */
-template <class T>
-inline unsigned argmin(const std::vector<T> &v) {
-    auto minval = *std::min_element(v.begin(),v.end());
-    std::vector<unsigned int> lo_ind;
-    for (unsigned int j=0; j<v.size(); ++j) {
-        if(!is_greater_than(v[j],minval)) {lo_ind.push_back(j);}
-    }
-    return rand_element(lo_ind);
-}
-
-/**
  * @brief Sigmoid function
  *
  * @param {const double} x; point to evaluate the sigmoid
  * @param {const double} x_max; point the sigmoid is 0.99
  * @param {const double} x_middle; point the sigmoid is 0.5
  */
-inline double sigmoid(const double x, const double x_max, const double x_middle) {
+inline double sigmoid(const double x, const double x_max, const double x_middle = 0.) {
     return 1./(1. + exp(-(x-x_middle)/(x_max*.217622180186)));
 }
 

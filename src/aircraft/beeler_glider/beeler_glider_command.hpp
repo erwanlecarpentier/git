@@ -53,9 +53,9 @@ public:
      * @return Return true if this action is equal to the argument
      */
     bool equals(const beeler_glider_command &a) {
-        if(is_equal_to(dalpha,a.dalpha)
-        && is_equal_to(dbeta,a.dbeta)
-        && is_equal_to(dsigma,a.dsigma)) {
+        if(are_equal(dalpha,a.dalpha)
+        && are_equal(dbeta,a.dbeta)
+        && are_equal(dsigma,a.dsigma)) {
             return true;
         } else {
             return false;

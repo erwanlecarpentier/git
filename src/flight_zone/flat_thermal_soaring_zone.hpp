@@ -331,7 +331,7 @@ public:
         if(thermals.size()!=0 && thermals[0]->get_model()==1){
             w[2] += global_sink_rate(z,t);
         }
-        if (!is_equal_to(noise_stddev,0.)) {
+        if (!are_equal(noise_stddev,0.)) {
             unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
             std::default_random_engine generator (seed);
             std::normal_distribution<double> distribution(0.,noise_stddev);
