@@ -6,10 +6,14 @@
 /**
  * @brief Decision node class
  */
+template <class ST, class AC>
 class dnode {
 public:
-    state s; ///< Labelling state
-    std::vector<std::shared_ptr<action>> actions; ///< Available actions, iteratively removed
+    typedef ST ST_type; ///< State type
+    typedef AC AC_type; ///< Action type
+
+    ST s; ///< Labelling state
+    std::vector<AC> actions; ///< Available actions, iteratively removed
     cnode * parent; ///< Pointer to parent node
     std::vector<std::unique_ptr<cnode>> children; ///< Child nodes
     //unsigned nvis; ///< Number of visits//TRM?
@@ -18,8 +22,8 @@ public:
      * @brief Constructor
      */
     dnode(
-        state _s,
-        std::vector<std::shared_ptr<action>> _actions,
+        ST _s,
+        std::vector<AC> _actions,
         cnode * _parent) :
         s(_s),
         actions(_actions),
@@ -36,9 +40,9 @@ public:
      * @return Return the sampled action.
      * @warning Remove the sampled action from the actions vector.
      */
-    std::shared_ptr<action> create_child() {
+    AC create_child() {
         unsigned indice = rand_indice(actions);
-        std::shared_ptr<action> sampled_action = actions.at(indice);
+        AC sampled_action = actions.at(indice);
         actions.erase(actions.begin() + indice);
         children.emplace_back(
             std::unique_ptr<cnode>(new cnode(s,sampled_action))

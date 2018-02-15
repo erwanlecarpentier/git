@@ -13,11 +13,13 @@
 /**
  * @brief UCT algorithm class
  */
-template <class MD, class PL>
+template <class ST, class AC class MD, class PL>
 class uct {
 public:
-    typedef MD MD_type;
-    typedef PL PL_type;
+    typedef ST ST_type; ///< State type
+    typedef AC AC_type; ///< Action type
+    typedef MD MD_type; ///< Model type
+    typedef PL PL_type; ///< Policy type (default policy)
 
     MD model; ///< Generative model
     PL default_policy; ///< Default policy
@@ -48,17 +50,17 @@ public:
      * @brief Sample return
      *
      * Sample a return with the default policy starting at the input state.
-     * @param {state} s; input state
+     * @param {ST} s; input state
      * @return Return the sampled return.
      */
-    double sample_return(state s) {
+    double sample_return(ST s) {
         if(model.is_terminal(s)) {
             return 0.;
         }
         double total_return = 0.;
-        std::shared_ptr<action> a = default_policy(s);
+        AC a = default_policy(s);
         for(unsigned t=0; t<horizon; ++t) {
-            state s_p;
+            ST s_p;
             model.state_transition(s,a,s_p);
             total_return += pow(discount_factor,(double)t) * model.reward_function(s,a,s_p);
             if(model.is_terminal(s_p)) {
@@ -74,10 +76,10 @@ public:
      * @brief Update value
      *
      * Update the value of a chance node by stacking a new sampled value.
-     * @param {cnode *} ptr; pointer to the updated chance node
+     * @param {cnode<ST,AC> *} ptr; pointer to the updated chance node
      * @param {double} q; new sampled value
      */
-    void update_value(cnode * ptr, double q) const {
+    void update_value(cnode<ST,AC> * ptr, double q) const {
         ptr->sampled_returns.push_back(q);
     }
 
@@ -86,10 +88,10 @@ public:
      *
      * Select child of a decision node wrt the UCT tree policy.
      * The node must be fully expanded.
-     * @param {dnode *} v; decision node
+     * @param {dnode<ST,AC> *} v; decision node
      * @return Return to the select child, which is a chance node.
      */
-    cnode * select_child(dnode * v) const {
+    cnode<ST,AC> * select_child(dnode<ST,AC> * v) const {
         std::vector<double> children_uct_scores;
         for(auto &c : v->children) {
             children_uct_scores.emplace_back(
@@ -106,11 +108,11 @@ public:
      *
      * Create a new child node to a decision node and sample a return value with the default
      * policy.
-     * @param {dnode *} v; pointer to the decision node
+     * @param {dnode<ST,AC> *} v; pointer to the decision node
      * @return Return the sampled value.
      */
-    double evaluate(dnode * v) {
-        state s_p;
+    double evaluate(dnode<ST,AC> * v) {
+        ST s_p;
         global_counter++; // a chance node will be created
         model.state_transition(v->s,v->create_child(),s_p);
         double q = sample_return(s_p);
@@ -122,12 +124,12 @@ public:
      * @brief Is state already sampled
      *
      * Equality operator.
-     * @param {cnode *} ptr; pointer to the chance node
-     * @param {state &} s; sampled state
+     * @param {cnode<ST,AC> *} ptr; pointer to the chance node
+     * @param {ST &} s; sampled state
      * @param {unsigned &} ind; indice modified to the value of the indice of the existing
      * decision node with state s if the comparison succeeds.
      */
-    bool is_state_already_sampled(cnode * ptr, state &s, unsigned &ind) const {
+    bool is_state_already_sampled(cnode<ST,AC> * ptr, ST &s, unsigned &ind) const {
         for(unsigned i=0; i<ptr->children.size(); ++i) {
             if(s.is_equal_to(ptr->children[i]->s)) {
                 ind = i;
@@ -142,17 +144,17 @@ public:
      *
      * Search within the tree, starting from the input decision node.
      * Recursive method.
-     * @param {dnode *} v; input decision node
+     * @param {dnode<ST,AC> *} v; input decision node
      * @return Return the sampled return at the given decision node
      */
-    double search_tree(dnode * v) {
+    double search_tree(dnode<ST,AC> * v) {
         if(model.is_terminal(v->s)) { // terminal node
             return 0.;
         } else if(!v->is_fully_expanded()) { // leaf node, expand it
             return evaluate(v);
         } else { // apply UCT tree policy
-            cnode * ptr = select_child(v);
-            state s_p;
+            cnode<ST,AC> * ptr = select_child(v);
+            ST s_p;
             model.state_transition(v->s,ptr->a,s_p);
             double r = model.reward_function(v->s,ptr->a,s_p);
             double q = 0.;
@@ -160,7 +162,7 @@ public:
             if(is_state_already_sampled(ptr,s_p,ind)) { // go to node
                 q = r + discount_factor * search_tree(ptr->children.at(ind).get());
             } else { // leaf node, create a new node
-                ptr->children.emplace_back(std::unique_ptr<dnode>(new dnode(s_p,model.get_action_space(s_p),ptr)));
+                ptr->children.emplace_back(std::unique_ptr<dnode<ST,AC>>(new dnode<ST,AC>(s_p,model.get_action_space(s_p),ptr)));
                 q = r + discount_factor * evaluate(ptr->get_last_child());
             }
             update_value(ptr,q);
@@ -172,11 +174,11 @@ public:
         } else if(v->is_leaf()) { // leaf node, expand it
             return evaluate(v->s);
         } else { // apply UCT tree policy
-            cnode<state,AC> * ptr = select_child(v);
-            state s_p;
+            cnode<ST,AC><ST,AC> * ptr = select_child(v);
+            ST s_p;
             model.state_transition(v->s,ptr->a,s_p);
             double r = model.reward_function(v->s,ptr->a,s_p);
-            ptr->children.emplace_back(std::unique_ptr<dnode>(new dnode(s_p,model.get_action_space(s_p),ptr)));
+            ptr->children.emplace_back(std::unique_ptr<dnode<ST,AC>>(new dnode<ST,AC>(s_p,model.get_action_space(s_p),ptr)));
             double q = r + discount_factor * search_tree(ptr->get_last_child());
             update_value(ptr,q);
             return q;
@@ -188,9 +190,9 @@ public:
      * @brief Build UCT tree
      *
      * Build a tree at the input root node.
-     * @param {dnode &} root; reference to the input root node
+     * @param {dnode<ST,AC> &} root; reference to the input root node
      */
-    void build_uct_tree(dnode &root) {
+    void build_uct_tree(dnode<ST,AC> &root) {
         for(unsigned i=0; i<budget; ++i) {
             search_tree(&root);
         }
@@ -201,10 +203,10 @@ public:
      * @brief Argmax value
      *
      * Get the indice of the child with the maximum value of an input decision node.
-     * @param {const dnode &} v; input decision node
+     * @param {const dnode<ST,AC> &} v; input decision node
      * @return Return the indice of the child with the maximum value
      */
-    unsigned argmax_value(const dnode &v) const {
+    unsigned argmax_value(const dnode<ST,AC> &v) const {
         std::vector<double> values;
         for(auto &ch: v.children) {
             values.emplace_back(ch->get_value());
@@ -216,14 +218,14 @@ public:
      * @brief Recommended action
      *
      * Get the recommended action from an input decision node.
-     * @param {const dnode &} v; input decision node
+     * @param {const dnode<ST,AC> &} v; input decision node
      * @return Return the recommended action at the input decision node.
      */
-    std::shared_ptr<action> recommended_action(const dnode &v) {
+    AC recommended_action(const dnode<ST,AC> &v) {
         return v.children.at(argmax_value(v))->a;
     }
 
-    void test(dnode &v) const {
+    void test(dnode<ST,AC> &v) const {
         std::cout << "nb children = " << v.children.size() << std::endl;
         for(auto &c : v.children) {
             std::cout << "nb children = " << c->children.size() << std::endl;
@@ -233,12 +235,12 @@ public:
     /**
      * @brief UCT policy operator
      *
-     * Policy operator for the undertaken action at given state.
-     * @param {const state &} s; current state of the agent
+     * Policy operator for the undertaken action at given ST.
+     * @param {const ST &} s; current state of the agent
      * @return Return the undertaken action at s.
      */
-    std::shared_ptr<action> operator()(const state &s) {
-        dnode root(s,model.get_action_space(s),nullptr);
+    AC operator()(const ST &s) {
+        dnode<ST,AC> root(s,model.get_action_space(s),nullptr);
         build_uct_tree(root);
         test(root);
         return recommended_action(root);
@@ -248,14 +250,14 @@ public:
      * @brief Process reward
      *
      * Process the resulting reward from transition (s,a,s_p)
-     * @param {state &} s; state
-     * @param {std::shared_ptr<action> &} a; action
-     * @param {state &} s_p; next state
+     * @param {ST &} s; state
+     * @param {AC &} a; action
+     * @param {ST &} s_p; next state
      */
     void process_reward(
-        const state & s,
-        const std::shared_ptr<action> & a,
-        const state & s_p)
+        const ST & s,
+        const AC & a,
+        const ST & s_p)
     {
         (void) s;
         (void) a;

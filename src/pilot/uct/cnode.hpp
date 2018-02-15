@@ -6,10 +6,14 @@ class dnode; // forward declaration
 /**
  * @brief Chance node class
  */
+template <class ST, class AC>
 class cnode {
 public:
-    state s; ///< Labelling state
-    std::shared_ptr<action> a; ///< Labelling action
+    typedef ST ST_type; ///< State type
+    typedef AC AC_type; ///< Action type
+
+    ST s; ///< Labelling state
+    AC a; ///< Labelling action
     std::vector<std::unique_ptr<dnode>> children; ///< Child nodes
     std::vector<double> sampled_returns; ///< Sampled returns
     //unsigned nvis; ///< Number of visits //TRM?
@@ -18,8 +22,8 @@ public:
      * @brief Constructor
      */
     cnode(
-        state _s,
-        std::shared_ptr<action> _a) :
+        ST _s,
+        AC _a) :
         s(_s),
         a(_a)
     {
